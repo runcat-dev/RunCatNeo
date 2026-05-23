@@ -14,12 +14,12 @@
 > - It is not intended to be a complete replacement or an upgrade of the existing RunCat, but rather an attempt to implement a new concept.
 > - Since it is currently under development for the first release, we do not accept issues or pull requests (PRs) at this time.
 
-[![Github issues](https://img.shields.io/github/issues/Kyome22/RunCatNeo)](https://github.com/Kyome22/RunCatNeo/issues)
-[![Github forks](https://img.shields.io/github/forks/Kyome22/RunCatNeo)](https://github.com/Kyome22/RunCatNeo/network/members)
-[![Github stars](https://img.shields.io/github/stars/Kyome22/RunCatNeo)](https://github.com/Kyome22/RunCatNeo/stargazers)
-[![Top language](https://img.shields.io/github/languages/top/Kyome22/RunCatNeo)](https://github.com/Kyome22/RunCatNeo/)
-[![Release](https://img.shields.io/github/v/release/Kyome22/RunCatNeo)]()
-[![Github license](https://img.shields.io/github/license/Kyome22/RunCatNeo)](https://github.com/Kyome22/RunCatNeo/)
+[![Issues](https://img.shields.io/github/issues/runcat-dev/RunCatNeo)](https://github.com/runcat-dev/RunCatNeo/issues)
+[![Forks](https://img.shields.io/github/forks/runcat-dev/RunCatNeo)](https://github.com/runcat-dev/RunCatNeo/network/members)
+[![Stars](https://img.shields.io/github/stars/runcat-dev/RunCatNeo)](https://github.com/runcat-dev/RunCatNeo/stargazers)
+[![Top language](https://img.shields.io/github/languages/top/runcat-dev/RunCatNeo)](https://github.com/runcat-dev/RunCatNeo/)
+[![Releases](https://img.shields.io/github/v/release/runcat-dev/RunCatNeo)](https://github.com/runcat-dev/RunCatNeo/releases)
+[![License](https://img.shields.io/github/license/runcat-dev/RunCatNeo)](https://github.com/runcat-dev/RunCatNeo/)
 
 `Swift` `macOS` `Xcode` `RunCat`
 
@@ -43,10 +43,11 @@ We welcome anyone interested in contributing to RunCat.
 However, please note that this is a place for discussing features, not for submitting requests.
 For requests, please create an Issue according to the template.
 
+Portal: https://runcat-dev.github.io  
 Discord: https://discord.gg/wja3mmHt9z
 
 ## Contributors
 
-<a href="https://github.com/Kyome22/RunCatNeo/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Kyome22/RunCatNeo" />
+<a href="https://github.com/runcat-dev/RunCatNeo/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=runcat-dev/RunCatNeo" />
 </a>
