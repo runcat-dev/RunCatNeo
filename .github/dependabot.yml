@@ -1,7 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: "swift"
-    directory: "/"
+    directory: "/LocalPackage"
     schedule:
       interval: "daily"
       timezone: "Asia/Tokyo"
