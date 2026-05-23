@@ -28,9 +28,9 @@ public struct UserDefaultsRepository: Sendable {
         nonmutating set { userDefaultsClient.set(newValue, .runnerID) }
     }
 
-    public var useInverseSpeedScaling: Bool {
-        get { userDefaultsClient.bool(.useInverseSpeedScaling) }
-        nonmutating set { userDefaultsClient.set(newValue, .useInverseSpeedScaling) }
+    public var speedDecreasesUnderLoad: Bool {
+        get { userDefaultsClient.bool(.speedDecreasesUnderLoad) }
+        nonmutating set { userDefaultsClient.set(newValue, .speedDecreasesUnderLoad) }
     }
 
     public var isFlippedHorizontally: Bool {
@@ -62,7 +62,7 @@ public struct UserDefaultsRepository: Sendable {
         }
         userDefaultsClient.register([
             .runnerID: RunnerKind.cat.id,
-            .useInverseSpeedScaling: false,
+            .speedDecreasesUnderLoad: false,
             .isFlippedHorizontally: false,
         ])
         if ProcessInfo.needsShowAllData {

@@ -29,6 +29,7 @@ public struct AppState: Sendable {
     public var cpuRingBuffer = RingBuffer()
     public var memoryRingBuffer = RingBuffer()
     public let metricsStreamBundle = AsyncStreamBundle<Metrics>()
+    public var runnerBundle: RunnerBundle?
     public let runnerBundleStreamBundle = AsyncStreamBundle<RunnerBundle>()
     public let runnerSpeedStreamBundle = AsyncStreamBundle<Float>()
 

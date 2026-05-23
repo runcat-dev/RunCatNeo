@@ -21,6 +21,14 @@
 import SwiftUI
 
 extension View {
+    var isDebugBuild: Bool {
+#if DEBUG
+        true
+#else
+        false
+#endif
+    }
+
     @ViewBuilder
     func labelStyle(isReady: Bool) -> some View {
         if isReady {
@@ -29,6 +37,4 @@ extension View {
             labelStyle(.titleAndIcon)
         }
     }
-
-    
 }

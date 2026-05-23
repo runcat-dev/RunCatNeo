@@ -18,6 +18,7 @@
  limitations under the License.
  */
 
+import AppKit
 import DataSource
 import Foundation
 import Observation
@@ -27,10 +28,12 @@ import SystemInfoKit
 public final class Dashboard: Composable {
     private let appStateClient: AppStateClient
     private let nsAppClient: NSAppClient
+    private let nsWorkspaceClient: NSWorkspaceClient
     private let logService: LogService
 
     @ObservationIgnored private var task: Task<Void, Never>?
 
+    public var appName: String
     public var systemInfoBundle: SystemInfoBundle
     public var cpuRingBuffer: RingBuffer
     public var memoryRingBuffer: RingBuffer
@@ -39,6 +42,7 @@ public final class Dashboard: Composable {
 
     public init(
         _ appDependencies: AppDependencies,
+        appName: String? = nil,
         systemInfoBundle: SystemInfoBundle = .cpuZero(),
         cpuRingBuffer: RingBuffer = .init(),
         memoryRingBuffer: RingBuffer = .init(),
@@ -47,7 +51,9 @@ public final class Dashboard: Composable {
     ) {
         self.appStateClient = appDependencies.appStateClient
         self.nsAppClient = appDependencies.nsAppClient
+        self.nsWorkspaceClient = appDependencies.nsWorkspaceClient
         self.logService = .init(appDependencies)
+        self.appName = appName ?? appStateClient.withLock(\.name)
         self.systemInfoBundle = systemInfoBundle
         self.cpuRingBuffer = cpuRingBuffer
         self.memoryRingBuffer = memoryRingBuffer
@@ -72,12 +78,28 @@ public final class Dashboard: Composable {
         case .settingsButtonTapped:
             nsAppClient.activate(true)
 
-        case .aboutButtonTapped:
+        case .activityMonitorButtonTapped:
+            guard let url = nsWorkspaceClient.urlForApplication(.activityMonitor) else { return }
+            nsWorkspaceClient.openApplication(url, .init())
+
+        case let .aboutButtonTapped(body):
             nsAppClient.activate(true)
-            nsAppClient.orderFrontStandardAboutPanel([:])
+            nsAppClient.orderFrontStandardAboutPanel([
+                NSApplication.AboutPanelOptionKey.credits: NSAttributedString(body)
+            ])
+
+        case .reportIssueButtonTapped:
+            guard let url = URL(string: .gitHubURL)?.appending(path: "issues") else { return }
+            _ = nsWorkspaceClient.open(url)
 
         case .quitButtonTapped:
             nsAppClient.terminate(nil)
+
+        case .debugSleepButtonTapped:
+            nsWorkspaceClient.post(NSWorkspace.willSleepNotification, nil)
+
+        case .debugWakeUpButtonTapped:
+            nsWorkspaceClient.post(NSWorkspace.didWakeNotification, nil)
         }
     }
 
@@ -91,7 +113,11 @@ public final class Dashboard: Composable {
         case task(String)
         case onDisappear
         case settingsButtonTapped
-        case aboutButtonTapped
+        case activityMonitorButtonTapped
+        case aboutButtonTapped(AttributedString)
+        case reportIssueButtonTapped
         case quitButtonTapped
+        case debugSleepButtonTapped
+        case debugWakeUpButtonTapped
     }
 }

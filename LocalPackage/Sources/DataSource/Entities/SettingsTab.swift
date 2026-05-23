@@ -1,8 +1,8 @@
 /*
- RunCatNeoApp.swift
- RunCatNeo
+ SettingsTab.swift
+ DataSource
 
- Created by Takuto Nakamura on 2026/01/15.
+ Created by Takuto Nakamura on 2026/05/23.
  Copyright 2026 Koyme22 (Takuto Nakamura)
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,16 +18,7 @@
  limitations under the License.
  */
 
-import Model
-import SwiftUI
-import UserInterface
-
-@main
-struct RunCatNeoApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-
-    var body: some Scene {
-        RunnerMenuBarScene()
-        SettingsWindowScene()
-    }
+public enum SettingsTab {
+    case general
+    case metrics
 }

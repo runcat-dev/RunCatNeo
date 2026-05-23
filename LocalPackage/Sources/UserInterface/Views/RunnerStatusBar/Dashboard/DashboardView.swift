@@ -27,56 +27,23 @@ struct DashboardView: View {
 
     var body: some View {
         VStack(spacing: 8) {
+            HStack {
+                Text(store.appName)
+                    .padding(.leading, 8)
+                Spacer()
+                MenuView(appName: store.appName) { action in
+                    await store.send(action)
+                }
+            }
             SystemInfoStackView(
                 systemInfoBundle: store.systemInfoBundle,
                 cpuRingBuffer: store.cpuRingBuffer,
                 memoryRingBuffer: store.memoryRingBuffer,
                 isPreview: store.isPreview
             )
-            HStack(spacing: 8) {
-                SettingsLink {
-                    Label {
-                        Text("settings", bundle: .module)
-                    } icon: {
-                        Image(systemName: "gear")
-                    }
-                    .labelStyle(.iconOnly)
-                }
-                .buttonStyle(.preAction {
-                    await store.send(.settingsButtonTapped)
-                })
-                .accessibilityIdentifier("open_settings")
-
-                Button {
-                    Task {
-                        await store.send(.aboutButtonTapped)
-                    }
-                } label: {
-                    Label {
-                        Text("aboutApp", bundle: .module)
-                    } icon: {
-                        Image(systemName: "info")
-                    }
-                    .labelStyle(.iconOnly)
-                }
-                .accessibilityIdentifier("about_app")
-
-                Button {
-                    Task {
-                        await store.send(.quitButtonTapped)
-                    }
-                } label: {
-                    Label {
-                        Text("quitApp", bundle: .module)
-                    } icon: {
-                        Image(systemName: "hand.wave")
-                    }
-                    .labelStyle(.iconOnly)
-                }
-                .accessibilityIdentifier("terminate_app")
-            }
         }
         .fixedSize()
+        .padding(8)
         .task {
             await store.send(.task(String(describing: Self.self)))
         }

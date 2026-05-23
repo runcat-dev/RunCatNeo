@@ -57,6 +57,7 @@ struct RunnerService {
         }
         userDefaultsRepository.runnerID = runner.id
         appStateClient.withLock {
+            $0.runnerBundle = runnerBundle
             $0.runnerBundleStreamBundle.send(runnerBundle)
         }
     }
@@ -76,13 +77,21 @@ struct RunnerService {
 
     func updateRunnerSpeed(from cpuInfo: CPUInfo?) {
         let cpuValue = max(1.0, min(20.0, Float(cpuInfo?.percentage.value ?? .zero) / 5.0))
-        let speed: Float = if userDefaultsRepository.useInverseSpeedScaling {
+        let speed: Float = if userDefaultsRepository.speedDecreasesUnderLoad {
             0.5 * (21.0 - cpuValue)
         } else {
             cpuValue
         }
         appStateClient.withLock {
             $0.runnerSpeedStreamBundle.send(speed)
+        }
+    }
+
+    func resendCurrentRunnerBundle() {
+        appStateClient.withLock {
+            if let runnerBundle = $0.runnerBundle {
+                $0.runnerBundleStreamBundle.send(runnerBundle)
+            }
         }
     }
 }

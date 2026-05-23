@@ -29,7 +29,6 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-async-algorithms.git", exact: "1.1.3"),
         .package(url: "https://github.com/apple/swift-log.git", exact: "1.8.0"),
-        .package(url: "https://github.com/Kyome22/DeviceModel.git", exact: "1.2.0"),
         .package(url: "https://github.com/Kyome22/SystemInfoKit.git", exact: "6.9.0"),
     ],
     targets: [
@@ -46,7 +45,6 @@ let package = Package(
             name: "Model",
             dependencies: [
                 "DataSource",
-                .product(name: "DeviceModel", package: "DeviceModel"),
             ],
             swiftSettings: swiftSettings
         ),

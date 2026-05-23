@@ -23,5 +23,8 @@ extension String {
     static let customRunners = "CUSTOM_RUNNERS"
     static let isFlippedHorizontally = "IS_FLIPPED_HORIZONTALLY"
     static let runnerID = "RUNNER_ID"
-    static let useInverseSpeedScaling = "USE_INVERSE_SPEED_SCALING"
+    static let speedDecreasesUnderLoad = "SPEED_DECREASES_UNDER_LOAD"
+
+    public static let activityMonitor = "com.apple.ActivityMonitor"
+    public static let gitHubURL = "https://github.com/runcat-dev/RunCatNeo"
 }

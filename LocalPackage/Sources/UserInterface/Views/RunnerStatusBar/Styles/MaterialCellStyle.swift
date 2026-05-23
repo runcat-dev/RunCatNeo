@@ -23,9 +23,9 @@ import SwiftUI
 private struct MaterialCellViewModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .background(.ultraThinMaterial, in: .rect(cornerRadius: 8))
+            .background(.ultraThinMaterial, in: .rect(cornerRadius: 12))
             .overlay {
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: 12)
                     .strokeBorder(Color(.separatorColor), lineWidth: 1)
             }
             .compositingGroup()

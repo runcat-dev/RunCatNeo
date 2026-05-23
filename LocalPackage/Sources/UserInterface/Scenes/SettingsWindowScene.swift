@@ -1,8 +1,8 @@
 /*
- RunCatNeoApp.swift
- RunCatNeo
+ SettingsWindowScene.swift
+ UserInterface
 
- Created by Takuto Nakamura on 2026/01/15.
+ Created by Takuto Nakamura on 2026/05/23.
  Copyright 2026 Koyme22 (Takuto Nakamura)
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,16 +18,14 @@
  limitations under the License.
  */
 
-import Model
 import SwiftUI
-import UserInterface
 
-@main
-struct RunCatNeoApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+public struct SettingsWindowScene: Scene {
+    public init() {}
 
-    var body: some Scene {
-        RunnerMenuBarScene()
-        SettingsWindowScene()
+    public var body: some Scene {
+        Settings {
+            SettingsView()
+        }
     }
 }

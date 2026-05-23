@@ -1,15 +1,6 @@
 {
-  "originHash" : "ad10c61271ab02bae3d9c764dd77347d2cd95411dbdb322002cd9d841af5bded",
+  "originHash" : "ddaed719e5bd7ce0069dfed82ba15c9cb4ae980e71125262bb9a6a7327d5b4cd",
   "pins" : [
-    {
-      "identity" : "devicemodel",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Kyome22/DeviceModel.git",
-      "state" : {
-        "revision" : "558269eb9cc69d2e5ab5a331e82c10452b15a9af",
-        "version" : "1.2.0"
-      }
-    },
     {
       "identity" : "swift-async-algorithms",
       "kind" : "remoteSourceControl",
