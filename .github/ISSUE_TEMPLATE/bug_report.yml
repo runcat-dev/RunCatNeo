@@ -1,0 +1,81 @@
+name: Bug Report
+description: File a bug report.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We do not accept issues in languages other than English.
+
+  - type: input
+    id: app-version
+    attributes:
+      label: "App Version"
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: "Device Model (iMac/MacBook/Mac mini/etc.)"
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: "OS Version"
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: "Describe the bug"
+      description: "A clear and concise description of what the bug is."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: "How to reproduce"
+      description: "Steps to reproduce the bug."
+      value: |
+        1.
+        2.
+        3.
+        ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: "Expected behavior"
+      description: "A description of what you expected to happen."
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: "Screenshots"
+      description: "If possible, attach screenshots."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "Check List"
+      options:
+        - label: "I have read the [CONTRIBUTING.md](https://github.com/runcat-dev/RunCatNeo/blob/main/CONTRIBUTING.md) and agree to follow it."
+          required: true
+        - label: "Uninstalled App."
+          required: true
+        - label: "Re-launched your computer."
+          required: true
+        - label: "Checked that no similar issues already exist."
+          required: true

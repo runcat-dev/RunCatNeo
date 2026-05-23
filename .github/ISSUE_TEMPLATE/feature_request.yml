@@ -1,0 +1,45 @@
+name: Feature Request
+description: File a feature request.
+title: "[Idea]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We do not accept requests in languages other than English.
+
+  - type: textarea
+    id: overview
+    attributes:
+      label: "Overview of the requested feature"
+      description: "Please provide a brief summary of the feature you're requesting."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: "Reason for the request"
+      description: "Explain why this feature is needed and what motivated your request."
+    validations:
+      required: true
+
+  - type: textarea
+    id: related-issues
+    attributes:
+      label: "Related Issues"
+      description: "Link to related issues, if applicable."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "Check List"
+      options:
+        - label: "I have read the [CONTRIBUTING.md](https://github.com/runcat-dev/RunCatNeo/blob/main/CONTRIBUTING.md) and agree to follow it."
+          required: true
+        - label: "The proposed feature is beneficial to a wide range of users and not just a personal preference."
+          required: true
+        - label: "Checked that no similar requests already exist."
+          required: true
