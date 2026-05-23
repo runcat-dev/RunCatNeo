@@ -1,0 +1,139 @@
+body {
+  margin: 0 auto;
+  font-family: "Exo 2", sans-serif;
+  background-color: #f5f5f5;
+  text-align: center;
+  min-height: 100vh;
+  min-width: 640px;
+  display: flex;
+  flex-direction: column;
+}
+
+header div {
+  display: flex;
+  background-color: #606060;
+  padding: 8px 16px;
+  color: #f5f5f5;
+}
+
+header a.title {
+  margin-right: auto;
+  text-decoration: none;
+  font-style: italic;
+  font-size: 24px;
+  line-height: 24px;
+  color: #f5f5f5;
+}
+
+header a.title:hover {
+  color: cadetblue;
+}
+
+header svg.github-icon {
+  width: 24px;
+  height: 24px;
+}
+
+header svg.github-icon path {
+  fill: #f5f5f5;
+}
+
+header svg.github-icon:hover path {
+  fill: cadetblue;
+}
+
+div.main {
+  flex: 1;
+}
+
+div.summary {
+  margin: 40px auto;
+}
+
+div.detail {
+  margin: 40px auto;
+  max-width: 600px;
+}
+
+p.title {
+  font-style: italic;
+  font-size: 80px;
+  line-height: 80px;
+  margin: 20px auto;
+}
+
+p.catchcopy {
+  font-weight: bold;
+}
+
+p.feature {
+  font-size: 1em;
+}
+
+ul.feature-list {
+  display: inline-block;
+  list-style: disc inside;
+  padding: 0;
+  margin: 0 auto 1em;
+  text-align: left;
+}
+
+ul.feature-list li {
+  padding: 2px 0;
+}
+
+img.demo {
+  width: 415px;
+  height: 330px;
+}
+
+p.app-store-banner img {
+  height: 78px;
+}
+
+p.app-store-banner img:active {
+  opacity: 0.7;
+  transform: translateY(2px);
+}
+
+img.screenshot {
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+}
+
+footer {
+  padding-top: 1em;
+  color: #606060;
+}
+
+nav a {
+  text-decoration: none;
+  color: #404040;
+}
+
+nav a:hover {
+  color: darkcyan;
+}
+
+div.privacy-policy {
+  flex: 1;
+  font-family: sans-serif;
+}
+
+div.privacy-policy div.block {
+  margin: 0 auto;
+  padding: 5px 20px;
+  max-width: 800px;
+  text-align: left;
+}
+
+div.privacy-policy h1 {
+  text-align: center;
+}
+
+div.privacy-policy p.explain {
+  text-indent: 1em;
+  text-align: justify;
+  hyphens: auto;
+}
