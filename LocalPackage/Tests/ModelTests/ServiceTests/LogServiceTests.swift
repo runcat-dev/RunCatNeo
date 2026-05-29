@@ -1,4 +1,4 @@
-import os
+import AllocatedUnfairLock
 import Testing
 
 @testable import DataSource
@@ -7,8 +7,8 @@ import Testing
 struct LogServiceTests {
     @Test
     func bootstrap_executed_only_once() {
-        let appState = OSAllocatedUnfairLock<AppState>(initialState: .init())
-        let count = OSAllocatedUnfairLock(initialState: 0)
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let count = AllocatedUnfairLock(initialState: 0)
         let sut = LogService(.testDependencies(
             appStateClient: .testDependency(appState),
             loggingSystemClient: testDependency(of: LoggingSystemClient.self) {

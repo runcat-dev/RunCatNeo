@@ -1,6 +1,15 @@
 {
-  "originHash" : "05dc765ef494d51db9cbd7af6117e0c123117a43dbda22f8a83ad26c0036b89b",
+  "originHash" : "0c34d8a9d5c086872f6e3824dfc16a10ecc7a73dd5e41368c01acfbbf1ab13d7",
   "pins" : [
+    {
+      "identity" : "allocatedunfairlock",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Kyome22/AllocatedUnfairLock.git",
+      "state" : {
+        "revision" : "bf1fa2b1b6a449fd1f8adf2d846feb5fab7734ca",
+        "version" : "1.0.0"
+      }
+    },
     {
       "identity" : "swift-async-algorithms",
       "kind" : "remoteSourceControl",
@@ -33,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Kyome22/SystemInfoKit.git",
       "state" : {
-        "revision" : "ce8238e972ca5b2fff980bb055aecf30770c68d8",
-        "version" : "6.9.0"
+        "revision" : "effdc376f5f62f8ff6f3f974ed92b43779073b63",
+        "version" : "7.0.0"
       }
     }
   ],

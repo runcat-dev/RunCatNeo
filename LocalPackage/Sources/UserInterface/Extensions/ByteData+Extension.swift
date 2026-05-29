@@ -1,8 +1,8 @@
 /*
- RunCatNeoApp.swift
- RunCatNeo
+ ByteData+Extension.swift
+ UserInterface
 
- Created by Takuto Nakamura on 2026/01/15.
+ Created by Takuto Nakamura on 2026/05/25.
  Copyright 2026 Koyme22 (Takuto Nakamura)
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,19 +18,18 @@
  limitations under the License.
  */
 
-import DataSource
-import Model
-import SwiftUI
-import UserInterface
+import SystemInfoKit
 
-@main
-struct RunCatNeoApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @AppStorage(.showsMetricsBar) private var showsMetricsBar = false
-
-    var body: some Scene {
-        RunnerBarScene()
-        MetricsBarScene(isInserted: $showsMetricsBar)
-        SettingsWindowScene()
+extension ByteData {
+    func menuBarDescription(type: SystemInfoType) -> String {
+        let (value, unit) = readableValue
+        return switch type {
+        case .storage:
+            String(format: "%5.2f %@", locale: .current, value, unit)
+        case .network:
+            String(format: value < 100 ? "%4.1f %@/s" : "%4.0f %@/s", locale: .current, value, unit)
+        default:
+            description
+        }
     }
 }

@@ -18,7 +18,7 @@
  limitations under the License.
  */
 
-import os
+import AllocatedUnfairLock
 
 public struct AppStateClient: DependencyClient {
     var getAppState: @Sendable () -> AppState
@@ -32,7 +32,7 @@ public struct AppStateClient: DependencyClient {
     }
 
     public static let liveValue: Self = {
-        let state = OSAllocatedUnfairLock<AppState>(initialState: .init())
+        let state = AllocatedUnfairLock<AppState>(initialState: .init())
         return Self(
             getAppState: { state.withLock(\.self) },
             setAppState: { value in state.withLock { $0 = value } }
@@ -44,7 +44,7 @@ public struct AppStateClient: DependencyClient {
         setAppState: { _ in }
     )
 
-    public static func testDependency(_ appState: OSAllocatedUnfairLock<AppState>) -> Self {
+    public static func testDependency(_ appState: AllocatedUnfairLock<AppState>) -> Self {
         Self(
             getAppState: { appState.withLock(\.self) },
             setAppState: { value in appState.withLock { $0 = value } }

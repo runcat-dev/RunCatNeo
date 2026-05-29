@@ -1,5 +1,5 @@
+import AllocatedUnfairLock
 import Foundation
-import os
 import Testing
 
 @testable import DataSource
@@ -8,7 +8,7 @@ import Testing
 struct DashboardTests {
     @MainActor @Test
     func send_settingsButtonTapped() async {
-        let callStack = OSAllocatedUnfairLock<[String]>(initialState: [])
+        let callStack = AllocatedUnfairLock<[String]>(initialState: [])
         let sut = Dashboard(.testDependencies(
             nsAppClient: testDependency(of: NSAppClient.self) {
                 $0.activate = { value in
@@ -22,7 +22,7 @@ struct DashboardTests {
 
     @MainActor @Test
     func send_activityMonitorButtonTapped() async {
-        let callStack = OSAllocatedUnfairLock<[String]>(initialState: [])
+        let callStack = AllocatedUnfairLock<[String]>(initialState: [])
         let sut = Dashboard(.testDependencies(
             nsWorkspaceClient: testDependency(of: NSWorkspaceClient.self) {
                 $0.urlForApplication = { _ in
@@ -41,7 +41,7 @@ struct DashboardTests {
 
     @MainActor @Test
     func send_aboutButtonTapped() async {
-        let callStack = OSAllocatedUnfairLock<[String]>(initialState: [])
+        let callStack = AllocatedUnfairLock<[String]>(initialState: [])
         let sut = Dashboard(.testDependencies(
             nsAppClient: testDependency(of: NSAppClient.self) {
                 $0.activate = { value in
@@ -61,7 +61,7 @@ struct DashboardTests {
 
     @MainActor @Test
     func send_reportIssueButtonTapped() async {
-        let callStack = OSAllocatedUnfairLock<[String]>(initialState: [])
+        let callStack = AllocatedUnfairLock<[String]>(initialState: [])
         let sut = Dashboard(.testDependencies(
             nsWorkspaceClient: testDependency(of: NSWorkspaceClient.self) {
                 $0.open = { value in
@@ -79,7 +79,7 @@ struct DashboardTests {
 
     @MainActor @Test
     func send_quitButtonTapped() async {
-        let callStack = OSAllocatedUnfairLock<[String]>(initialState: [])
+        let callStack = AllocatedUnfairLock<[String]>(initialState: [])
         let sut = Dashboard(.testDependencies(
             nsAppClient: testDependency(of: NSAppClient.self) {
                 $0.terminate = { _ in

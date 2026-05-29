@@ -65,8 +65,12 @@ public final class Dashboard: Composable {
         switch action {
         case let .task(screenName):
             logService.notice(.screenView(name: screenName))
+            if let metrics = appStateClient.withLock(\.metrics.latestValue) {
+                updateMetrics(metrics)
+            }
+            task?.cancel()
             task = Task { [weak self, appStateClient] in
-                let stream = appStateClient.withLock(\.metricsStreamBundle).stream
+                let stream = appStateClient.withLock(\.metrics.stream)
                 for await value in stream {
                     self?.updateMetrics(value)
                 }

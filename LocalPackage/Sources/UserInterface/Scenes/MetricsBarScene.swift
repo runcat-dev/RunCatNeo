@@ -1,8 +1,8 @@
 /*
- RunnerMenuBarScene.swift
+ MetricsBarScene.swift
  UserInterface
 
- Created by Takuto Nakamura on 2026/05/05.
+ Created by Takuto Nakamura on 2026/05/24.
  Copyright 2026 Koyme22 (Takuto Nakamura)
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,16 +21,19 @@
 import Model
 import SwiftUI
 
-public struct RunnerMenuBarScene: Scene {
+public struct MetricsBarScene: Scene {
     @Environment(\.appDependencies) private var appDependencies
+    @Binding private var isInserted: Bool
 
-    public init() {}
+    public init(isInserted: Binding<Bool>) {
+        _isInserted = isInserted
+    }
 
     public var body: some Scene {
-        MenuBarExtra {
-            DashboardView(store: .init(appDependencies))
+        MenuBarExtra(isInserted: $isInserted) {
+            MetricsBarSettingsView(store: .init(appDependencies))
         } label: {
-            RunnerMenuBarView(store: .init(appDependencies))
+            MetricsBarView(store: .init(appDependencies))
         }
         .menuBarExtraStyle(.window)
     }

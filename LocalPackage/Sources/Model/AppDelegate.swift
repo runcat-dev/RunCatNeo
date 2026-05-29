@@ -33,37 +33,37 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
         let nsWorkspaceClient = appDependencies.nsWorkspaceClient
         let logService = LogService(appDependencies)
         logService.bootstrap()
-        let systemInfoService = SystemInfoService(appDependencies)
+        let metricsService = MetricsService(appDependencies)
         let runnerService = RunnerService(appDependencies)
         Task {
             await withTaskGroup { group in
                 group.addTask {
                     let publisher = nsWorkspaceClient.publisher(NSWorkspace.willSleepNotification)
                     for await _ in publisher.values {
-                        systemInfoService.stopMonitoring()
+                        metricsService.stopMonitoring()
                     }
                 }
                 group.addTask {
                     let publisher = nsWorkspaceClient.publisher(NSWorkspace.didWakeNotification)
                     for await _ in publisher.values {
-                        systemInfoService.startMonitoring()
+                        metricsService.startMonitoring()
                     }
                 }
                 group.addTask {
                     let stream = appStateClient.withLock(\.systemInfoObserver).systemInfoStream()
                     for await value in stream {
-                        systemInfoService.updateMetrics(from: value)
+                        metricsService.updateMetrics(from: value)
                         runnerService.updateRunnerSpeed(from: value.cpuInfo)
                     }
                 }
             }
         }
         logService.notice(.launchApp)
-        systemInfoService.startMonitoring()
+        metricsService.startMonitoring()
         runnerService.setup()
     }
 
     public func applicationWillTerminate(_ notification: Notification) {
-        SystemInfoService(appDependencies).stopMonitoring()
+        MetricsService(appDependencies).stopMonitoring()
     }
 }

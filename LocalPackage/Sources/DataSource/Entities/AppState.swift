@@ -28,10 +28,11 @@ public struct AppState: Sendable {
     public let systemInfoObserver = SystemInfoObserver.shared
     public var cpuRingBuffer = RingBuffer()
     public var memoryRingBuffer = RingBuffer()
-    public let metricsStreamBundle = AsyncStreamBundle<Metrics>()
+    public var metrics = AsyncStreamBundle<Metrics>()
+    public var metricsConfigurationChanges = AsyncStreamBundle<Void>()
     public var runnerBundle: RunnerBundle?
-    public let runnerBundleStreamBundle = AsyncStreamBundle<RunnerBundle>()
-    public let runnerSpeedStreamBundle = AsyncStreamBundle<Float>()
+    public var runnerBundles = AsyncStreamBundle<RunnerBundle>()
+    public var runnerSpeeds = AsyncStreamBundle<Float>()
 
     init(
         name: String = "",

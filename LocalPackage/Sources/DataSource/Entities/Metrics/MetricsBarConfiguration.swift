@@ -1,8 +1,8 @@
 /*
- ActivationBundle.swift
+ MetricsBarConfiguration.swift
  DataSource
 
- Created by Takuto Nakamura on 2026/05/08.
+ Created by Takuto Nakamura on 2026/05/24.
  Copyright 2026 Koyme22 (Takuto Nakamura)
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,16 +18,22 @@
  limitations under the License.
  */
 
-public struct ActivationBundle: Codable, Sendable {
-    public var isActiveMemory: Bool
-    public var isActiveStorage: Bool
-    public var isActiveBattery: Bool
-    public var isActiveNetwork: Bool
+public struct MetricsBarConfiguration: Codable, Sendable {
+    public var showsCPU: Bool
+    public var showsMemory: Bool
+    public var showsStorage: Bool
+    public var showsBattery: Bool
+    public var showsNetwork: Bool
 
-    static let `default` = Self(
-        isActiveMemory: true,
-        isActiveStorage: true,
-        isActiveBattery: true,
-        isActiveNetwork: true
+    public var isEmpty: Bool {
+        !showsCPU && !showsMemory && !showsStorage && !showsBattery && !showsNetwork
+    }
+
+    public static let `default` = Self(
+        showsCPU: true,
+        showsMemory: false,
+        showsStorage: false,
+        showsBattery: false,
+        showsNetwork: false
     )
 }

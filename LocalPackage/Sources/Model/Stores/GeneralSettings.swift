@@ -26,8 +26,8 @@ public final class GeneralSettings: Composable {
     private let launchAtLoginRepository: LaunchAtLoginRepository
     private let userDefaultsRepository: UserDefaultsRepository
     private let logService: LogService
+    private let metricsService: MetricsService
     private let runnerService: RunnerService
-    private let systemInfoService: SystemInfoService
 
     public var speedDecreasesUnderLoad: Bool
     public var isFlippedHorizontally: Bool
@@ -44,8 +44,8 @@ public final class GeneralSettings: Composable {
         self.launchAtLoginRepository = .init(appDependencies.smAppServiceClient)
         self.userDefaultsRepository = .init(appDependencies.userDefaultsClient)
         self.logService = .init(appDependencies)
+        self.metricsService = .init(appDependencies)
         self.runnerService = .init(appDependencies)
-        self.systemInfoService = .init(appDependencies)
         self.speedDecreasesUnderLoad = speedDecreasesUnderLoad ?? userDefaultsRepository.speedDecreasesUnderLoad
         self.isFlippedHorizontally = isFlippedHorizontally ?? userDefaultsRepository.isFlippedHorizontally
         self.launchesAtLogin =  launchesAtLogin ?? launchAtLoginRepository.isEnabled
@@ -60,7 +60,7 @@ public final class GeneralSettings: Composable {
         case let .slowDownUnderLoadToggleSwitched(isOn):
             speedDecreasesUnderLoad = isOn
             userDefaultsRepository.speedDecreasesUnderLoad = isOn
-            let cpuInfo = systemInfoService.currentSystemInfoBundle.cpuInfo
+            let cpuInfo = metricsService.currentSystemInfoBundle.cpuInfo
             runnerService.updateRunnerSpeed(from: cpuInfo)
 
         case let .flipHorizontallyToggleSwitched(isOn):

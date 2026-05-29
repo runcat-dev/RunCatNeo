@@ -1,8 +1,8 @@
 /*
- RunCatNeoApp.swift
- RunCatNeo
+ Array+Extension.swift
+ UserInterface
 
- Created by Takuto Nakamura on 2026/01/15.
+ Created by Takuto Nakamura on 2026/05/25.
  Copyright 2026 Koyme22 (Takuto Nakamura)
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,19 +18,16 @@
  limitations under the License.
  */
 
-import DataSource
-import Model
-import SwiftUI
-import UserInterface
+import CoreGraphics
 
-@main
-struct RunCatNeoApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @AppStorage(.showsMetricsBar) private var showsMetricsBar = false
-
-    var body: some Scene {
-        RunnerBarScene()
-        MetricsBarScene(isInserted: $showsMetricsBar)
-        SettingsWindowScene()
+extension Array where Element == CGFloat {
+    func joined(separator: CGFloat) -> CGFloat {
+        reduce(.zero) {
+            if $0 > .zero {
+                $0 + separator + $1
+            } else {
+                $0 + $1
+            }
+        }
     }
 }

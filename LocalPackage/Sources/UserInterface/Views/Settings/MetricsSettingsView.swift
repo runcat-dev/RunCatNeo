@@ -29,28 +29,38 @@ struct MetricsSettingsView: View {
         Form {
             Section {
                 Toggle(isOn: Binding<Bool>(
-                    get: { store.activationBundle.isActiveMemory },
-                    asyncSet: { await store.send(.isActiveToggleSwitched(.memory, $0)) }
+                    get: { store.showsMetricsBar },
+                    asyncSet: { await store.send(.showsMetricsBarToggleSwitched($0)) }
                 )) {
-                    Text("memoryPerformance", bundle: .module)
+                    Text("showMetricsBar", bundle: .module)
+                }
+            } header: {
+                Text("metricsBar", bundle: .module)
+            }
+            Section {
+                Toggle(isOn: Binding<Bool>(
+                    get: { store.metricsConfiguration.monitorsMemory },
+                    asyncSet: { await store.send(.monitorsSystemInfoToggleSwitched(.memory, $0)) }
+                )) {
+                    Text("enableMemoryPressureMonitoring", bundle: .module)
                 }
                 Toggle(isOn: Binding<Bool>(
-                    get: { store.activationBundle.isActiveStorage },
-                    asyncSet: { await store.send(.isActiveToggleSwitched(.storage, $0)) }
+                    get: { store.metricsConfiguration.monitorsStorage },
+                    asyncSet: { await store.send(.monitorsSystemInfoToggleSwitched(.storage, $0)) }
                 )) {
-                    Text("storageCapacity", bundle: .module)
+                    Text("enableStorageCapacityMonitoring", bundle: .module)
                 }
                 Toggle(isOn: Binding<Bool>(
-                    get: { store.activationBundle.isActiveBattery },
-                    asyncSet: { await store.send(.isActiveToggleSwitched(.battery, $0)) }
+                    get: { store.metricsConfiguration.monitorsBattery },
+                    asyncSet: { await store.send(.monitorsSystemInfoToggleSwitched(.battery, $0)) }
                 )) {
-                    Text("batteryState", bundle: .module)
+                    Text("enableBatteryStatusMonitoring", bundle: .module)
                 }
                 Toggle(isOn: Binding<Bool>(
-                    get: { store.activationBundle.isActiveNetwork },
-                    asyncSet: { await store.send(.isActiveToggleSwitched(.network, $0)) }
+                    get: { store.metricsConfiguration.monitorsNetwork },
+                    asyncSet: { await store.send(.monitorsSystemInfoToggleSwitched(.network, $0)) }
                 )) {
-                    Text("networkConnection", bundle: .module)
+                    Text("enableNetworkConnectivityMonitoring", bundle: .module)
                 }
             } header: {
                 Text("systemInfo", bundle: .module)

@@ -1,5 +1,5 @@
 /*
- RunnerMenuBar.swift
+ RunnerBar.swift
  Model
 
  Created by Takuto Nakamura on 2026/05/08.
@@ -23,13 +23,14 @@ import DataSource
 import Observation
 
 @MainActor @Observable
-public final class RunnerMenuBar: Composable {
+public final class RunnerBar: Composable {
     private let appStateClient: AppStateClient
     private let userDefaultsRepository: UserDefaultsRepository
     private let logService: LogService
 
     @ObservationIgnored private var eventBridge: Action.EventBridge?
     @ObservationIgnored private var tintColor = CGColor.black
+    @ObservationIgnored private var task: Task<Void, Never>?
 
     public var icon: NSImage?
     public var size: CGSize
@@ -61,8 +62,8 @@ public final class RunnerMenuBar: Composable {
         case let .task(screenName, eventBridge):
             logService.notice(.screenView(name: screenName))
             self.eventBridge = eventBridge
-
-            Task { [weak self, appStateClient] in
+            task?.cancel()
+            task = Task { [weak self, appStateClient] in
                 await withTaskGroup { group in
                     group.addTask { @MainActor @Sendable in
                         for await value in StatusBarAppearanceBridge.shared.stream {
@@ -70,19 +71,24 @@ public final class RunnerMenuBar: Composable {
                         }
                     }
                     group.addTask { @MainActor @Sendable in
-                        let stream = appStateClient.withLock(\.runnerBundleStreamBundle.stream)
+                        let stream = appStateClient.withLock(\.runnerBundles.stream)
                         for await value in stream {
                             self?.update(runnerBundle: value)
                         }
                     }
                     group.addTask { @MainActor @Sendable in
-                        let stream = appStateClient.withLock(\.runnerSpeedStreamBundle.stream)
+                        let stream = appStateClient.withLock(\.runnerSpeeds.stream)
                         for await value in stream {
                             self?.update(runnerSpeed: value)
                         }
                     }
                 }
             }
+
+        case .onDisappear:
+            // This will not be called within the MenuBarExtra lifecycle,
+            // but I am including it here for the sake of formality.
+            task?.cancel()
         }
     }
 
@@ -126,6 +132,7 @@ public final class RunnerMenuBar: Composable {
 
     public enum Action: Sendable {
         case task(String, EventBridge)
+        case onDisappear
 
         public struct EventBridge: Sendable {
             public let getBundleImage: @MainActor @Sendable (String) -> NSImage

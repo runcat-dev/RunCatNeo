@@ -1,5 +1,5 @@
 /*
- RunnerMenuBar.swift
+ RunnerBarView.swift
  UserInterface
 
  Created by Takuto Nakamura on 2026/05/08.
@@ -21,8 +21,8 @@
 import Model
 import SwiftUI
 
-struct RunnerMenuBarView: View {
-    @StateObject var store: RunnerMenuBar
+struct RunnerBarView: View {
+    @StateObject var store: RunnerBar
 
     private var iconImage: NSImage {
         let nsImage = NSImage(size: store.size, flipped: true) { rect in
@@ -72,4 +72,4 @@ struct RunnerMenuBarView: View {
     }
 }
 
-extension RunnerMenuBar: ObservableObject {}
+extension RunnerBar: ObservableObject {}

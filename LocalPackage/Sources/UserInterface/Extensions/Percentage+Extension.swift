@@ -1,8 +1,8 @@
 /*
- RunCatNeoApp.swift
- RunCatNeo
+ Percentage+Extension.swift
+ UserInterface
 
- Created by Takuto Nakamura on 2026/01/15.
+ Created by Takuto Nakamura on 2026/05/25.
  Copyright 2026 Koyme22 (Takuto Nakamura)
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,19 +18,14 @@
  limitations under the License.
  */
 
-import DataSource
-import Model
-import SwiftUI
-import UserInterface
+import SystemInfoKit
 
-@main
-struct RunCatNeoApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @AppStorage(.showsMetricsBar) private var showsMetricsBar = false
-
-    var body: some Scene {
-        RunnerBarScene()
-        MetricsBarScene(isInserted: $showsMetricsBar)
-        SettingsWindowScene()
+extension Percentage {
+    var menuBarDescription: String {
+        String(
+            format: value < 100 ? "%4.1f%%" : "%4.0f%%",
+            locale: .current,
+            value
+        )
     }
 }

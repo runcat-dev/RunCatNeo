@@ -29,12 +29,14 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-async-algorithms.git", exact: "1.1.4"),
         .package(url: "https://github.com/apple/swift-log.git", exact: "1.12.1"),
-        .package(url: "https://github.com/Kyome22/SystemInfoKit.git", exact: "6.9.0"),
+        .package(url: "https://github.com/Kyome22/AllocatedUnfairLock.git", exact: "1.0.0"),
+        .package(url: "https://github.com/Kyome22/SystemInfoKit.git", exact: "7.0.0"),
     ],
     targets: [
         .target(
             name: "DataSource",
             dependencies: [
+                .product(name: "AllocatedUnfairLock", package: "AllocatedUnfairLock"),
                 .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "SystemInfoKit", package: "SystemInfoKit"),

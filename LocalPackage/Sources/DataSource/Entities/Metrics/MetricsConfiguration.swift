@@ -1,8 +1,8 @@
 /*
- RunCatNeoApp.swift
- RunCatNeo
+ MetricsConfiguration.swift
+ DataSource
 
- Created by Takuto Nakamura on 2026/01/15.
+ Created by Takuto Nakamura on 2026/05/08.
  Copyright 2026 Koyme22 (Takuto Nakamura)
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,19 +18,16 @@
  limitations under the License.
  */
 
-import DataSource
-import Model
-import SwiftUI
-import UserInterface
+public struct MetricsConfiguration: Codable, Sendable, Equatable {
+    public var monitorsMemory: Bool
+    public var monitorsStorage: Bool
+    public var monitorsBattery: Bool
+    public var monitorsNetwork: Bool
 
-@main
-struct RunCatNeoApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @AppStorage(.showsMetricsBar) private var showsMetricsBar = false
-
-    var body: some Scene {
-        RunnerBarScene()
-        MetricsBarScene(isInserted: $showsMetricsBar)
-        SettingsWindowScene()
-    }
+    static let `default` = Self(
+        monitorsMemory: true,
+        monitorsStorage: true,
+        monitorsBattery: true,
+        monitorsNetwork: true
+    )
 }

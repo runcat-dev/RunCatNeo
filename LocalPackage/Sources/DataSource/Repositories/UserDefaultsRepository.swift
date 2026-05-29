@@ -38,19 +38,41 @@ public struct UserDefaultsRepository: Sendable {
         nonmutating set { userDefaultsClient.set(newValue, .isFlippedHorizontally) }
     }
 
-    public var activationBundle: ActivationBundle {
+    public var metricsConfiguration: MetricsConfiguration {
         get {
-            guard let data = userDefaultsClient.data(.activationBundle),
-                  let value = try? JSONDecoder().decode(ActivationBundle.self, from: data) else {
+            guard let data = userDefaultsClient.data(.metricsConfiguration),
+                  let value = try? JSONDecoder().decode(MetricsConfiguration.self, from: data) else {
                 return .default
             }
             return value
         }
         nonmutating set {
             if let data = try? JSONEncoder().encode(newValue) {
-                userDefaultsClient.set(data, .activationBundle)
+                userDefaultsClient.set(data, .metricsConfiguration)
             } else {
-                userDefaultsClient.removeObject(.activationBundle)
+                userDefaultsClient.removeObject(.metricsConfiguration)
+            }
+        }
+    }
+
+    public var showsMetricsBar: Bool {
+        get { userDefaultsClient.bool(.showsMetricsBar) }
+        nonmutating set { userDefaultsClient.set(newValue, .showsMetricsBar) }
+    }
+
+    public var metricsBarConfiguration: MetricsBarConfiguration {
+        get {
+            guard let data = userDefaultsClient.data(.metricsBarConfiguration),
+                  let value = try? JSONDecoder().decode(MetricsBarConfiguration.self, from: data) else {
+                return .default
+            }
+            return value
+        }
+        nonmutating set {
+            if let data = try? JSONEncoder().encode(newValue) {
+                userDefaultsClient.set(data, .metricsBarConfiguration)
+            } else {
+                userDefaultsClient.removeObject(.metricsBarConfiguration)
             }
         }
     }

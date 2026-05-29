@@ -24,22 +24,29 @@ import SystemInfoKit
 
 @MainActor @Observable
 public final class MetricsSettings: Composable {
+    private let appStateClient: AppStateClient
     private let userDefaultsRepository: UserDefaultsRepository
     private let logService: LogService
-    private let systemInfoService: SystemInfoService
+    private let metricsService: MetricsService
 
-    public var activationBundle: ActivationBundle
+    @ObservationIgnored private var task: Task<Void, Never>?
+
+    public var showsMetricsBar: Bool
+    public var metricsConfiguration: MetricsConfiguration
     public let action: (Action) async -> Void
 
     public init(
         _ appDependencies: AppDependencies,
-        activationBundle: ActivationBundle? = nil,
+        showsMetricsBar: Bool? = nil,
+        metricsConfiguration: MetricsConfiguration? = nil,
         action: @escaping (Action) async -> Void =  { _ in }
     ) {
+        self.appStateClient = appDependencies.appStateClient
         self.userDefaultsRepository = .init(appDependencies.userDefaultsClient)
         self.logService = .init(appDependencies)
-        self.systemInfoService = .init(appDependencies)
-        self.activationBundle = activationBundle ?? userDefaultsRepository.activationBundle
+        self.metricsService = .init(appDependencies)
+        self.showsMetricsBar = showsMetricsBar ?? userDefaultsRepository.showsMetricsBar
+        self.metricsConfiguration = metricsConfiguration ?? userDefaultsRepository.metricsConfiguration
         self.action = action
     }
 
@@ -47,27 +54,53 @@ public final class MetricsSettings: Composable {
         switch action {
         case let .task(screenName):
             logService.notice(.screenView(name: screenName))
-
-        case let .isActiveToggleSwitched(type, isOn):
-            switch type {
-            case .memory:
-                activationBundle.isActiveMemory = isOn
-            case .storage:
-                activationBundle.isActiveStorage = isOn
-            case .battery:
-                activationBundle.isActiveBattery = isOn
-            case .network:
-                activationBundle.isActiveNetwork = isOn
-            default:
-                break
+            task?.cancel()
+            task = Task { [weak self, appStateClient] in
+                let stream = appStateClient.withLock(\.metricsConfigurationChanges.stream)
+                for await _ in stream {
+                    self?.updateMetricsConfiguration()
+                }
             }
-            userDefaultsRepository.activationBundle = activationBundle
-            systemInfoService.toggleSystemInfoActivation(type: type, isOn: isOn)
+
+        case let .showsMetricsBarToggleSwitched(isOn):
+            showsMetricsBar = isOn
+            userDefaultsRepository.showsMetricsBar = isOn
+
+        case let .monitorsSystemInfoToggleSwitched(type, isOn):
+            func overwrite(isOn: Bool, shows: inout Bool) {
+                shows = shows && isOn
+            }
+            var metricsBarConfiguration = userDefaultsRepository.metricsBarConfiguration
+            switch type {
+            case .cpu:
+                return
+            case .memory:
+                metricsConfiguration.monitorsMemory = isOn
+                overwrite(isOn: isOn, shows: &metricsBarConfiguration.showsMemory)
+            case .storage:
+                metricsConfiguration.monitorsStorage = isOn
+                overwrite(isOn: isOn, shows: &metricsBarConfiguration.showsStorage)
+            case .battery:
+                metricsConfiguration.monitorsBattery = isOn
+                overwrite(isOn: isOn, shows: &metricsBarConfiguration.showsBattery)
+            case .network:
+                metricsConfiguration.monitorsNetwork = isOn
+                overwrite(isOn: isOn, shows: &metricsBarConfiguration.showsNetwork)
+            }
+            userDefaultsRepository.metricsConfiguration = metricsConfiguration
+            userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
+            metricsService.toggleSystemInfoActivation(type: type, isOn: isOn)
+            metricsService.emitMetricsConfigurationChange()
         }
+    }
+
+    private func updateMetricsConfiguration() {
+        metricsConfiguration = userDefaultsRepository.metricsConfiguration
     }
 
     public enum Action: Sendable {
         case task(String)
-        case isActiveToggleSwitched(SystemInfoType, Bool)
+        case showsMetricsBarToggleSwitched(Bool)
+        case monitorsSystemInfoToggleSwitched(SystemInfoType, Bool)
     }
 }

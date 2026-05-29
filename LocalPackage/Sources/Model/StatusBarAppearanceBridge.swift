@@ -18,24 +18,22 @@
  limitations under the License.
  */
 
+import AllocatedUnfairLock
 import AppKit
 import DataSource
-import Synchronization
 
 public final class StatusBarAppearanceBridge: Sendable {
     public static let shared = StatusBarAppearanceBridge()
 
-    private let streamBundle = AsyncStreamBundle<NSAppearance>()
-    private let lastAppearance = Mutex<NSAppearance?>(nil)
+    private let lockedStreamBundle = AllocatedUnfairLock<AsyncStreamBundle<NSAppearance>>(initialState: .init())
 
-    public var stream: AsyncStream<NSAppearance> {
-        streamBundle.stream
+    public var stream: any AsyncShareStream<NSAppearance> {
+        lockedStreamBundle.withLock(\.stream)
     }
 
     public func send(_ appearance: NSAppearance) {
-        guard lastAppearance.withLock(\.self) != appearance else { return }
-        lastAppearance.withLock { $0 = appearance }
-        streamBundle.send(appearance)
+        guard appearance != lockedStreamBundle.withLock(\.latestValue) else { return }
+        lockedStreamBundle.withLock { $0.send(appearance) }
     }
 }
 

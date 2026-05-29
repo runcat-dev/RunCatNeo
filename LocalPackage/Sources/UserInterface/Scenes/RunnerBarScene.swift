@@ -1,8 +1,8 @@
 /*
- RunCatNeoApp.swift
- RunCatNeo
+ RunnerBarScene.swift
+ UserInterface
 
- Created by Takuto Nakamura on 2026/01/15.
+ Created by Takuto Nakamura on 2026/05/05.
  Copyright 2026 Koyme22 (Takuto Nakamura)
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,19 +18,20 @@
  limitations under the License.
  */
 
-import DataSource
 import Model
 import SwiftUI
-import UserInterface
 
-@main
-struct RunCatNeoApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @AppStorage(.showsMetricsBar) private var showsMetricsBar = false
+public struct RunnerBarScene: Scene {
+    @Environment(\.appDependencies) private var appDependencies
 
-    var body: some Scene {
-        RunnerBarScene()
-        MetricsBarScene(isInserted: $showsMetricsBar)
-        SettingsWindowScene()
+    public init() {}
+
+    public var body: some Scene {
+        MenuBarExtra {
+            DashboardView(store: .init(appDependencies))
+        } label: {
+            RunnerBarView(store: .init(appDependencies))
+        }
+        .menuBarExtraStyle(.window)
     }
 }

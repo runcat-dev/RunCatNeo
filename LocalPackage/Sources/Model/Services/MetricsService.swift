@@ -1,5 +1,5 @@
 /*
- SystemInfoService.swift
+ MetricsService.swift
  Model
 
  Created by Takuto Nakamura on 2026/05/07.
@@ -21,7 +21,7 @@
 import DataSource
 import SystemInfoKit
 
-struct SystemInfoService {
+struct MetricsService {
     private let appStateClient: AppStateClient
     private let userDefaultsRepository: UserDefaultsRepository
 
@@ -41,14 +41,14 @@ struct SystemInfoService {
     }
 
     func startMonitoring() {
-        let activationBundle = userDefaultsRepository.activationBundle
+        let metricsConfiguration = userDefaultsRepository.metricsConfiguration
         appStateClient.withLock {
             $0.systemInfoObserver.toggleActivation(requests: [
                 SystemInfoType.cpu: true,
-                SystemInfoType.memory: activationBundle.isActiveMemory,
-                SystemInfoType.storage: activationBundle.isActiveStorage,
-                SystemInfoType.battery: activationBundle.isActiveBattery,
-                SystemInfoType.network: activationBundle.isActiveNetwork,
+                SystemInfoType.memory: metricsConfiguration.monitorsMemory,
+                SystemInfoType.storage: metricsConfiguration.monitorsStorage,
+                SystemInfoType.battery: metricsConfiguration.monitorsBattery,
+                SystemInfoType.network: metricsConfiguration.monitorsNetwork,
             ])
             $0.systemInfoObserver.startMonitoring(monitorInterval: Double($0.monitorInterval))
         }
@@ -68,11 +68,17 @@ struct SystemInfoService {
             if let value = systemInfoBundle.memoryInfo?.percentage.value {
                 $0.memoryRingBuffer.append(value)
             }
-            $0.metricsStreamBundle.send(.init(
+            $0.metrics.send(.init(
                 systemInfoBundle: systemInfoBundle,
                 cpuRingBuffer: $0.cpuRingBuffer,
                 memoryRingBuffer: $0.memoryRingBuffer
             ))
+        }
+    }
+
+    func emitMetricsConfigurationChange() {
+        appStateClient.withLock {
+            $0.metricsConfigurationChanges.send()
         }
     }
 }

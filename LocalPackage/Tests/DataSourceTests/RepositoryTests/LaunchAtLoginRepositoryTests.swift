@@ -1,4 +1,4 @@
-import os
+import AllocatedUnfairLock
 import ServiceManagement
 import Testing
 
@@ -7,7 +7,7 @@ import Testing
 struct LaunchAtLoginRepositoryTests {
     @Test
     func switchStatus_success_register() async {
-        let status = OSAllocatedUnfairLock(initialState: false)
+        let status = AllocatedUnfairLock(initialState: false)
         let smAppServiceClient = testDependency(of: SMAppServiceClient.self) {
             $0.status = {
                 status.withLock(\.self) ? .enabled : .notRegistered
@@ -24,7 +24,7 @@ struct LaunchAtLoginRepositoryTests {
 
     @Test
     func switchStatus_success_unregister() async {
-        let status = OSAllocatedUnfairLock(initialState: true)
+        let status = AllocatedUnfairLock(initialState: true)
         let smAppServiceClient = testDependency(of: SMAppServiceClient.self) {
             $0.status = {
                 status.withLock(\.self) ? .enabled : .notRegistered
@@ -41,7 +41,7 @@ struct LaunchAtLoginRepositoryTests {
 
     @Test
     func switchStatus_failure_register() async {
-        let status = OSAllocatedUnfairLock(initialState: false)
+        let status = AllocatedUnfairLock(initialState: false)
         let smAppServiceClient = testDependency(of: SMAppServiceClient.self) {
             $0.status = {
                 status.withLock(\.self) ? .enabled : .notRegistered
@@ -61,7 +61,7 @@ struct LaunchAtLoginRepositoryTests {
 
     @Test
     func switchStatus_failure_unregister() async {
-        let status = OSAllocatedUnfairLock(initialState: true)
+        let status = AllocatedUnfairLock(initialState: true)
         let smAppServiceClient = testDependency(of: SMAppServiceClient.self) {
             $0.status = {
                 status.withLock(\.self) ? .enabled : .notRegistered

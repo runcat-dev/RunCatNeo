@@ -19,12 +19,14 @@
  */
 
 extension String {
-    static let activationBundle = "ACTIVATION_BUNDLE"
     static let customRunners = "CUSTOM_RUNNERS"
     static let isFlippedHorizontally = "IS_FLIPPED_HORIZONTALLY"
+    static let metricsBarConfiguration = "METRICS_BAR_CONFIGURATION"
+    static let metricsConfiguration = "METRICS_CONFIGURATION"
     static let runnerID = "RUNNER_ID"
     static let speedDecreasesUnderLoad = "SPEED_DECREASES_UNDER_LOAD"
 
     public static let activityMonitor = "com.apple.ActivityMonitor"
     public static let gitHubURL = "https://github.com/runcat-dev/RunCatNeo"
+    public static let showsMetricsBar = "SHOWS_METRICS_BAR"
 }
