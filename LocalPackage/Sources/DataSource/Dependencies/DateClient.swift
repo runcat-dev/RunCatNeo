@@ -1,8 +1,8 @@
 /*
- RCNError.swift
+ DateClient.swift
  DataSource
 
- Created by Takuto Nakamura on 2026/05/31.
+ Created by Takuto Nakamura on 2026/06/06.
  Copyright 2026 Koyme22 (Takuto Nakamura)
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,20 +20,14 @@
 
 import Foundation
 
-public enum RCNError: Error, Equatable {
-    case customRunner(CustomRunner)
-    case customMetrics(CustomMetrics)
+public struct DateClient: DependencyClient {
+    public var now: @Sendable () -> Date
 
-    public enum CustomRunner: Error {
-        case runnerInUse
-        case nameAlreadyExists
-        case invalidFrameImage
-        case frameLimitExceeded
-        case savingFailed
-        case loadingFailed
-    }
+    public static let liveValue = Self(
+        now: { Date.now }
+    )
 
-    public enum CustomMetrics: Error {
-        case fileUnreadable
-    }
+    public static let testValue = Self(
+        now: { Date.distantPast }
+    )
 }

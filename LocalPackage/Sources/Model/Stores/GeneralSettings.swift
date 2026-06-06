@@ -27,8 +27,8 @@ public final class GeneralSettings: Composable {
     private let launchAtLoginRepository: LaunchAtLoginRepository
     private let userDefaultsRepository: UserDefaultsRepository
     private let logService: LogService
-    private let metricsService: MetricsService
     private let runnerService: RunnerService
+    private let systemMetricsService: SystemMetricsService
 
     @ObservationIgnored private var task: Task<Void, Never>?
 
@@ -54,8 +54,8 @@ public final class GeneralSettings: Composable {
         self.launchAtLoginRepository = .init(appDependencies.smAppServiceClient)
         self.userDefaultsRepository = .init(appDependencies.userDefaultsClient)
         self.logService = .init(appDependencies)
-        self.metricsService = .init(appDependencies)
         self.runnerService = .init(appDependencies)
+        self.systemMetricsService = .init(appDependencies)
         self.currentRunner = currentRunner
         self.runnerBundleList = runnerBundleList
         self.speedDecreasesUnderLoad = speedDecreasesUnderLoad ?? userDefaultsRepository.speedDecreasesUnderLoad
@@ -75,16 +75,16 @@ public final class GeneralSettings: Composable {
             task?.cancel()
             task = Task { [weak self, appStateClient] in
                 await withTaskGroup { group in
-                    group.addTask { @MainActor @Sendable in
+                    group.addTask {
                         let stream = appStateClient.withLock(\.runnerBundles.stream)
                         for await value in stream {
-                            self?.updateCurrentRunner(from: value)
+                            await self?.updateCurrentRunner(from: value)
                         }
                     }
-                    group.addTask { @MainActor @Sendable in
+                    group.addTask {
                         let stream = appStateClient.withLock(\.runnerBundleLists.stream)
                         for await value in stream {
-                            self?.update(runnerBundleList: value)
+                            await self?.update(runnerBundleList: value)
                         }
                     }
                 }
@@ -106,7 +106,7 @@ public final class GeneralSettings: Composable {
         case let .slowDownUnderLoadToggleSwitched(isOn):
             speedDecreasesUnderLoad = isOn
             userDefaultsRepository.speedDecreasesUnderLoad = isOn
-            let cpuInfo = metricsService.currentSystemInfoBundle.cpuInfo
+            let cpuInfo = systemMetricsService.currentSystemInfoBundle.cpuInfo
             runnerService.updateRunnerSpeed(from: cpuInfo)
 
         case let .flipHorizontallyToggleSwitched(isOn):

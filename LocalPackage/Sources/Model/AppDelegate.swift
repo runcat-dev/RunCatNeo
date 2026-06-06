@@ -30,36 +30,40 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
             $0.name = Bundle.main.bundleDisplayName
             $0.version = Bundle.main.bundleVersion
         }
-        let nsWorkspaceClient = appDependencies.nsWorkspaceClient
         let logService = LogService(appDependencies)
         logService.bootstrap()
-        let metricsService = MetricsService(appDependencies)
+        let nsWorkspaceClient = appDependencies.nsWorkspaceClient
+        let customMetricsService = CustomMetricsService(appDependencies)
+        let systemMetricsService = SystemMetricsService(appDependencies)
         let runnerService = RunnerService(appDependencies)
         Task {
             await withTaskGroup { group in
                 group.addTask {
                     let publisher = nsWorkspaceClient.publisher(NSWorkspace.willSleepNotification)
                     for await _ in publisher.values {
-                        metricsService.stopMonitoring()
+                        customMetricsService.stopMonitoring()
+                        systemMetricsService.stopMonitoring()
                     }
                 }
                 group.addTask {
                     let publisher = nsWorkspaceClient.publisher(NSWorkspace.didWakeNotification)
                     for await _ in publisher.values {
-                        metricsService.startMonitoring()
+                        customMetricsService.startMonitoring()
+                        systemMetricsService.startMonitoring()
                     }
                 }
                 group.addTask {
                     let stream = appStateClient.withLock(\.systemInfoObserver).systemInfoStream()
                     for await value in stream {
-                        metricsService.updateMetrics(from: value)
+                        systemMetricsService.updateMetrics(from: value)
                         runnerService.updateRunnerSpeed(from: value.cpuInfo)
                     }
                 }
             }
         }
         logService.notice(.launchApp)
-        metricsService.startMonitoring()
+        customMetricsService.startMonitoring()
+        systemMetricsService.startMonitoring()
         do {
             try runnerService.setup()
         } catch {
@@ -68,6 +72,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     public func applicationWillTerminate(_ notification: Notification) {
-        MetricsService(appDependencies).stopMonitoring()
+        CustomMetricsService(appDependencies).stopMonitoring()
+        SystemMetricsService(appDependencies).stopMonitoring()
     }
 }

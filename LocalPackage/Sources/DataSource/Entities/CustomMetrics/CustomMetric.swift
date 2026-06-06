@@ -1,8 +1,8 @@
 /*
- RCNError.swift
+ CustomMetric.swift
  DataSource
 
- Created by Takuto Nakamura on 2026/05/31.
+ Created by Takuto Nakamura on 2026/06/06.
  Copyright 2026 Koyme22 (Takuto Nakamura)
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,22 +18,14 @@
  limitations under the License.
  */
 
-import Foundation
+public struct CustomMetric: Codable, Sendable, Equatable {
+    public var title: String
+    public var formattedValue: String
+    public var normalizedValue: Double?
 
-public enum RCNError: Error, Equatable {
-    case customRunner(CustomRunner)
-    case customMetrics(CustomMetrics)
-
-    public enum CustomRunner: Error {
-        case runnerInUse
-        case nameAlreadyExists
-        case invalidFrameImage
-        case frameLimitExceeded
-        case savingFailed
-        case loadingFailed
-    }
-
-    public enum CustomMetrics: Error {
-        case fileUnreadable
+    public init(title: String, formattedValue: String, normalizedValue: Double? = nil) {
+        self.title = title
+        self.formattedValue = formattedValue
+        self.normalizedValue = normalizedValue
     }
 }

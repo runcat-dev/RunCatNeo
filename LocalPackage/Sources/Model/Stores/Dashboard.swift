@@ -29,6 +29,7 @@ public final class Dashboard: Composable {
     private let appStateClient: AppStateClient
     private let nsAppClient: NSAppClient
     private let nsWorkspaceClient: NSWorkspaceClient
+    private let userDefaultsRepository: UserDefaultsRepository
     private let logService: LogService
 
     @ObservationIgnored private var task: Task<Void, Never>?
@@ -37,6 +38,7 @@ public final class Dashboard: Composable {
     public var systemInfoBundle: SystemInfoBundle
     public var cpuRingBuffer: RingBuffer
     public var memoryRingBuffer: RingBuffer
+    public var customMetricsBundles: [CustomMetricsBundle]
     public let isPreview: Bool
     public let action: (Action) async -> Void
 
@@ -46,17 +48,20 @@ public final class Dashboard: Composable {
         systemInfoBundle: SystemInfoBundle = .cpuZero(),
         cpuRingBuffer: RingBuffer = .init(),
         memoryRingBuffer: RingBuffer = .init(),
+        customMetricsBundles: [CustomMetricsBundle] = [],
         isPreview: Bool? = nil,
         action: @escaping (Action) async -> Void =  { _ in }
     ) {
         self.appStateClient = appDependencies.appStateClient
         self.nsAppClient = appDependencies.nsAppClient
         self.nsWorkspaceClient = appDependencies.nsWorkspaceClient
+        self.userDefaultsRepository = .init(appDependencies.userDefaultsClient)
         self.logService = .init(appDependencies)
         self.appName = appName ?? appStateClient.withLock(\.name)
         self.systemInfoBundle = systemInfoBundle
         self.cpuRingBuffer = cpuRingBuffer
         self.memoryRingBuffer = memoryRingBuffer
+        self.customMetricsBundles = customMetricsBundles
         self.isPreview = isPreview ?? ProcessInfo.isPreview
         self.action = action
     }
@@ -112,6 +117,7 @@ public final class Dashboard: Composable {
         systemInfoBundle = metrics.systemInfoBundle
         cpuRingBuffer = metrics.cpuRingBuffer
         memoryRingBuffer = metrics.memoryRingBuffer
+        customMetricsBundles = metrics.customMetricsBundles
     }
 
     public enum Action: Sendable {

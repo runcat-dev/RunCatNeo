@@ -38,19 +38,19 @@ public struct UserDefaultsRepository: Sendable {
         nonmutating set { userDefaultsClient.set(newValue, .isFlippedHorizontally) }
     }
 
-    public var metricsConfiguration: MetricsConfiguration {
+    public var systemMetricsConfiguration: SystemMetricsConfiguration {
         get {
-            guard let data = userDefaultsClient.data(.metricsConfiguration),
-                  let value = try? JSONDecoder().decode(MetricsConfiguration.self, from: data) else {
+            guard let data = userDefaultsClient.data(.systemMetricsConfiguration),
+                  let value = try? JSONDecoder().decode(SystemMetricsConfiguration.self, from: data) else {
                 return .default
             }
             return value
         }
         nonmutating set {
             if let data = try? JSONEncoder().encode(newValue) {
-                userDefaultsClient.set(data, .metricsConfiguration)
+                userDefaultsClient.set(data, .systemMetricsConfiguration)
             } else {
-                userDefaultsClient.removeObject(.metricsConfiguration)
+                userDefaultsClient.removeObject(.systemMetricsConfiguration)
             }
         }
     }
@@ -73,6 +73,23 @@ public struct UserDefaultsRepository: Sendable {
                 userDefaultsClient.set(data, .metricsBarConfiguration)
             } else {
                 userDefaultsClient.removeObject(.metricsBarConfiguration)
+            }
+        }
+    }
+
+    public var customMetricsConfiguration: CustomMetricsConfiguration {
+        get {
+            guard let data = userDefaultsClient.data(.customMetricsConfiguration),
+                  let value = try? JSONDecoder().decode(CustomMetricsConfiguration.self, from: data) else {
+                return .empty
+            }
+            return value
+        }
+        nonmutating set {
+            if let data = try? JSONEncoder().encode(newValue) {
+                userDefaultsClient.set(data, .customMetricsConfiguration)
+            } else {
+                userDefaultsClient.removeObject(.customMetricsConfiguration)
             }
         }
     }

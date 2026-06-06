@@ -1,5 +1,5 @@
 /*
- MetricsService.swift
+ SystemMetricsService.swift
  Model
 
  Created by Takuto Nakamura on 2026/05/07.
@@ -21,7 +21,7 @@
 import DataSource
 import SystemInfoKit
 
-struct MetricsService {
+struct SystemMetricsService {
     private let appStateClient: AppStateClient
     private let userDefaultsRepository: UserDefaultsRepository
 
@@ -41,14 +41,14 @@ struct MetricsService {
     }
 
     func startMonitoring() {
-        let metricsConfiguration = userDefaultsRepository.metricsConfiguration
+        let configuration = userDefaultsRepository.systemMetricsConfiguration
         appStateClient.withLock {
             $0.systemInfoObserver.toggleActivation(requests: [
                 SystemInfoType.cpu: true,
-                SystemInfoType.memory: metricsConfiguration.monitorsMemory,
-                SystemInfoType.storage: metricsConfiguration.monitorsStorage,
-                SystemInfoType.battery: metricsConfiguration.monitorsBattery,
-                SystemInfoType.network: metricsConfiguration.monitorsNetwork,
+                SystemInfoType.memory: configuration.monitorsMemory,
+                SystemInfoType.storage: configuration.monitorsStorage,
+                SystemInfoType.battery: configuration.monitorsBattery,
+                SystemInfoType.network: configuration.monitorsNetwork,
             ])
             $0.systemInfoObserver.startMonitoring(monitorInterval: Double($0.monitorInterval))
         }
@@ -62,23 +62,21 @@ struct MetricsService {
 
     func updateMetrics(from systemInfoBundle: SystemInfoBundle) {
         appStateClient.withLock {
+            var metrics = $0.metrics.latestValue ?? .init()
+            metrics.systemInfoBundle = systemInfoBundle
             if let value = systemInfoBundle.cpuInfo?.percentage.value {
-                $0.cpuRingBuffer.append(value)
+                metrics.cpuRingBuffer.append(value)
             }
             if let value = systemInfoBundle.memoryInfo?.percentage.value {
-                $0.memoryRingBuffer.append(value)
+                metrics.memoryRingBuffer.append(value)
             }
-            $0.metrics.send(.init(
-                systemInfoBundle: systemInfoBundle,
-                cpuRingBuffer: $0.cpuRingBuffer,
-                memoryRingBuffer: $0.memoryRingBuffer
-            ))
+            $0.metrics.send(metrics)
         }
     }
 
-    func emitMetricsConfigurationChange() {
+    func emitConfigurationChange() {
         appStateClient.withLock {
-            $0.metricsConfigurationChanges.send()
+            $0.systemMetricsConfigurationChanges.send()
         }
     }
 }

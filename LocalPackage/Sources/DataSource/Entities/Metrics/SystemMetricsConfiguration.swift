@@ -1,5 +1,5 @@
 /*
- MetricsConfiguration.swift
+ SystemMetricsConfiguration.swift
  DataSource
 
  Created by Takuto Nakamura on 2026/05/08.
@@ -18,7 +18,7 @@
  limitations under the License.
  */
 
-public struct MetricsConfiguration: Codable, Sendable, Equatable {
+public struct SystemMetricsConfiguration: Codable, Sendable, Equatable {
     public var monitorsMemory: Bool
     public var monitorsStorage: Bool
     public var monitorsBattery: Bool

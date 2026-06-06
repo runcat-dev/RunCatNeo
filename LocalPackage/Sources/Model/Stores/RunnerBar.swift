@@ -65,21 +65,21 @@ public final class RunnerBar: Composable {
             task?.cancel()
             task = Task { [weak self, appStateClient] in
                 await withTaskGroup { group in
-                    group.addTask { @MainActor @Sendable in
+                    group.addTask {
                         for await value in StatusBarAppearanceBridge.shared.stream {
-                            self?.update(appearance: value)
+                            await self?.update(appearance: value)
                         }
                     }
-                    group.addTask { @MainActor @Sendable in
+                    group.addTask {
                         let stream = appStateClient.withLock(\.runnerBundles.stream)
                         for await value in stream {
-                            self?.update(runnerBundle: value)
+                            await self?.update(runnerBundle: value)
                         }
                     }
-                    group.addTask { @MainActor @Sendable in
+                    group.addTask {
                         let stream = appStateClient.withLock(\.runnerSpeeds.stream)
                         for await value in stream {
-                            self?.update(runnerSpeed: value)
+                            await self?.update(runnerSpeed: value)
                         }
                     }
                 }

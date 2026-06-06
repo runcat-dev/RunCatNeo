@@ -42,10 +42,22 @@ extension RCNError.CustomRunner: LocalizedError {
     }
 }
 
+extension RCNError.CustomMetrics: LocalizedError {
+    public var errorDescription: String? {
+        let localizationValue: String.LocalizationValue = switch self {
+        case .fileUnreadable:
+            "fileUnreadable"
+        }
+        return String(localized: localizationValue, bundle: .module)
+    }
+}
+
 extension RCNError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case let .customRunner(detail):
+            detail.errorDescription
+        case let .customMetrics(detail):
             detail.errorDescription
         }
     }

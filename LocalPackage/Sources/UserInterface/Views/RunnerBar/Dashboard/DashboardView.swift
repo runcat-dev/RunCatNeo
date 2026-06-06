@@ -41,6 +41,9 @@ struct DashboardView: View {
                 memoryRingBuffer: store.memoryRingBuffer,
                 isPreview: store.isPreview
             )
+            ForEach(store.customMetricsBundles) { customMetricsBundle in
+                CustomMetricsCardView(customMetricsBundle: customMetricsBundle)
+            }
         }
         .fixedSize()
         .padding(8)

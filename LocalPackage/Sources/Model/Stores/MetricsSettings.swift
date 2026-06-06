@@ -19,6 +19,7 @@
  */
 
 import DataSource
+import Foundation
 import Observation
 import SystemInfoKit
 
@@ -26,24 +27,47 @@ import SystemInfoKit
 public final class MetricsSettings: Composable {
     private let appStateClient: AppStateClient
     private let userDefaultsRepository: UserDefaultsRepository
+    private let nsWorkspaceClient: NSWorkspaceClient
+    private let customMetricsService: CustomMetricsService
     private let logService: LogService
-    private let metricsService: MetricsService
+    private let systemMetricsService: SystemMetricsService
 
     @ObservationIgnored private var task: Task<Void, Never>?
 
-    public var metricsConfiguration: MetricsConfiguration
+    public var systemMetricsConfiguration: SystemMetricsConfiguration
+    public var customMetricsSources: [CustomMetricsSource]
+    public var failedCustomMetricsSourceIDs: Set<UUID>
+    public var showingFileImporter: Bool
+    public var showingConfirmationDialog: Bool
+    public var pendingRemovalSourceID: UUID?
     public let action: (Action) async -> Void
+
+    public var customMetricsSchemaURL: URL? {
+        URL(string: .gitHubURL)?.appending(path: "blob/main/docs/CustomMetricsSchema.md")
+    }
 
     public init(
         _ appDependencies: AppDependencies,
-        metricsConfiguration: MetricsConfiguration? = nil,
-        action: @escaping (Action) async -> Void =  { _ in }
+        systemMetricsConfiguration: SystemMetricsConfiguration? = nil,
+        customMetricsSources: [CustomMetricsSource]? = nil,
+        failedCustomMetricsSourceIDs: Set<UUID> = [],
+        showingFileImporter: Bool = false,
+        showingConfirmationDialog: Bool = false,
+        pendingRemovalSourceID: UUID? = nil,
+        action: @escaping (Action) async -> Void = { _ in }
     ) {
         self.appStateClient = appDependencies.appStateClient
         self.userDefaultsRepository = .init(appDependencies.userDefaultsClient)
+        self.nsWorkspaceClient = appDependencies.nsWorkspaceClient
+        self.customMetricsService = .init(appDependencies)
         self.logService = .init(appDependencies)
-        self.metricsService = .init(appDependencies)
-        self.metricsConfiguration = metricsConfiguration ?? userDefaultsRepository.metricsConfiguration
+        self.systemMetricsService = .init(appDependencies)
+        self.systemMetricsConfiguration = systemMetricsConfiguration ?? userDefaultsRepository.systemMetricsConfiguration
+        self.customMetricsSources = customMetricsSources ?? userDefaultsRepository.customMetricsConfiguration.sources
+        self.failedCustomMetricsSourceIDs = failedCustomMetricsSourceIDs
+        self.showingFileImporter = showingFileImporter
+        self.showingConfirmationDialog = showingConfirmationDialog
+        self.pendingRemovalSourceID = pendingRemovalSourceID
         self.action = action
     }
 
@@ -51,11 +75,23 @@ public final class MetricsSettings: Composable {
         switch action {
         case let .task(screenName):
             logService.notice(.screenView(name: screenName))
+            customMetricsSources = userDefaultsRepository.customMetricsConfiguration.sources
+            refreshFailedCustomMetricsSourceIDs()
             task?.cancel()
             task = Task { [weak self, appStateClient] in
-                let stream = appStateClient.withLock(\.metricsConfigurationChanges.stream)
-                for await _ in stream {
-                    self?.updateMetricsConfiguration()
+                await withTaskGroup { group in
+                    group.addTask {
+                        let stream = appStateClient.withLock(\.systemMetricsConfigurationChanges.stream)
+                        for await _ in stream {
+                            await self?.refreshSystemMetricsConfiguration()
+                        }
+                    }
+                    group.addTask {
+                        let stream = appStateClient.withLock(\.metrics.stream)
+                        for await _ in stream {
+                            await self?.refreshFailedCustomMetricsSourceIDs()
+                        }
+                    }
                 }
             }
 
@@ -72,32 +108,90 @@ public final class MetricsSettings: Composable {
             case .cpu:
                 return
             case .memory:
-                metricsConfiguration.monitorsMemory = isOn
+                systemMetricsConfiguration.monitorsMemory = isOn
                 overwrite(isOn: isOn, shows: &metricsBarConfiguration.showsMemory)
             case .storage:
-                metricsConfiguration.monitorsStorage = isOn
+                systemMetricsConfiguration.monitorsStorage = isOn
                 overwrite(isOn: isOn, shows: &metricsBarConfiguration.showsStorage)
             case .battery:
-                metricsConfiguration.monitorsBattery = isOn
+                systemMetricsConfiguration.monitorsBattery = isOn
                 overwrite(isOn: isOn, shows: &metricsBarConfiguration.showsBattery)
             case .network:
-                metricsConfiguration.monitorsNetwork = isOn
+                systemMetricsConfiguration.monitorsNetwork = isOn
                 overwrite(isOn: isOn, shows: &metricsBarConfiguration.showsNetwork)
             }
-            userDefaultsRepository.metricsConfiguration = metricsConfiguration
+            userDefaultsRepository.systemMetricsConfiguration = systemMetricsConfiguration
             userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
-            metricsService.toggleSystemInfoActivation(type: type, isOn: isOn)
-            metricsService.emitMetricsConfigurationChange()
+            systemMetricsService.toggleSystemInfoActivation(type: type, isOn: isOn)
+            systemMetricsService.emitConfigurationChange()
+
+        case .addCustomMetricsSourceButtonTapped:
+            showingFileImporter = true
+
+        case let .onCompletionFileImporter(.success(url)):
+            do {
+                try customMetricsService.addSource(of: url)
+                customMetricsSources = userDefaultsRepository.customMetricsConfiguration.sources
+                customMetricsService.emitConfigurationChange()
+            } catch let error as RCNError {
+                print(error.localizedDescription)
+            } catch {
+                logService.critical(.unknown(error))
+            }
+
+        case let .onCompletionFileImporter(.failure(error)):
+            logService.critical(.unknown(error))
+
+        case let .removeCustomMetricsSourceButtonTapped(id):
+            pendingRemovalSourceID = id
+            showingConfirmationDialog = true
+
+        case .removingCustomMetricsSourceConfirmed:
+            guard let sourceID = pendingRemovalSourceID else { return }
+            customMetricsService.removeSource(of: sourceID)
+            customMetricsSources = userDefaultsRepository.customMetricsConfiguration.sources
+            customMetricsService.emitConfigurationChange()
+            pendingRemovalSourceID = nil
+
+        case .removingCustomMetricsSourceCancelled:
+            pendingRemovalSourceID = nil
+
+        case let .customMetricsSourceLinkTapped(source):
+            do {
+                try customMetricsService.perform(
+                    action: { nsWorkspaceClient.activateFileViewerSelecting([$0]) },
+                    for: source
+                )
+            } catch {
+                logService.critical(.unknown(error))
+            }
         }
     }
 
-    private func updateMetricsConfiguration() {
-        metricsConfiguration = userDefaultsRepository.metricsConfiguration
+    private func refreshSystemMetricsConfiguration() {
+        systemMetricsConfiguration = userDefaultsRepository.systemMetricsConfiguration
+    }
+
+    private func refreshFailedCustomMetricsSourceIDs() {
+        guard let metrics = appStateClient.withLock(\.metrics.latestValue) else {
+            return
+        }
+        failedCustomMetricsSourceIDs = metrics.customMetricsBundles.reduce(into: Set<UUID>()) {
+            if $1.isFailed {
+                $0.insert($1.id)
+            }
+        }
     }
 
     public enum Action: Sendable {
         case task(String)
         case onDisappear
         case monitorsSystemInfoToggleSwitched(SystemInfoType, Bool)
+        case addCustomMetricsSourceButtonTapped
+        case onCompletionFileImporter(Result<URL, any Error>)
+        case removeCustomMetricsSourceButtonTapped(UUID)
+        case removingCustomMetricsSourceConfirmed
+        case removingCustomMetricsSourceCancelled
+        case customMetricsSourceLinkTapped(CustomMetricsSource)
     }
 }

@@ -26,7 +26,7 @@ import SystemInfoKit
 public final class MetricsBarSettings: Composable {
     private let userDefaultsRepository: UserDefaultsRepository
     private let logService: LogService
-    private let metricsService: MetricsService
+    private let systemMetricsService: SystemMetricsService
 
     public var metricsBarConfiguration: MetricsBarConfiguration
     public let action: (Action) async -> Void
@@ -38,7 +38,7 @@ public final class MetricsBarSettings: Composable {
     ) {
         self.userDefaultsRepository = .init(appDependencies.userDefaultsClient)
         self.logService = .init(appDependencies)
-        self.metricsService = .init(appDependencies)
+        self.systemMetricsService = .init(appDependencies)
         self.metricsBarConfiguration = metricsBarConfiguration ?? userDefaultsRepository.metricsBarConfiguration
         self.action = action
     }
@@ -58,29 +58,29 @@ public final class MetricsBarSettings: Composable {
                     return false
                 }
             }
-            var metricsConfiguration = userDefaultsRepository.metricsConfiguration
+            var configuration = userDefaultsRepository.systemMetricsConfiguration
             var needsToggleActivation = false
             switch type {
             case .cpu:
                 metricsBarConfiguration.showsCPU = isOn
             case .memory:
                 metricsBarConfiguration.showsMemory = isOn
-                needsToggleActivation = overwrite(isOn: isOn, monitors: &metricsConfiguration.monitorsMemory)
+                needsToggleActivation = overwrite(isOn: isOn, monitors: &configuration.monitorsMemory)
             case .storage:
                 metricsBarConfiguration.showsStorage = isOn
-                needsToggleActivation = overwrite(isOn: isOn, monitors: &metricsConfiguration.monitorsStorage)
+                needsToggleActivation = overwrite(isOn: isOn, monitors: &configuration.monitorsStorage)
             case .battery:
                 metricsBarConfiguration.showsBattery = isOn
-                needsToggleActivation = overwrite(isOn: isOn, monitors: &metricsConfiguration.monitorsBattery)
+                needsToggleActivation = overwrite(isOn: isOn, monitors: &configuration.monitorsBattery)
             case .network:
                 metricsBarConfiguration.showsNetwork = isOn
-                needsToggleActivation = overwrite(isOn: isOn, monitors: &metricsConfiguration.monitorsNetwork)
+                needsToggleActivation = overwrite(isOn: isOn, monitors: &configuration.monitorsNetwork)
             }
             userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
-            userDefaultsRepository.metricsConfiguration = metricsConfiguration
-            metricsService.emitMetricsConfigurationChange()
+            userDefaultsRepository.systemMetricsConfiguration = configuration
+            systemMetricsService.emitConfigurationChange()
             if needsToggleActivation {
-                metricsService.toggleSystemInfoActivation(type: type, isOn: isOn)
+                systemMetricsService.toggleSystemInfoActivation(type: type, isOn: isOn)
             }
         }
     }
