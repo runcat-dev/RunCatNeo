@@ -1,8 +1,8 @@
 /*
- SettingsTab.swift
+ Donation.swift
  DataSource
 
- Created by Takuto Nakamura on 2026/05/23.
+ Created by Takuto Nakamura on 2026/06/08.
  Copyright 2026 Koyme22 (Takuto Nakamura)
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,9 +18,13 @@
  limitations under the License.
  */
 
-public enum SettingsTab {
-    case general
-    case customRunners
-    case metrics
-    case donation
+public enum Donation {
+    public static let groupID = "22140755"
+
+    public enum Product: String, CaseIterable, Sendable {
+        case onetime = "com.kyome.Neo.RunCat.donation.onetime"
+        case yearly = "com.kyome.Neo.RunCat.donation.subscription.yearly"
+
+        public var id: String { rawValue }
+    }
 }

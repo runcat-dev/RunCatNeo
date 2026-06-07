@@ -21,11 +21,14 @@
 import Logging
 
 public enum ErrorEvent {
+    case donationFailed(any Error)
     case importingCustomMetricsSourceFailed(any Error)
     case importingFrameImagesFailed(any Error)
 
     public var message: Logger.Message {
         switch self {
+        case .donationFailed:
+            "Donation failed."
         case .importingCustomMetricsSourceFailed:
             "Failed importing custom metrics source."
         case .importingFrameImagesFailed:
@@ -35,7 +38,8 @@ public enum ErrorEvent {
 
     public var metadata: Logger.Metadata? {
         switch self {
-        case let .importingCustomMetricsSourceFailed(error),
+        case let .donationFailed(error),
+            let .importingCustomMetricsSourceFailed(error),
             let .importingFrameImagesFailed(error):
             ["cause": "\(error.localizedDescription)"]
         }

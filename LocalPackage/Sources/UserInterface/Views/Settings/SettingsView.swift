@@ -51,10 +51,19 @@ struct SettingsView: View {
                     Label {
                         Text("metricsTab", bundle: .module)
                     } icon: {
-                        Image(systemName: "chart.xyaxis.line")
+                        Image(systemName: "chart.bar")
                     }
                 }
                 .tag(SettingsTab.metrics)
+            DonationSettingsView(store: .init(appDependencies))
+                .tabItem {
+                    Label {
+                        Text("donationTab", bundle: .module)
+                    } icon: {
+                        Image(systemName: "mug")
+                    }
+                }
+                .tag(SettingsTab.donation)
         }
         .accessibilityIdentifier("settings")
     }
