@@ -23,41 +23,38 @@ import SystemInfoKit
 
 struct SystemMetricsService {
     private let appStateClient: AppStateClient
+    private let systemInfoObserverClient: SystemInfoObserverClient
     private let userDefaultsRepository: UserDefaultsRepository
 
     var currentSystemInfoBundle: SystemInfoBundle {
-        appStateClient.withLock(\.systemInfoObserver.currentSystemInfo)
+        systemInfoObserverClient.currentSystemInfo()
     }
 
     init(_ appDependencies: AppDependencies) {
         self.appStateClient = appDependencies.appStateClient
+        self.systemInfoObserverClient = appDependencies.systemInfoObserverClient
         self.userDefaultsRepository = .init(appDependencies.userDefaultsClient)
     }
 
     func stopMonitoring() {
-        appStateClient.withLock {
-            $0.systemInfoObserver.stopMonitoring()
-        }
+        systemInfoObserverClient.stopMonitoring()
     }
 
     func startMonitoring() {
         let configuration = userDefaultsRepository.systemMetricsConfiguration
-        appStateClient.withLock {
-            $0.systemInfoObserver.toggleActivation(requests: [
-                SystemInfoType.cpu: true,
-                SystemInfoType.memory: configuration.monitorsMemory,
-                SystemInfoType.storage: configuration.monitorsStorage,
-                SystemInfoType.battery: configuration.monitorsBattery,
-                SystemInfoType.network: configuration.monitorsNetwork,
-            ])
-            $0.systemInfoObserver.startMonitoring(monitorInterval: Double($0.monitorInterval))
-        }
+        systemInfoObserverClient.toggleActivation([
+            SystemInfoType.cpu: true,
+            SystemInfoType.memory: configuration.monitorsMemory,
+            SystemInfoType.storage: configuration.monitorsStorage,
+            SystemInfoType.battery: configuration.monitorsBattery,
+            SystemInfoType.network: configuration.monitorsNetwork,
+        ])
+        let monitorInterval = appStateClient.withLock(\.monitorInterval)
+        systemInfoObserverClient.startMonitoring(Double(monitorInterval))
     }
 
     func toggleSystemInfoActivation(type: SystemInfoType, isOn: Bool) {
-        appStateClient.withLock {
-            $0.systemInfoObserver.toggleActivation(requests: [type: isOn])
-        }
+        systemInfoObserverClient.toggleActivation([type: isOn])
     }
 
     func updateMetrics(from systemInfoBundle: SystemInfoBundle) {

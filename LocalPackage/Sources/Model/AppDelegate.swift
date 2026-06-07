@@ -33,6 +33,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
         let logService = LogService(appDependencies)
         logService.bootstrap()
         let nsWorkspaceClient = appDependencies.nsWorkspaceClient
+        let systemInfoObserverClient = appDependencies.systemInfoObserverClient
         let customMetricsService = CustomMetricsService(appDependencies)
         let systemMetricsService = SystemMetricsService(appDependencies)
         let runnerService = RunnerService(appDependencies)
@@ -53,7 +54,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
                     }
                 }
                 group.addTask {
-                    let stream = appStateClient.withLock(\.systemInfoObserver).systemInfoStream()
+                    let stream = systemInfoObserverClient.systemInfoStream()
                     for await value in stream {
                         systemMetricsService.updateMetrics(from: value)
                         runnerService.updateRunnerSpeed(from: value.cpuInfo)

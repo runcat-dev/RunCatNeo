@@ -19,7 +19,6 @@
  */
 
 import Foundation
-import SystemInfoKit
 
 public struct AppState: Sendable {
     public var name: String
@@ -27,7 +26,6 @@ public struct AppState: Sendable {
     public var hasAlreadyBootstrap: Bool
     public let monitorInterval: Int
     public var metrics = AsyncStreamBundle<Metrics>()
-    public let systemInfoObserver = SystemInfoObserver.shared
     public var systemMetricsConfigurationChanges = AsyncStreamBundle<Void>()
     public var customMetricsReconcileObserver: Task<Void, Never>?
     public var customMetricsObservers = [UUID: Task<Void, Never>]()
