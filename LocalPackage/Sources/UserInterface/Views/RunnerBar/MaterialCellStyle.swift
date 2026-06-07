@@ -1,5 +1,5 @@
 /*
- RunnerMenuBar.swift
+ MaterialCellStyle.swift
  UserInterface
 
  Created by Takuto Nakamura on 2026/05/09.

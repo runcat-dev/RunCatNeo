@@ -44,4 +44,4 @@ The project's `CONTRIBUTING.md` defines the authoritative style rules. Key point
 - Default to no code comments; rely on descriptive names.
 - One PR per concern; do not bundle unrelated changes.
 
-Every source file carries the Apache-2.0 license header — preserve it when editing and include it when creating new files.
+Every source file under `LocalPackage/Sources/` carries the Apache-2.0 license header — preserve it when editing and include it when creating new files. Test files under `LocalPackage/Tests/` omit the header by convention and start directly with `import`.
