@@ -23,6 +23,7 @@ import Foundation
 
 struct CustomMetricsService {
     private let appStateClient: AppStateClient
+    private let dataClient: DataClient
     private let dateClient: DateClient
     private let fileWatcherClient: FileWatcherClient
     private let urlClient: URLClient
@@ -37,6 +38,7 @@ struct CustomMetricsService {
 
     public init(_ appDependencies: AppDependencies) {
         self.appStateClient = appDependencies.appStateClient
+        self.dataClient = appDependencies.dataClient
         self.dateClient = appDependencies.dateClient
         self.fileWatcherClient = appDependencies.fileWatcherClient
         self.urlClient = appDependencies.urlClient
@@ -51,7 +53,7 @@ struct CustomMetricsService {
         defer {
             urlClient.stopAccessingSecurityScopedResource(url)
         }
-        let data = try Data(contentsOf: url)
+        let data = try dataClient.read(url)
         let snapshot = try snapshotDecoder.decode(CustomMetricsSnapshot.self, from: data)
         let bookmark = try urlClient.bookmarkData(url, .withSecurityScope)
         let source = CustomMetricsSource(
@@ -195,7 +197,7 @@ struct CustomMetricsService {
                     for await _ in watchStream {
                         if Task.isCancelled { break }
                         do {
-                            let data = try Data(contentsOf: url)
+                            let data = try dataClient.read(url)
                             let snapshot = try snapshotDecoder.decode(CustomMetricsSnapshot.self, from: data)
                             emitSuccess(snapshot: snapshot, for: source)
                         } catch {

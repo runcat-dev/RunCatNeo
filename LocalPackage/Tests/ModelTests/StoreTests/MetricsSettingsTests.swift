@@ -43,11 +43,11 @@ struct MetricsSettingsTests {
                 emittedChange.withLock { $0 += 1 }
             }
         }
-        let fileURL = URL(filePath: NSTemporaryDirectory())
-            .appending(path: "metrics-\(UUID().uuidString).json")
+        let fileURL = URL(filePath: "/tmp/metrics.json")
         let json = #"{ "title": "Imported", "metrics": [], "lastUpdatedDate": "2026-06-05T04:50:40Z" }"#
-        try json.write(to: fileURL, atomically: true, encoding: .utf8)
-        defer { try? FileManager.default.removeItem(at: fileURL) }
+        let dataClient = testDependency(of: DataClient.self) {
+            $0.read = { _ in Data(json.utf8) }
+        }
         let urlClient = testDependency(of: URLClient.self) {
             $0.startAccessingSecurityScopedResource = { _ in true }
             $0.stopAccessingSecurityScopedResource = { _ in }
@@ -55,6 +55,7 @@ struct MetricsSettingsTests {
         }
         let sut = MetricsSettings(.testDependencies(
             appStateClient: appStateClient,
+            dataClient: dataClient,
             urlClient: urlClient,
             userDefaultsClient: storage.client
         ))

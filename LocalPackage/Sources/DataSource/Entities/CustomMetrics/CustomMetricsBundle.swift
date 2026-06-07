@@ -20,7 +20,7 @@
 
 import Foundation
 
-public struct CustomMetricsBundle: Sendable, Identifiable {
+public struct CustomMetricsBundle: Sendable, Identifiable, Equatable {
     public var id: UUID
     public var snapshot: CustomMetricsSnapshot
     public var isFailed: Bool
