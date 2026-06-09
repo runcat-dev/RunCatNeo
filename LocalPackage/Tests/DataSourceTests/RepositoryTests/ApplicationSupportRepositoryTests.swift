@@ -63,23 +63,15 @@ struct ApplicationSupportRepositoryTests {
     }
 
     @Test
-    func loadCustomRunners_reads_customRunners_file_and_filters_out_non_custom_runners() {
+    func loadCustomRunners_reads_runners_from_customRunners_file() {
         let readURL = AllocatedUnfairLock<URL?>(initialState: nil)
         let json = """
             [
               {
                 "id": "custom",
                 "name": "Custom",
-                "isCustom": true,
                 "isTemplate": false,
                 "frameOrder": [0, 1]
-              },
-              {
-                "id": "cat",
-                "name": "Cat",
-                "isCustom": false,
-                "isTemplate": true,
-                "frameOrder": [0, 1, 2, 3, 4]
               }
             ]
             """
@@ -104,14 +96,12 @@ struct ApplicationSupportRepositoryTests {
               {
                 "id": "alpha",
                 "name": "Alpha",
-                "isCustom": true,
                 "isTemplate": false,
                 "frameOrder": [0, 1]
               },
               {
                 "id": "beta",
                 "name": "Beta",
-                "isCustom": true,
                 "isTemplate": false,
                 "frameOrder": [0, 1]
               }
@@ -134,7 +124,6 @@ struct ApplicationSupportRepositoryTests {
               {
                 "id": "alpha",
                 "name": "Alpha",
-                "isCustom": true,
                 "isTemplate": false,
                 "frameOrder": [0, 1]
               }
@@ -162,7 +151,7 @@ struct ApplicationSupportRepositoryTests {
         try sut.saveCustomRunners([Runner(id: "custom", name: "Custom", isTemplate: false, frameOrder: .custom([0, 1]))])
         let (data, url) = try #require(written.withLock { $0 })
         #expect(url.hasPathSuffix("RunCatNeo/CUSTOM_RUNNERS.json"))
-        let expectedJSON = #"[{"frameOrder":[0,1],"id":"custom","isCustom":true,"isTemplate":false,"name":"Custom"}]"#
+        let expectedJSON = #"[{"frameOrder":[0,1],"id":"custom","isTemplate":false,"name":"Custom"}]"#
         #expect(String(decoding: data, as: UTF8.self) == expectedJSON)
     }
 

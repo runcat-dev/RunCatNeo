@@ -39,7 +39,7 @@ struct CustomRunnerSettingsSectionView: View {
                     .buttonStyle(.borderless)
                 } label: {
                     Label {
-                        Text(runnerBundle.runner.name)
+                        runnerBundle.runner.displayText
                     } icon: {
                         runnerBundle.thumbnail
                     }

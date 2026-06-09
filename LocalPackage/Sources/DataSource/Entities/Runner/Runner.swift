@@ -20,35 +20,36 @@
 
 import Foundation
 
-public struct Runner: Sendable, Hashable, Identifiable, Codable {
+public struct Runner: Sendable, Hashable, Identifiable {
     public var id: String
-    public var name: String
-    public var isCustom: Bool
     public var isTemplate: Bool
     public var frameOrder: FrameOrder
+    public var source: RunnerSource
+
+    public var isCustom: Bool {
+        if case .custom = source { true } else { false }
+    }
 
     public init(id: String, name: String, isTemplate: Bool, frameOrder: FrameOrder) {
         self.id = id
-        self.name = name
-        self.isCustom = true
         self.isTemplate = isTemplate
         self.frameOrder = frameOrder
+        self.source = .custom(name: name)
     }
 
     public init(kind: RunnerKind) {
         id = kind.id
-        name = kind.localizedName
-        isCustom = false
         isTemplate = true
         frameOrder = kind.frameOrder
+        source = .builtIn(kind)
     }
 
     public func resourceNames() -> [String] {
-        frameOrder.order.map { n in
+        frameOrder.order.map { frameNumber in
             if isCustom {
-                "frame-\(n)"
+                "frame-\(frameNumber)"
             } else {
-                "\(id)-frame-\(n)"
+                "\(id)-frame-\(frameNumber)"
             }
         }
     }
@@ -61,5 +62,37 @@ public struct Runner: Sendable, Hashable, Identifiable, Codable {
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
+    }
+}
+
+extension Runner: Codable {
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case isTemplate
+        case frameOrder
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        isTemplate = try container.decode(Bool.self, forKey: .isTemplate)
+        frameOrder = try container.decode(FrameOrder.self, forKey: .frameOrder)
+        let name = try container.decode(String.self, forKey: .name)
+        source = .custom(name: name)
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        guard case let .custom(name) = source else {
+            throw EncodingError.invalidValue(source, EncodingError.Context(
+                codingPath: encoder.codingPath,
+                debugDescription: "Only custom runners are persisted."
+            ))
+        }
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(isTemplate, forKey: .isTemplate)
+        try container.encode(frameOrder, forKey: .frameOrder)
     }
 }

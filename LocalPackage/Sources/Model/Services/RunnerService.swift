@@ -112,7 +112,13 @@ struct RunnerService {
 
     func validate(customRunnerName name: String) -> Bool {
         let runners = applicationSupportRepository.loadCustomRunners()
-        return !runners.contains(where: { $0.name == name })
+        return !runners.contains { runner in
+            if case let .custom(existingName) = runner.source {
+                existingName == name
+            } else {
+                false
+            }
+        }
     }
 
     func convertToCustomFrame(from frameImage: FrameImage) throws -> Frame {

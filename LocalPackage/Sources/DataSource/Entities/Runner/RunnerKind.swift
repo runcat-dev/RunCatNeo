@@ -62,31 +62,4 @@ public enum RunnerKind: String, Sendable, Identifiable, CaseIterable {
         case .mochi: .swing
         }
     }
-
-    // As a general rule, items related to localization belong to the UserInterface Module,
-    // but runner names are handled as an exception.
-    var localizedName: String {
-        switch self {
-        case .cat:
-            String(localized: "cat", table: "RunnerNames", bundle: .module)
-        case .parrot:
-            String(localized: "parrot", table: "RunnerNames", bundle: .module)
-        case .slime:
-            String(localized: "slime", table: "RunnerNames", bundle: .module)
-        case .greyhound:
-            String(localized: "greyhound", table: "RunnerNames", bundle: .module)
-        case .welshCorgi:
-            String(localized: "welshCorgi", table: "RunnerNames", bundle: .module)
-        case .drop:
-            String(localized: "drop", table: "RunnerNames", bundle: .module)
-        case .coffee:
-            String(localized: "coffee", table: "RunnerNames", bundle: .module)
-        case .newtonCradle:
-            String(localized: "newtonCradle", table: "RunnerNames", bundle: .module)
-        case .engine:
-            String(localized: "engine", table: "RunnerNames", bundle: .module)
-        case .mochi:
-            String(localized: "mochi", table: "RunnerNames", bundle: .module)
-        }
-    }
 }

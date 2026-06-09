@@ -149,7 +149,9 @@ struct CustomRunnerSettingsTests {
         )
         await sut.send(.addButtonTapped)
         #expect(recorder.lock.withLock(\.self) == nil)
-        #expect(sut.customRunnerBundleList.map(\.runner.name) == ["New Runner"])
+        #expect(sut.customRunnerBundleList.compactMap { runnerBundle in
+            if case let .custom(name) = runnerBundle.runner.source { name } else { nil }
+        } == ["New Runner"])
         #expect(writtenFileNames.withLock(\.self) == ["frame-0.png", "CUSTOM_RUNNERS.json"])
     }
 
@@ -160,7 +162,6 @@ struct CustomRunnerSettingsTests {
               {
                 "id": "custom-runner",
                 "name": "New Runner",
-                "isCustom": true,
                 "isTemplate": false,
                 "frameOrder": [0]
               }

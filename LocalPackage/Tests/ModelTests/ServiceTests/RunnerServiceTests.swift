@@ -83,7 +83,6 @@ struct RunnerServiceTests {
               {
                 "id": "custom-runner",
                 "name": "Custom Runner",
-                "isCustom": true,
                 "isTemplate": false,
                 "frameOrder": [0]
               }
@@ -117,7 +116,6 @@ struct RunnerServiceTests {
               {
                 "id": "custom-runner",
                 "name": "Custom Runner",
-                "isCustom": true,
                 "isTemplate": false,
                 "frameOrder": [0]
               }
@@ -161,7 +159,6 @@ struct RunnerServiceTests {
               {
                 "id": "custom-runner",
                 "name": "Custom Runner",
-                "isCustom": true,
                 "isTemplate": false,
                 "frameOrder": [0]
               }
@@ -196,7 +193,6 @@ struct RunnerServiceTests {
               {
                 "id": "custom-runner",
                 "name": "Custom Runner",
-                "isCustom": true,
                 "isTemplate": false,
                 "frameOrder": [0]
               }
@@ -303,7 +299,6 @@ struct RunnerServiceTests {
               {
                 "id": "custom-runner",
                 "name": "Custom Runner",
-                "isCustom": true,
                 "isTemplate": false,
                 "frameOrder": [0]
               }
@@ -366,7 +361,7 @@ struct RunnerServiceTests {
         let writtenFiles = written.withLock(\.self)
         #expect(writtenFiles.map(\.url.lastPathComponent) == ["frame-0.png", "frame-1.png", "CUSTOM_RUNNERS.json"])
         #expect(writtenFiles.first?.data == Data("png".utf8))
-        let expectedJSON = #"[{"frameOrder":[0,1],"id":"custom-runner","isCustom":true,"isTemplate":false,"name":"Custom Runner"}]"#
+        let expectedJSON = #"[{"frameOrder":[0,1],"id":"custom-runner","isTemplate":false,"name":"Custom Runner"}]"#
         #expect(writtenFiles.last.map { String(decoding: $0.data, as: UTF8.self) } == expectedJSON)
         #expect(appState.withLock(\.runnerBundleLists.latestValue) != nil)
     }
@@ -378,14 +373,12 @@ struct RunnerServiceTests {
               {
                 "id": "custom-runner",
                 "name": "Custom Runner",
-                "isCustom": true,
                 "isTemplate": false,
                 "frameOrder": [0]
               },
               {
                 "id": "other-runner",
                 "name": "Other Runner",
-                "isCustom": true,
                 "isTemplate": false,
                 "frameOrder": [0]
               }
@@ -410,7 +403,7 @@ struct RunnerServiceTests {
             }
         ))
         try sut.delete(customRunner: Runner(id: "custom-runner", name: "Custom Runner", isTemplate: false, frameOrder: .custom([0])))
-        let expectedJSON = #"[{"frameOrder":[0],"id":"other-runner","isCustom":true,"isTemplate":false,"name":"Other Runner"}]"#
+        let expectedJSON = #"[{"frameOrder":[0],"id":"other-runner","isTemplate":false,"name":"Other Runner"}]"#
         #expect(writtenJSON.withLock(\.self) == expectedJSON)
         #expect(removedURL.withLock(\.self)?.hasPathSuffix("RunCatNeo/custom-runner") == true)
     }

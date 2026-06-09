@@ -62,7 +62,7 @@ public struct ApplicationSupportRepository: Sendable {
               let runners = try? JSONDecoder().decode([Runner].self, from: data) else {
             return []
         }
-        return runners.filter(\.isCustom)
+        return runners
     }
 
     public func loadCustomRunner(of runnerID: Runner.ID) -> Runner? {
