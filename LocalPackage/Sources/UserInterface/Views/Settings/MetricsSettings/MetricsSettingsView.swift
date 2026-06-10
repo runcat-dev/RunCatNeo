@@ -33,6 +33,9 @@ struct MetricsSettingsView: View {
                 )) {
                     Text("showMetricsBar", bundle: .module)
                 }
+                .sheet(isPresented: $store.showingMetricsBarNotesSheet) {
+                    MetricsBarNotesView(store: store)
+                }
             } header: {
                 Text("metricsBar", bundle: .module)
             }

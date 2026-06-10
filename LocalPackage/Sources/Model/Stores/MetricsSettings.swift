@@ -35,6 +35,7 @@ public final class MetricsSettings: Composable {
     @ObservationIgnored private var task: Task<Void, Never>?
 
     public var showsMetricsBar: Bool
+    public var showingMetricsBarNotesSheet: Bool
     public var systemMetricsConfiguration: SystemMetricsConfiguration
     public var showingAlert: Bool
     public var error: RCNError?
@@ -44,6 +45,7 @@ public final class MetricsSettings: Composable {
     public init(
         _ appDependencies: AppDependencies,
         showsMetricsBar: Bool? = nil,
+        showingMetricsBarNotesSheet: Bool = false,
         systemMetricsConfiguration: SystemMetricsConfiguration? = nil,
         showingAlert: Bool = false,
         error: RCNError? = nil,
@@ -57,6 +59,7 @@ public final class MetricsSettings: Composable {
         self.logService = .init(appDependencies)
         self.systemMetricsService = .init(appDependencies)
         self.showsMetricsBar = showsMetricsBar ?? userDefaultsRepository.showsMetricsBar
+        self.showingMetricsBarNotesSheet = showingMetricsBarNotesSheet
         self.systemMetricsConfiguration = systemMetricsConfiguration ?? userDefaultsRepository.systemMetricsConfiguration
         self.showingAlert = showingAlert
         self.error = error
@@ -84,8 +87,20 @@ public final class MetricsSettings: Composable {
             task = nil
 
         case let .showMetricsBarToggleSwitched(isOn):
-            showsMetricsBar = isOn
-            userDefaultsRepository.showsMetricsBar = isOn
+            if isOn {
+                showingMetricsBarNotesSheet = true
+            } else {
+                showsMetricsBar = false
+                userDefaultsRepository.showsMetricsBar = false
+            }
+
+        case .changedMyMindButtonTapped:
+            showingMetricsBarNotesSheet = false
+
+        case .showButtonTapped:
+            showingMetricsBarNotesSheet = false
+            showsMetricsBar = true
+            userDefaultsRepository.showsMetricsBar = true
 
         case let .monitorsSystemMetricsToggleSwitched(type, isOn):
             func overwrite(isOn: Bool, shows: inout Bool) {
@@ -130,6 +145,8 @@ public final class MetricsSettings: Composable {
         case task(String)
         case onDisappear
         case showMetricsBarToggleSwitched(Bool)
+        case changedMyMindButtonTapped
+        case showButtonTapped
         case monitorsSystemMetricsToggleSwitched(SystemInfoType, Bool)
         case customMetricsSettings(CustomMetricsSettings.Action)
     }

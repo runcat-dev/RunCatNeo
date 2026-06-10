@@ -30,10 +30,13 @@ struct DonationSettingsView: View {
         Form {
             Section {
                 Label {
-                    Text("donationIntro", bundle: .module)
+                    Text("donationDescription", bundle: .module)
                 } icon: {
-                    Image(systemName: "pawprint.fill")
+                    Image(nsImage: NSImage(named: NSImage.applicationIconName)!)
+                        .resizable()
+                        .scaledToFit()
                 }
+                .labelReservedIconWidth(32)
             }
             Section {
                 ProductView(id: DonationProduct.oneTime.id, prefersPromotionalIcon: true) {
