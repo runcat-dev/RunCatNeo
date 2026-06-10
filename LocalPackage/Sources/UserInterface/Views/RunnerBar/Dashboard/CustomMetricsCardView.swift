@@ -63,6 +63,7 @@ struct CustomMetricsCardView: View {
         }
         .fixedSize()
         .padding(.leading, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(8)
         .materialCellStyle()
     }
