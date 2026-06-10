@@ -32,6 +32,7 @@ jobs:
           xcodebuild test \
             -scheme LocalPackage-Package \
             -destination "platform=macOS,arch=arm64" \
+            -skipPackagePluginValidation \
             -retry-tests-on-failure \
             -derivedDataPath DerivedData \
             -resultBundlePath TestResults/unit_test_result_bundle | \
