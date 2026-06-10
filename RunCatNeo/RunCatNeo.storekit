@@ -20,14 +20,54 @@
       "internalID" : "6740000001",
       "localizations" : [
         {
+          "description" : "Eine leckere Tasse für die Entwicklung",
+          "displayName" : "Eine Tasse heißer Kakao",
+          "locale" : "de"
+        },
+        {
           "description" : "A tasty cup for development",
           "displayName" : "A Cup of Hot Cocoa",
           "locale" : "en_US"
         },
         {
+          "description" : "Una taza deliciosa para el desarrollo",
+          "displayName" : "Una taza de chocolate caliente",
+          "locale" : "es_ES"
+        },
+        {
+          "description" : "Une délicieuse tasse pour le développement",
+          "displayName" : "Une tasse de chocolat chaud",
+          "locale" : "fr"
+        },
+        {
           "description" : "開発のためのおいしい1杯",
           "displayName" : "ココア1杯",
           "locale" : "ja"
+        },
+        {
+          "description" : "개발을 위한 맛있는 한 잔",
+          "displayName" : "핫초코 한 잔",
+          "locale" : "ko"
+        },
+        {
+          "description" : "Вкусная чашка для разработки",
+          "displayName" : "Чашка горячего шоколада",
+          "locale" : "ru"
+        },
+        {
+          "description" : "Một cốc thơm ngon cho việc phát triển",
+          "displayName" : "Một cốc sô-cô-la nóng",
+          "locale" : "vi"
+        },
+        {
+          "description" : "为开发加油的美味一杯",
+          "displayName" : "一杯热可可",
+          "locale" : "zh_Hans"
+        },
+        {
+          "description" : "為開發加油的美味一杯",
+          "displayName" : "一杯熱可可",
+          "locale" : "zh_Hant"
         }
       ],
       "productID" : "com.kyome.Neo.RunCat.donation.onetime",
@@ -88,7 +128,56 @@
     {
       "id" : "22140755",
       "localizations" : [
-
+        {
+          "description" : "",
+          "displayName" : "Laufende Unterstützung",
+          "locale" : "de"
+        },
+        {
+          "description" : "",
+          "displayName" : "Continuous support",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "",
+          "displayName" : "Apoyo continuo",
+          "locale" : "es_ES"
+        },
+        {
+          "description" : "",
+          "displayName" : "Soutien continu",
+          "locale" : "fr"
+        },
+        {
+          "description" : "",
+          "displayName" : "継続的なサポート",
+          "locale" : "ja"
+        },
+        {
+          "description" : "",
+          "displayName" : "지속적인 후원",
+          "locale" : "ko"
+        },
+        {
+          "description" : "",
+          "displayName" : "Постоянная поддержка",
+          "locale" : "ru"
+        },
+        {
+          "description" : "",
+          "displayName" : "Hỗ trợ liên tục",
+          "locale" : "vi"
+        },
+        {
+          "description" : "",
+          "displayName" : "持续支持",
+          "locale" : "zh_Hans"
+        },
+        {
+          "description" : "",
+          "displayName" : "持續支持",
+          "locale" : "zh_Hant"
+        }
       ],
       "name" : "RunCat Neo Support",
       "subscriptions" : [
@@ -117,14 +206,54 @@
           ],
           "localizations" : [
             {
+              "description" : "Heißer Kakao für die tägliche Entwicklung",
+              "displayName" : "Kakaopulver",
+              "locale" : "de"
+            },
+            {
               "description" : "Hot cocoa for daily development",
               "displayName" : "Hot Cocoa Powder",
               "locale" : "en_US"
             },
             {
+              "description" : "Chocolate caliente para el desarrollo diario",
+              "displayName" : "Cacao en polvo",
+              "locale" : "es_ES"
+            },
+            {
+              "description" : "Du chocolat chaud pour le développement quotidien",
+              "displayName" : "Cacao en poudre",
+              "locale" : "fr"
+            },
+            {
               "description" : "日々の開発のためのココア",
               "displayName" : "ココアの粉",
               "locale" : "ja"
+            },
+            {
+              "description" : "매일의 개발을 위한 핫초코",
+              "displayName" : "핫초코 가루",
+              "locale" : "ko"
+            },
+            {
+              "description" : "Горячий шоколад для ежедневной разработки",
+              "displayName" : "Какао-порошок",
+              "locale" : "ru"
+            },
+            {
+              "description" : "Sô-cô-la nóng cho việc phát triển hằng ngày",
+              "displayName" : "Bột ca cao",
+              "locale" : "vi"
+            },
+            {
+              "description" : "为日常开发加油的热可可",
+              "displayName" : "热可可粉",
+              "locale" : "zh_Hans"
+            },
+            {
+              "description" : "為日常開發加油的熱可可",
+              "displayName" : "熱可可粉",
+              "locale" : "zh_Hant"
             }
           ],
           "productID" : "com.kyome.Neo.RunCat.donation.subscription.yearly",
