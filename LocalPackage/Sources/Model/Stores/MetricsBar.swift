@@ -19,6 +19,7 @@
  */
 
 import DataSource
+import Foundation
 import Observation
 import SystemInfoKit
 
@@ -29,15 +30,18 @@ public final class MetricsBar: Composable {
     private let logService: LogService
 
     @ObservationIgnored private var task: Task<Void, Never>?
+    @ObservationIgnored private var customMetricsSourceIDs = [UUID]()
 
     public var metricsBarConfiguration: MetricsBarConfiguration
     public var systemInfoBundle: SystemInfoBundle
+    public var customMetricsBundles: [CustomMetricsBundle]
     public let action: (Action) async -> Void
 
     public init(
         _ appDependencies: AppDependencies,
         metricsBarConfiguration: MetricsBarConfiguration? = nil,
         systemInfoBundle: SystemInfoBundle = .init(),
+        customMetricsBundles: [CustomMetricsBundle] = [],
         action: @escaping (Action) async -> Void = { _ in }
     ) {
         self.appStateClient = appDependencies.appStateClient
@@ -45,6 +49,7 @@ public final class MetricsBar: Composable {
         self.logService = .init(appDependencies)
         self.metricsBarConfiguration = metricsBarConfiguration ?? userDefaultsRepository.metricsBarConfiguration
         self.systemInfoBundle = systemInfoBundle
+        self.customMetricsBundles = customMetricsBundles
         self.action = action
     }
 
@@ -52,8 +57,9 @@ public final class MetricsBar: Composable {
         switch action {
         case let .task(screenName):
             logService.notice(.screenView(name: screenName))
+            customMetricsSourceIDs = userDefaultsRepository.customMetricsConfiguration.sources.map(\.id)
             if let metrics = appStateClient.withLock(\.metrics.latestValue) {
-                updateSystemInfoBundle(from: metrics)
+                updateMetrics(from: metrics)
             }
             task?.cancel()
             task = Task { [weak self, appStateClient] in
@@ -61,13 +67,19 @@ public final class MetricsBar: Composable {
                     group.addTask {
                         let stream = appStateClient.withLock(\.metrics.stream)
                         for await value in stream {
-                            await self?.updateSystemInfoBundle(from: value)
+                            await self?.updateMetrics(from: value)
                         }
                     }
                     group.addTask {
                         let stream = appStateClient.withLock(\.systemMetricsConfigurationChanges.stream)
                         for await _ in stream {
                             await self?.updateMetricsBarConfiguration()
+                        }
+                    }
+                    group.addTask {
+                        let stream = appStateClient.withLock(\.customMetricsConfigurationChanges.stream)
+                        for await _ in stream {
+                            await self?.updateCustomMetricsConfiguration()
                         }
                     }
                 }
@@ -79,12 +91,25 @@ public final class MetricsBar: Composable {
         }
     }
 
-    private func updateSystemInfoBundle(from metrics: Metrics) {
+    private func updateMetrics(from metrics: Metrics) {
         systemInfoBundle = metrics.systemInfoBundle
+        customMetricsBundles = sortedBySourceOrder(metrics.customMetricsBundles)
     }
 
     private func updateMetricsBarConfiguration() {
         metricsBarConfiguration = userDefaultsRepository.metricsBarConfiguration
+    }
+
+    private func updateCustomMetricsConfiguration() {
+        customMetricsSourceIDs = userDefaultsRepository.customMetricsConfiguration.sources.map(\.id)
+        metricsBarConfiguration = userDefaultsRepository.metricsBarConfiguration
+        customMetricsBundles = sortedBySourceOrder(customMetricsBundles)
+    }
+
+    private func sortedBySourceOrder(_ bundles: [CustomMetricsBundle]) -> [CustomMetricsBundle] {
+        customMetricsSourceIDs.compactMap { id in
+            bundles.first { $0.id == id }
+        }
     }
 
     public enum Action: Sendable {

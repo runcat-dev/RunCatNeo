@@ -61,12 +61,31 @@ struct MetricsBarSettingsView: View {
             } header: {
                 Text("metricsBarSettings", bundle: .module)
             }
+            if !store.customMetricsSources.isEmpty {
+                Section {
+                    ForEach(store.customMetricsSources) { source in
+                        Toggle(isOn: Binding<Bool>(
+                            get: { store.metricsBarConfiguration.showsCustomMetrics(of: source.id) },
+                            asyncSet: { await store.send(.showsCustomMetricsToggleSwitched(source.id, $0)) }
+                        )) {
+                            Text("show\(source.displayName)Metrics", bundle: .module)
+                        }
+                    }
+                } header: {
+                    Text("customMetrics", bundle: .module)
+                }
+            }
         }
         .formStyle(.grouped)
         .frame(width: 360)
         .fixedSize()
         .task {
             await store.send(.task(String(describing: Self.self)))
+        }
+        .onDisappear {
+            Task {
+                await store.send(.onDisappear)
+            }
         }
     }
 }

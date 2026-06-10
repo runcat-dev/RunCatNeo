@@ -110,6 +110,21 @@ struct CustomMetricsServiceTests {
     }
 
     @Test
+    func removeSource_removes_visibility_entry_from_metricsBarConfiguration() {
+        var initialMetricsBarConfiguration = MetricsBarConfiguration.default
+        initialMetricsBarConfiguration.visibleCustomMetricsSourceIDs = [UUID(1), UUID(2)]
+        let storage = UserDefaultsClient.storage(
+            initialSources: [makeSource(id: UUID(1)), makeSource(id: UUID(2))],
+            initialMetricsBarConfiguration: initialMetricsBarConfiguration
+        )
+        let sut = CustomMetricsService(.testDependencies(userDefaultsClient: storage.client))
+        sut.removeSource(of: UUID(1))
+        var expected = MetricsBarConfiguration.default
+        expected.visibleCustomMetricsSourceIDs = [UUID(2)]
+        #expect(storage.currentMetricsBarConfiguration() == expected)
+    }
+
+    @Test
     func perform_passes_resolved_security_scoped_url_to_action() throws {
         let receivedURLs = AllocatedUnfairLock<[URL]>(initialState: [])
         let sut = CustomMetricsService(.testDependencies(

@@ -51,7 +51,7 @@ struct SettingsView: View {
                     Label {
                         Text("metricsTab", bundle: .module)
                     } icon: {
-                        Image(systemName: "chart.bar")
+                        Image(systemName: "chart.bar.horizontal.page.fill")
                     }
                 }
                 .tag(SettingsTab.metrics)

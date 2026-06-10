@@ -18,6 +18,7 @@
  limitations under the License.
  */
 
+import AppKit
 import SwiftUI
 
 enum IndicatorKind {
@@ -40,5 +41,14 @@ enum IndicatorKind {
         case .usageHalfLabel:
             CGSize(width: 46.0, height: 8.0)
         }
+    }
+
+    static let customValueLabelMaxWidth = 80.0
+
+    static func customValueLabelSize(for text: String) -> CGSize {
+        let font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+        let measuredWidth = NSAttributedString(string: text, attributes: [.font: font]).size().width
+        let width = min(ceil(measuredWidth) + 4.0, customValueLabelMaxWidth)
+        return CGSize(width: width, height: 16.0)
     }
 }

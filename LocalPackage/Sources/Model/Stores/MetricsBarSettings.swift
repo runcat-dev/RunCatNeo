@@ -19,27 +19,35 @@
  */
 
 import DataSource
+import Foundation
 import Observation
 import SystemInfoKit
 
 @MainActor @Observable
 public final class MetricsBarSettings: Composable {
+    private let appStateClient: AppStateClient
     private let userDefaultsRepository: UserDefaultsRepository
     private let logService: LogService
     private let systemMetricsService: SystemMetricsService
 
+    @ObservationIgnored private var task: Task<Void, Never>?
+
     public var metricsBarConfiguration: MetricsBarConfiguration
+    public var customMetricsSources: [CustomMetricsSource]
     public let action: (Action) async -> Void
 
     public init(
         _ appDependencies: AppDependencies,
         metricsBarConfiguration: MetricsBarConfiguration? = nil,
+        customMetricsSources: [CustomMetricsSource]? = nil,
         action: @escaping (Action) async -> Void =  { _ in }
     ) {
+        self.appStateClient = appDependencies.appStateClient
         self.userDefaultsRepository = .init(appDependencies.userDefaultsClient)
         self.logService = .init(appDependencies)
         self.systemMetricsService = .init(appDependencies)
         self.metricsBarConfiguration = metricsBarConfiguration ?? userDefaultsRepository.metricsBarConfiguration
+        self.customMetricsSources = customMetricsSources ?? userDefaultsRepository.customMetricsConfiguration.sources
         self.action = action
     }
 
@@ -48,6 +56,18 @@ public final class MetricsBarSettings: Composable {
         case let .task(screenName):
             logService.notice(.screenView(name: screenName))
             metricsBarConfiguration = userDefaultsRepository.metricsBarConfiguration
+            customMetricsSources = userDefaultsRepository.customMetricsConfiguration.sources
+            task?.cancel()
+            task = Task { [weak self, appStateClient] in
+                let stream = appStateClient.withLock(\.customMetricsConfigurationChanges.stream)
+                for await _ in stream {
+                    self?.updateCustomMetricsConfiguration()
+                }
+            }
+
+        case .onDisappear:
+            task?.cancel()
+            task = nil
 
         case let .showsSystemMetricsToggleSwitched(type, isOn):
             func overwrite(isOn: Bool, monitors: inout Bool) -> Bool {
@@ -82,11 +102,27 @@ public final class MetricsBarSettings: Composable {
             if needsToggleActivation {
                 systemMetricsService.toggleSystemMetricsActivation(type: type, isOn: isOn)
             }
+
+        case let .showsCustomMetricsToggleSwitched(id, isOn):
+            if isOn {
+                metricsBarConfiguration.visibleCustomMetricsSourceIDs.insert(id)
+            } else {
+                metricsBarConfiguration.visibleCustomMetricsSourceIDs.remove(id)
+            }
+            userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
+            systemMetricsService.emitConfigurationChange()
         }
+    }
+
+    private func updateCustomMetricsConfiguration() {
+        customMetricsSources = userDefaultsRepository.customMetricsConfiguration.sources
+        metricsBarConfiguration = userDefaultsRepository.metricsBarConfiguration
     }
 
     public enum Action: Sendable {
         case task(String)
+        case onDisappear
         case showsSystemMetricsToggleSwitched(SystemInfoType, Bool)
+        case showsCustomMetricsToggleSwitched(UUID, Bool)
     }
 }

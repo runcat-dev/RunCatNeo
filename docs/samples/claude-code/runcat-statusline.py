@@ -7,6 +7,7 @@ Writes ~/.claude/runcat-usage.json shaped like:
     {
       "title": "Claude Code",
       "symbol": "staroflife",
+      "metricsBarValue": "67%",
       "metrics": [
         {"title": "Model",   "formattedValue": "Opus 4.7"},
         {"title": "Context", "formattedValue": "67%", "normalizedValue": 0.67},
@@ -57,6 +58,8 @@ snapshot = {
     ] if m is not None],
     "lastUpdatedDate": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
 }
+if ctx is not None:
+    snapshot["metricsBarValue"] = f"{ctx:g}%"
 
 OUT.parent.mkdir(parents=True, exist_ok=True)
 fd, tmp = tempfile.mkstemp(prefix=".runcat-", dir=str(OUT.parent))

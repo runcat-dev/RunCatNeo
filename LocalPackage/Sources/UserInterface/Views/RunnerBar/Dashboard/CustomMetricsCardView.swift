@@ -40,7 +40,7 @@ struct CustomMetricsCardView: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
-            Image(systemName: snapshot.symbol ?? "waveform.path.ecg.rectangle")
+            Image(systemName: snapshot.displaySymbol)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 24, height: 24)

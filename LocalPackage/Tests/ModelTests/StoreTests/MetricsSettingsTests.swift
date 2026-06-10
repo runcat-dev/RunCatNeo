@@ -64,7 +64,8 @@ struct MetricsSettingsTests {
             showsMemory: true,
             showsStorage: false,
             showsBattery: false,
-            showsNetwork: false
+            showsNetwork: false,
+            visibleCustomMetricsSourceIDs: []
         )
         let encodedBarConfiguration = try JSONEncoder().encode(initialBarConfiguration)
         storage.lock.withLock { $0[.metricsBarConfiguration] = encodedBarConfiguration }

@@ -14,13 +14,27 @@ extension UserDefaultsClient {
             }
             return try? JSONDecoder().decode(CustomMetricsConfiguration.self, from: data)
         }
+
+        func currentMetricsBarConfiguration() -> MetricsBarConfiguration? {
+            guard let data = lock.withLock({ $0[.metricsBarConfiguration] }) else {
+                return nil
+            }
+            return try? JSONDecoder().decode(MetricsBarConfiguration.self, from: data)
+        }
     }
 
-    static func storage(initialSources: [CustomMetricsSource] = []) -> Storage {
+    static func storage(
+        initialSources: [CustomMetricsSource] = [],
+        initialMetricsBarConfiguration: MetricsBarConfiguration? = nil
+    ) -> Storage {
         var initial = [String: Data]()
         if !initialSources.isEmpty,
            let encoded = try? JSONEncoder().encode(CustomMetricsConfiguration(sources: initialSources)) {
             initial[.customMetricsConfiguration] = encoded
+        }
+        if let initialMetricsBarConfiguration,
+           let encoded = try? JSONEncoder().encode(initialMetricsBarConfiguration) {
+            initial[.metricsBarConfiguration] = encoded
         }
         let lock = AllocatedUnfairLock<[String: Data]>(initialState: initial)
         let client = testDependency(of: UserDefaultsClient.self) {

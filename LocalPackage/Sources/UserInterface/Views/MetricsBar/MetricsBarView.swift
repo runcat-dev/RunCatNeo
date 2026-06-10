@@ -47,6 +47,9 @@ struct MetricsBarView: View {
         if store.metricsBarConfiguration.showsNetwork, store.systemInfoBundle.networkInfo != nil {
             widthArray.append(iconWidth + IndicatorKind.usageHalfLabel.size.width)
         }
+        for bundle in store.customMetricsBundles where store.metricsBarConfiguration.showsCustomMetrics(of: bundle.id) {
+            widthArray.append(iconWidth + IndicatorKind.customValueLabelSize(for: bundle.metricsBarLabel).width)
+        }
         let width = if widthArray.isEmpty {
             IndicatorKind.sleepingCat.size.width
         } else {
@@ -77,6 +80,9 @@ struct MetricsBarView: View {
                 }
                 if store.metricsBarConfiguration.showsNetwork, let networkInfo = store.systemInfoBundle.networkInfo {
                     drawSystemInfo(context: &context, point: &point, systemInfo: networkInfo)
+                }
+                for bundle in store.customMetricsBundles where store.metricsBarConfiguration.showsCustomMetrics(of: bundle.id) {
+                    drawCustomMetrics(context: &context, point: &point, bundle: bundle)
                 }
             }
         }
@@ -126,6 +132,22 @@ struct MetricsBarView: View {
         default:
             break
         }
+    }
+
+    private func drawCustomMetrics(
+        context: inout GraphicsContext,
+        point: inout CGPoint,
+        bundle: CustomMetricsBundle
+    ) {
+        let iconSize = IndicatorKind.categoryIcon.size
+        context.drawIcon(systemName: bundle.snapshot.displaySymbol, point: point, size: iconSize)
+        point.x += iconSize.width
+        let labelSize = IndicatorKind.customValueLabelSize(for: bundle.metricsBarLabel)
+        context.drawBlackText(origin: point, size: labelSize) {
+            Text(verbatim: bundle.metricsBarLabel)
+                .monospacedDigit()
+        }
+        point.x += labelSize.width + IndicatorKind.spacer.size.width
     }
 }
 

@@ -77,6 +77,9 @@ struct CustomMetricsService {
         var configuration = userDefaultsRepository.customMetricsConfiguration
         configuration.sources.removeAll { $0.id == id }
         userDefaultsRepository.customMetricsConfiguration = configuration
+        var metricsBarConfiguration = userDefaultsRepository.metricsBarConfiguration
+        metricsBarConfiguration.visibleCustomMetricsSourceIDs.remove(id)
+        userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
     }
 
     func perform(action: (_ securityScopedURL: URL) -> Void, for source: CustomMetricsSource) throws {

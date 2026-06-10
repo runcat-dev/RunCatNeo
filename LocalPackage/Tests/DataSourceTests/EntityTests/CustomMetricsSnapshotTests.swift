@@ -54,6 +54,25 @@ struct CustomMetricsSnapshotTests {
     }
 
     @Test
+    func decode_snapshot_with_metricsBarValue() throws {
+        let json = """
+            {
+              "title": "Claude Code",
+              "metricsBarValue": "5.4%",
+              "metrics": [],
+              "lastUpdatedDate": "2026-06-05T04:50:40Z"
+            }
+            """.data(using: .utf8)!
+        let snapshot = try decoder.decode(CustomMetricsSnapshot.self, from: json)
+        let expected = CustomMetricsSnapshot(
+            title: "Claude Code",
+            metricsBarValue: "5.4%",
+            lastUpdatedDate: try #require(ISO8601DateFormatter().date(from: "2026-06-05T04:50:40Z"))
+        )
+        #expect(snapshot == expected)
+    }
+
+    @Test
     func decode_throws_when_title_missing() {
         let json = """
             {
@@ -92,6 +111,7 @@ struct CustomMetricsSnapshotTests {
         let original = CustomMetricsSnapshot(
             title: "GPU",
             symbol: "cpu",
+            metricsBarValue: "64°C",
             metrics: [
                 CustomMetric(title: "Temp", formattedValue: "64°C", normalizedValue: 0.64),
                 CustomMetric(title: "Fan", formattedValue: "1200 RPM"),
