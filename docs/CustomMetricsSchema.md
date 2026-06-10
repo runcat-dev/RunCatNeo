@@ -82,5 +82,6 @@ There is no minimum cadence. Update the file every second, or only when somethin
 See `docs/samples/` for working scripts:
 
 - `docs/samples/claude-code/` — Claude Code statusLine integration that writes context-window and cost rows.
+- `docs/samples/bitcoin/` — launchd-scheduled shell script that shows the current Bitcoin price in USD via the CoinGecko public API.
 
 Want to share an integration? Open a PR adding a sibling directory under `docs/samples/`.
