@@ -39,9 +39,10 @@ struct MetricsBarView: View {
             widthArray.append(iconWidth + IndicatorKind.usageFullLabel.size.width)
         }
         if store.metricsBarConfiguration.showsBattery, let batteryInfo = store.systemInfoBundle.batteryInfo {
-            widthArray.append(iconWidth)
             if batteryInfo.isInstalled {
-                widthArray.append(IndicatorKind.usageFullLabel.size.width)
+                widthArray.append(iconWidth + IndicatorKind.usageFullLabel.size.width)
+            } else {
+                widthArray.append(iconWidth)
             }
         }
         if store.metricsBarConfiguration.showsNetwork, store.systemInfoBundle.networkInfo != nil {
@@ -129,6 +130,8 @@ struct MetricsBarView: View {
                     .font(.system(size: 7))
                     .monospaced()
             }
+            point.x += labelSize.width + IndicatorKind.spacer.size.width
+
         default:
             break
         }
