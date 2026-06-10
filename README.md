@@ -23,6 +23,26 @@
 
 `Swift` `macOS` `Xcode` `RunCat`
 
+<img src="./docs/images/demo.gif" width="410" height="260" alt="demo" />
+
+## 🚧 Installation
+
+~~RunCat Neo is available for installation on the App Store.~~
+
+- Requirement: macOS 26 or higher
+- App Store: https://apps.apple.com/us/app/runcat-neo/id6757801838
+- Language:
+  - Chinese (simplified)
+  - Chinese (traditional)
+  - English (primary)
+  - French
+  - German
+  - Japanese
+  - Korean
+  - Russian
+  - Spanish
+  - Vietnamese
+
 ## Requirements
 
 - Development with Xcode 26.2+
