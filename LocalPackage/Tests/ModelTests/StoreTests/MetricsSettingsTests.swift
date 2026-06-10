@@ -111,7 +111,7 @@ struct MetricsSettingsTests {
     }
 
     @MainActor @Test
-    func send_showMetricsBarToggleSwitched_persists_flag() async {
+    func send_showMetricsBarToggleSwitched_on_shows_notes_sheet_without_persisting() async {
         let setCallStack = AllocatedUnfairLock<[String]>(initialState: [])
         let sut = MetricsSettings(.testDependencies(
             userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
@@ -122,7 +122,59 @@ struct MetricsSettingsTests {
             }
         ))
         await sut.send(.showMetricsBarToggleSwitched(true))
+        #expect(sut.showingMetricsBarNotesSheet == true)
+        #expect(sut.showsMetricsBar == false)
+        #expect(setCallStack.withLock(\.self).isEmpty)
+    }
+
+    @MainActor @Test
+    func send_showMetricsBarToggleSwitched_off_persists_flag() async {
+        let setCallStack = AllocatedUnfairLock<[String]>(initialState: [])
+        let sut = MetricsSettings(.testDependencies(
+            userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
+                $0.set = { value, key in
+                    let entry = "set: \(key) = \(value ?? "nil")"
+                    setCallStack.withLock { $0.append(entry) }
+                }
+            }
+        ), showsMetricsBar: true)
+        await sut.send(.showMetricsBarToggleSwitched(false))
+        #expect(sut.showingMetricsBarNotesSheet == false)
+        #expect(sut.showsMetricsBar == false)
+        #expect(setCallStack.withLock(\.self) == ["set: SHOWS_METRICS_BAR = false"])
+    }
+
+    @MainActor @Test
+    func send_showButtonTapped_enables_metrics_bar_and_persists_flag() async {
+        let setCallStack = AllocatedUnfairLock<[String]>(initialState: [])
+        let sut = MetricsSettings(.testDependencies(
+            userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
+                $0.set = { value, key in
+                    let entry = "set: \(key) = \(value ?? "nil")"
+                    setCallStack.withLock { $0.append(entry) }
+                }
+            }
+        ), showingMetricsBarNotesSheet: true)
+        await sut.send(.showButtonTapped)
+        #expect(sut.showingMetricsBarNotesSheet == false)
         #expect(sut.showsMetricsBar == true)
         #expect(setCallStack.withLock(\.self) == ["set: SHOWS_METRICS_BAR = true"])
+    }
+
+    @MainActor @Test
+    func send_changedMyMindButtonTapped_dismisses_sheet_without_enabling() async {
+        let setCallStack = AllocatedUnfairLock<[String]>(initialState: [])
+        let sut = MetricsSettings(.testDependencies(
+            userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
+                $0.set = { value, key in
+                    let entry = "set: \(key) = \(value ?? "nil")"
+                    setCallStack.withLock { $0.append(entry) }
+                }
+            }
+        ), showingMetricsBarNotesSheet: true)
+        await sut.send(.changedMyMindButtonTapped)
+        #expect(sut.showingMetricsBarNotesSheet == false)
+        #expect(sut.showsMetricsBar == false)
+        #expect(setCallStack.withLock(\.self).isEmpty)
     }
 }
