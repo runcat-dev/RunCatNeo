@@ -32,9 +32,13 @@ struct DashboardView: View {
                     .foregroundStyle(.secondary)
                     .padding(.leading, 8)
                 Spacer()
-                MenuView(appName: store.appName) { action in
-                    await store.send(action)
-                }
+                MenuView(
+                    appName: store.appName,
+                    isPreview: store.isPreview,
+                    buttonTapped: { action in
+                        await store.send(action)
+                    }
+                )
             }
             SystemInfoStackView(
                 systemInfoBundle: store.systemInfoBundle,

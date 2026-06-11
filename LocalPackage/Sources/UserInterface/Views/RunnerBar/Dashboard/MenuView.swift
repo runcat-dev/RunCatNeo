@@ -25,6 +25,7 @@ import SwiftUI
 struct MenuView: View {
     @Environment(\.openWindow) private var openWindow
     var appName: String
+    var isPreview: Bool
     var buttonTapped: (Dashboard.Action) async -> Void
 
     private var aboutBody: AttributedString {
@@ -114,7 +115,7 @@ struct MenuView: View {
                 }
             }
             .accessibilityIdentifier("terminate_app")
-            if isDebugBuild {
+            if !isPreview, isDebugBuild {
                 Divider()
                 Button {
                     Task {
