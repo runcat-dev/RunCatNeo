@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "dog-frame-0.png",
+      "idiom" : "mac"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

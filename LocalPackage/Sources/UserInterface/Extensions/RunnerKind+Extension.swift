@@ -25,14 +25,10 @@ extension RunnerKind {
         switch self {
         case .cat:
             String(localized: "cat", table: "RunnerNames", bundle: .module)
-        case .parrot:
-            String(localized: "parrot", table: "RunnerNames", bundle: .module)
+        case .dog:
+            String(localized: "dog", table: "RunnerNames", bundle: .module)
         case .slime:
             String(localized: "slime", table: "RunnerNames", bundle: .module)
-        case .greyhound:
-            String(localized: "greyhound", table: "RunnerNames", bundle: .module)
-        case .welshCorgi:
-            String(localized: "welshCorgi", table: "RunnerNames", bundle: .module)
         case .drop:
             String(localized: "drop", table: "RunnerNames", bundle: .module)
         case .coffee:

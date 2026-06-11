@@ -20,10 +20,8 @@
 
 public enum RunnerKind: String, Sendable, Identifiable, CaseIterable {
     case cat = "cat"
-    case parrot = "parrot"
+    case dog = "dog"
     case slime = "slime"
-    case greyhound = "greyhound"
-    case welshCorgi = "welsh-corgi"
     case drop = "drop"
     case coffee = "coffee"
     case newtonCradle = "newton-cradle"
@@ -35,10 +33,8 @@ public enum RunnerKind: String, Sendable, Identifiable, CaseIterable {
     var numberOfResources: Int {
         switch self {
         case .cat: 5
-        case .parrot: 5
+        case .dog: 5
         case .slime: 5
-        case .greyhound: 14
-        case .welshCorgi: 7
         case .drop: 5
         case .coffee: 10
         case .newtonCradle: 5
@@ -51,10 +47,8 @@ public enum RunnerKind: String, Sendable, Identifiable, CaseIterable {
         let n = numberOfResources
         return switch self {
         case .cat: .ascending(n)
-        case .parrot: .ascending(n)
+        case .dog: .ascending(n)
         case .slime: .partyHorn
-        case .greyhound: .ascending(n)
-        case .welshCorgi: .ascending(n)
         case .drop: .ascending(n)
         case .coffee: .ascending(n)
         case .newtonCradle: .pendulum
