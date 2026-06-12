@@ -3638,61 +3638,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "OSS"
+            "value" : "RunCat Neo ist Open-Source-Software."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "OSS"
+            "value" : "RunCat Neo is an open-source software."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "OSS"
+            "value" : "RunCat Neo es un software de código abierto."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "OSS"
+            "value" : "RunCat Neo est un logiciel open source."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "OSS"
+            "value" : "RunCat Neoはオープンソースソフトウェアです。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "OSS"
+            "value" : "RunCat Neo는 오픈 소스 소프트웨어입니다."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "OSS"
+            "value" : "RunCat Neo — программное обеспечение с открытым исходным кодом."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "OSS"
+            "value" : "RunCat Neo là phần mềm mã nguồn mở."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "OSS"
+            "value" : "RunCat Neo 是开源软件。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "OSS"
+            "value" : "RunCat Neo 是開放原始碼軟體。"
           }
         }
       }

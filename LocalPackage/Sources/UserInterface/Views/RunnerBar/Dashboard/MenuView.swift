@@ -31,7 +31,7 @@ struct MenuView: View {
     private var aboutBody: AttributedString {
         var attributedString = AttributedString()
 
-        var ossParagraph = AttributedString(String(localized: "oss", bundle: .module))
+        var ossParagraph = AttributedString(String(localized: "oss", bundle: .module) + "\n")
         ossParagraph.foregroundColor = NSColor.textColor
         attributedString.append(ossParagraph)
 
