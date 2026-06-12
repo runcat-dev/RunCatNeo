@@ -3,7 +3,7 @@
  Model
 
  Created by Takuto Nakamura on 2026/06/09.
- Copyright 2026 Koyme22 (Takuto Nakamura)
+ Copyright 2026 Kyome22 (Takuto Nakamura)
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
