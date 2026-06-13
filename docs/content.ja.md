@@ -8,7 +8,7 @@
 ネコの走る速さで Mac の CPU 負荷がわかります。  
 メニューバーをちらっと見るだけで十分です。
 
-![RunCat Neo デモ](./images/demo.gif =480x)
+![RunCat Neo デモ](./images/ja/demo.gif =480x)
 
 [![App Store でダウンロード](./images/ja/download_on_app_store.svg)](https://apps.apple.com/us/app/runcat-neo/id6757801838)
 

@@ -7,7 +7,7 @@ Cat living in the menubar.
 
 The cat tells you the CPU usage of your Mac by how fast it runs — one glance at the menu bar is all it takes.
 
-![RunCat Neo demo](./images/demo.gif =480x)
+![RunCat Neo demo](./images/en/demo.gif =480x)
 
 [![Download on the App Store](./images/en/download_on_app_store.svg)](https://apps.apple.com/us/app/runcat-neo/id6757801838)
 
