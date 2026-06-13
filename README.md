@@ -1,6 +1,6 @@
 # RunCat Neo
 
-**A cute running cat animation on your macOS Menubar.**
+**A cute running cat animation on your macOS menubar.**
 
 > [!CAUTION]
 >
@@ -23,7 +23,7 @@
 
 `Swift` `macOS` `Xcode` `RunCat`
 
-<img src="./docs/images/demo.gif" width="410" height="260" alt="demo" />
+<img src="./docs/images/en/demo.gif" width="449" height="350" alt="demo" />
 
 ## 🚧 Installation
 
@@ -62,6 +62,10 @@ RunCat can watch any local JSON file in the documented format and render it as a
 
 - [JSON schema](docs/CustomMetricsSchema.md)
 - [Claude Code statusLine sample](docs/samples/claude-code/)
+
+## Custom Runners
+
+By creating your own keyframe animations, you can have any runner you like dashing across your menu bar. You can also find resources for custom runners showcased and distributed in the [Runner Gallery](https://runcat-dev.github.io/RunnerGallery/).
 
 ## RunCat Developers' Community
 
