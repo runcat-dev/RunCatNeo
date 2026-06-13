@@ -56,7 +56,7 @@ struct DonationSettingsView: View {
             }
             Section {
                 ProductView(id: DonationProduct.yearly.id, prefersPromotionalIcon: true) {
-                    Image(systemName: "takeoutbag.and.cup.and.straw.fill")
+                    Image(.cocoaPowder)
                         .font(.system(size: 40))
                         .foregroundStyle(.secondary)
                         .productIconBorder()
