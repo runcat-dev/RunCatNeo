@@ -37,7 +37,7 @@ struct MenuView: View {
 
         let url = URL.github
         var urlParagraph = AttributedString(url.absoluteString)
-        urlParagraph.foregroundColor = NSColor(resource: .url)
+        urlParagraph.foregroundColor = NSColor.linkColor
         urlParagraph.link = url
         attributedString.append(urlParagraph)
 
