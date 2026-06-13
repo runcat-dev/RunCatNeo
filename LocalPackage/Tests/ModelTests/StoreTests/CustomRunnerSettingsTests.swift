@@ -216,4 +216,99 @@ struct CustomRunnerSettingsTests {
         #expect(recorder.lock.withLock(\.self) == nil)
         #expect(sut.customRunnerBundleList.isEmpty)
     }
+
+    @MainActor @Test
+    func send_addCustomRunnerButtonTapped_shows_editor_sheet() async {
+        let sut = CustomRunnerSettings(.testDependencies())
+        await sut.send(.addCustomRunnerButtonTapped)
+        #expect(sut.showingCustomRunnerEditorSheet == true)
+    }
+
+    @MainActor @Test
+    func send_cancelButtonTapped_hides_editor_sheet() async {
+        let sut = CustomRunnerSettings(
+            .testDependencies(),
+            showingCustomRunnerEditorSheet: true
+        )
+        await sut.send(.cancelButtonTapped)
+        #expect(sut.showingCustomRunnerEditorSheet == false)
+    }
+
+    @MainActor @Test
+    func send_onDissmissSheet_resets_editor_inputs() async {
+        let frameImage = FrameImage.dummy()
+        let sut = CustomRunnerSettings(
+            .testDependencies(),
+            runnerName: "New Runner",
+            isTemplate: false,
+            frameImages: [frameImage],
+            selectingFrameImage: frameImage,
+            previewingFrameImage: frameImage,
+            previewSpeed: 2
+        )
+        await sut.send(.onDissmissSheet)
+        #expect(sut.runnerName.isEmpty)
+        #expect(sut.isTemplate == true)
+        #expect(sut.frameImages.isEmpty)
+        #expect(sut.selectingFrameImage == nil)
+        #expect(sut.previewingFrameImage == nil)
+        #expect(sut.previewSpeed == 1)
+    }
+
+    @MainActor @Test
+    func send_selectRenderingMode_updates_isTemplate() async {
+        let sut = CustomRunnerSettings(.testDependencies())
+        await sut.send(.selectRenderingMode(.color))
+        #expect(sut.isTemplate == false)
+        await sut.send(.selectRenderingMode(.monochrome))
+        #expect(sut.isTemplate == true)
+    }
+
+    @MainActor @Test
+    func send_onDragFrameImageCell_selects_frame() async {
+        let frameImage = FrameImage.dummy()
+        let sut = CustomRunnerSettings(.testDependencies())
+        await sut.send(.onDragFrameImageCell(frameImage))
+        #expect(sut.selectingFrameImage == frameImage)
+    }
+
+    @MainActor @Test
+    func send_onCompletionFileImporter_appends_accessible_frame_image() async {
+        let recorder = errorRecorder()
+        let urlClient = testDependency(of: URLClient.self) {
+            $0.startAccessingSecurityScopedResource = { _ in true }
+            $0.stopAccessingSecurityScopedResource = { _ in }
+        }
+        let sut = CustomRunnerSettings(
+            .testDependencies(urlClient: urlClient),
+            action: recorder.action
+        )
+        await sut.send(.onCompletionFileImporter(.success([URL.fixture(name: "solid_red_30x36")])))
+        #expect(sut.frameImages.count == 1)
+        #expect(recorder.lock.withLock(\.self) == nil)
+    }
+
+    @MainActor @Test
+    func send_onCompletionFileImporter_skips_inaccessible_frame_image() async {
+        let recorder = errorRecorder()
+        let urlClient = testDependency(of: URLClient.self) {
+            $0.startAccessingSecurityScopedResource = { _ in false }
+        }
+        let sut = CustomRunnerSettings(
+            .testDependencies(urlClient: urlClient),
+            action: recorder.action
+        )
+        await sut.send(.onCompletionFileImporter(.success([URL.fixture(name: "solid_red_30x36")])))
+        #expect(sut.frameImages.isEmpty)
+        #expect(recorder.lock.withLock(\.self) == nil)
+    }
+
+    @MainActor @Test
+    func send_onCompletionFileImporter_failure_is_noop() async {
+        let recorder = errorRecorder()
+        let sut = CustomRunnerSettings(.testDependencies(), action: recorder.action)
+        await sut.send(.onCompletionFileImporter(.failure(URLError(.cancelled))))
+        #expect(sut.frameImages.isEmpty)
+        #expect(recorder.lock.withLock(\.self) == nil)
+    }
 }

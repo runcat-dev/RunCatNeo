@@ -177,4 +177,12 @@ struct MetricsSettingsTests {
         #expect(sut.showsMetricsBar == false)
         #expect(setCallStack.withLock(\.self).isEmpty)
     }
+
+    @MainActor @Test
+    func send_customMetricsSettings_onError_shows_alert() async {
+        let sut = MetricsSettings(.testDependencies())
+        await sut.send(.customMetricsSettings(.onError(.customMetrics(.fileUnreadable))))
+        #expect(sut.error == .customMetrics(.fileUnreadable))
+        #expect(sut.showingAlert == true)
+    }
 }

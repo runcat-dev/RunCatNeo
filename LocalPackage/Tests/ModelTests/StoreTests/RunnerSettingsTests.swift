@@ -101,4 +101,12 @@ struct RunnerSettingsTests {
         #expect(recorder.lock.withLock(\.self) == ["set: IS_FLIPPED_HORIZONTALLY = true"])
         #expect(appState.withLock(\.runnerBundles.latestValue) == bundle)
     }
+
+    @MainActor @Test
+    func send_customRunnerSettings_onError_shows_alert() async {
+        let sut = RunnerSettings(.testDependencies())
+        await sut.send(.customRunnerSettings(.onError(.customRunner(.loadingFailed))))
+        #expect(sut.error == .customRunner(.loadingFailed))
+        #expect(sut.showingAlert == true)
+    }
 }

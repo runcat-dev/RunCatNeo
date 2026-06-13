@@ -1,5 +1,6 @@
 import AllocatedUnfairLock
 import Foundation
+import SystemInfoKit
 import Testing
 
 @testable import DataSource
@@ -65,5 +66,63 @@ struct MetricsBarSettingsTests {
         await waitUntil { sut.customMetricsSources == [source] }
         #expect(sut.customMetricsSources == [source])
         await sut.send(.onDisappear)
+    }
+
+    @MainActor @Test
+    func send_showsSystemMetricsToggleSwitched_persists_configurations_and_activates() async throws {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let activationRequests = AllocatedUnfairLock<[SystemInfoType: Bool]?>(initialState: nil)
+        let initialBarConfiguration = MetricsBarConfiguration(
+            showsCPU: true,
+            showsMemory: false,
+            showsStorage: false,
+            showsBattery: false,
+            showsNetwork: false,
+            visibleCustomMetricsSourceIDs: []
+        )
+        let storage = UserDefaultsClient.storage(initialMetricsBarConfiguration: initialBarConfiguration)
+        let systemMetricsConfiguration = SystemMetricsConfiguration(
+            monitorsMemory: false,
+            monitorsStorage: false,
+            monitorsBattery: false,
+            monitorsNetwork: false
+        )
+        storage.lock.withLock {
+            $0[.systemMetricsConfiguration] = try? JSONEncoder().encode(systemMetricsConfiguration)
+        }
+        let sut = MetricsBarSettings(.testDependencies(
+            appStateClient: .testDependency(appState),
+            systemInfoObserverClient: testDependency(of: SystemInfoObserverClient.self) {
+                $0.toggleActivation = { requests in
+                    activationRequests.withLock { $0 = requests }
+                }
+            },
+            userDefaultsClient: storage.client
+        ))
+        await sut.send(.showsSystemMetricsToggleSwitched(.memory, true))
+        #expect(sut.metricsBarConfiguration.showsMemory == true)
+        #expect(storage.currentMetricsBarConfiguration()?.showsMemory == true)
+        let storedConfiguration = try JSONDecoder().decode(
+            SystemMetricsConfiguration.self,
+            from: try #require(storage.lock.withLock { $0[.systemMetricsConfiguration] })
+        )
+        #expect(storedConfiguration.monitorsMemory == true)
+        #expect(activationRequests.withLock(\.self) == [.memory: true])
+        #expect(appState.withLock(\.systemMetricsConfigurationChanges.latestValue) != nil)
+    }
+
+    @MainActor @Test
+    func send_showsSystemMetricsToggleSwitched_cpu_does_not_toggle_activation() async {
+        let activationCount = AllocatedUnfairLock<Int>(initialState: 0)
+        let storage = UserDefaultsClient.storage()
+        let sut = MetricsBarSettings(.testDependencies(
+            systemInfoObserverClient: testDependency(of: SystemInfoObserverClient.self) {
+                $0.toggleActivation = { _ in activationCount.withLock { $0 += 1 } }
+            },
+            userDefaultsClient: storage.client
+        ))
+        await sut.send(.showsSystemMetricsToggleSwitched(.cpu, true))
+        #expect(sut.metricsBarConfiguration.showsCPU == true)
+        #expect(activationCount.withLock(\.self) == 0)
     }
 }

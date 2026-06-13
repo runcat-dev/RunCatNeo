@@ -26,6 +26,7 @@ import Observation
 @MainActor @Observable
 public final class CustomRunnerSettings: Composable {
     private let appStateClient: AppStateClient
+    private let urlClient: URLClient
     private let uuidClient: UUIDClient
     private let logService: LogService
     private let runnerService: RunnerService
@@ -62,6 +63,7 @@ public final class CustomRunnerSettings: Composable {
         action: @escaping (Action) async -> Void =  { _ in }
     ) {
         self.appStateClient = appDependencies.appStateClient
+        self.urlClient = appDependencies.urlClient
         self.uuidClient = appDependencies.uuidClient
         self.logService = .init(appDependencies)
         self.runnerService = .init(appDependencies)
@@ -169,9 +171,9 @@ public final class CustomRunnerSettings: Composable {
         case let .onCompletionFileImporter(.success(urls)):
             do {
                 for url in urls {
-                    guard url.startAccessingSecurityScopedResource() else { return }
+                    guard urlClient.startAccessingSecurityScopedResource(url) else { return }
                     defer {
-                        url.stopAccessingSecurityScopedResource()
+                        urlClient.stopAccessingSecurityScopedResource(url)
                     }
                     try appendFrameImage(from: url)
                 }
