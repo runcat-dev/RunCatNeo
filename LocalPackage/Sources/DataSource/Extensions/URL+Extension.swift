@@ -33,6 +33,10 @@ extension URL {
         Self.github.appending(path: "blob/main/docs/CustomMetricsSchema.md")
     }
 
+    public static let runnerGallery = URL(
+        string: "https://runcat-dev.github.io/RunnerGallery/"
+    )!
+
     public static let termsOfService = URL(
         string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
     )!

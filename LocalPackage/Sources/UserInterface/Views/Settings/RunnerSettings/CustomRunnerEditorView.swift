@@ -46,6 +46,7 @@ struct CustomRunnerEditorView: View {
                         FrameImagesCollectionView(store: store)
                     } label: {
                         Text("frames", bundle: .module)
+                        Text("requirements", bundle: .module)
                     }
                     LabeledContent {
                         RunnerPreviewView(store: store)

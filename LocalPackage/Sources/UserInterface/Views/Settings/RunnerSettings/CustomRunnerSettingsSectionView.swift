@@ -68,6 +68,10 @@ struct CustomRunnerSettingsSectionView: View {
             }
         } header: {
             Text("customRunners", bundle: .module)
+        } footer: {
+            Text(runnerGalleryGuidance)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: 420, alignment: .leading)
         }
         .task {
             await store.send(.task)
@@ -77,5 +81,14 @@ struct CustomRunnerSettingsSectionView: View {
                 await store.send(.onDisappear)
             }
         }
+    }
+
+    var runnerGalleryGuidance: AttributedString {
+        var text = AttributedString(String(localized: "runnerGalleryDescription", bundle: .module))
+        if let range = text.range(of: "Runner Gallery") {
+            text[range].link = URL.runnerGallery
+            text[range].foregroundColor = NSColor.linkColor
+        }
+        return text
     }
 }

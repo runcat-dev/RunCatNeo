@@ -103,24 +103,6 @@ struct FrameImagesCollectionView: View {
                 .buttonStyle(.segmented)
                 .disabled(store.selectingFrameImage == nil)
                 Spacer()
-                Button {
-                    Task {
-                        await store.send(.helpButtonTapped)
-                    }
-                } label: {
-                    Image(systemName: "info.circle")
-                }
-                .buttonStyle(.segmented)
-                .popover(isPresented: $store.showingHelpPopover, arrowEdge: .bottom) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("requirements:", bundle: .module)
-                            .font(.headline)
-                        Text("format:", bundle: .module)
-                        Text("height:", bundle: .module)
-                        Text("width:", bundle: .module)
-                    }
-                    .padding()
-                }
             }
         }
         .frame(width: 256, height: 180) // 256 = 48 × 5 + 4 × 4

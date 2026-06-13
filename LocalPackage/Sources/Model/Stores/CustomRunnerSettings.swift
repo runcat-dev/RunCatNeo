@@ -42,7 +42,6 @@ public final class CustomRunnerSettings: Composable {
     public var previewingFrameImage: FrameImage?
     public var previewSpeed: Double
     public var showingFileImporter: Bool
-    public var showingHelpPopover: Bool
     public let action: (Action) async -> Void
 
     public var canAdd: Bool {
@@ -60,7 +59,6 @@ public final class CustomRunnerSettings: Composable {
         previewingFrameImage: FrameImage? = nil,
         previewSpeed: Double = 1,
         showingFileImporter: Bool = false,
-        showingHelpPopover: Bool = false,
         action: @escaping (Action) async -> Void =  { _ in }
     ) {
         self.appStateClient = appDependencies.appStateClient
@@ -76,7 +74,6 @@ public final class CustomRunnerSettings: Composable {
         self.previewingFrameImage = previewingFrameImage
         self.previewSpeed = previewSpeed
         self.showingFileImporter = showingFileImporter
-        self.showingHelpPopover = showingHelpPopover
         self.action = action
     }
 
@@ -169,9 +166,6 @@ public final class CustomRunnerSettings: Composable {
             }
             advanceFrameImage()
             
-        case .helpButtonTapped:
-            showingHelpPopover = true
-            
         case let .onCompletionFileImporter(.success(urls)):
             do {
                 for url in urls {
@@ -258,7 +252,6 @@ public final class CustomRunnerSettings: Composable {
         case onDropCollection([URL])
         case addFrameButtonTapped
         case deleteFrameButtonTapped
-        case helpButtonTapped
         case onCompletionFileImporter(Result<[URL], any Error>)
         case addButtonTapped
         case onError(RCNError)
