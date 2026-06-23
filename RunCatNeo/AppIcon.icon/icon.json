@@ -26,7 +26,7 @@
           "fill-specializations" : [
             {
               "value" : {
-                "automatic-gradient" : "extended-gray:1.00000,1.00000"
+                "solid" : "display-p3:1.00000,1.00000,1.00000,1.00000"
               }
             },
             {
@@ -36,15 +36,15 @@
               }
             }
           ],
-          "glass" : false,
+          "glass" : true,
           "hidden" : false,
           "image-name" : "cat.png",
           "name" : "cat",
           "position" : {
-            "scale" : 1.2,
+            "scale" : 0.55,
             "translation-in-points" : [
-              -595.390625,
-              179.828125
+              -29.7578125,
+              25.850000000000023
             ]
           }
         }
