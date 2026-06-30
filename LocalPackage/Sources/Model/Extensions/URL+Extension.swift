@@ -1,6 +1,6 @@
 /*
  URL+Extension.swift
- DataSource
+ Model
 
  Created by Takuto Nakamura on 2026/06/09.
  Copyright 2026 Kyome22 (Takuto Nakamura)
