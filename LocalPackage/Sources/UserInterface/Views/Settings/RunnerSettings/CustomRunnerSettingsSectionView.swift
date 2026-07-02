@@ -70,8 +70,10 @@ struct CustomRunnerSettingsSectionView: View {
             Text("customRunners", bundle: .module)
         } footer: {
             Text(runnerGalleryGuidance)
+                .multilineTextAlignment(.leading)
                 .foregroundStyle(.secondary)
-                .frame(maxWidth: 420, alignment: .leading)
+                .frame(width: 420)
+                .fixedSize()
         }
         .task {
             await store.send(.task)

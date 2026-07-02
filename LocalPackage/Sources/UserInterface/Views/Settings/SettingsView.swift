@@ -27,7 +27,7 @@ struct SettingsView: View {
     @State private var settingsTab = SettingsTab.general
 
     var body: some View {
-        TabView(selection: $settingsTab) {
+        TabView(selection: $settingsTab.animation()) {
             GeneralSettingsView(store: .init(appDependencies))
                 .tabItem {
                     Label {
@@ -65,8 +65,7 @@ struct SettingsView: View {
                 }
                 .tag(SettingsTab.donation)
         }
-        .frame(minHeight: 280, maxHeight: .infinity)
-        .fixedSize(horizontal: true, vertical: false)
+        .fixedSize()
         .accessibilityIdentifier("settings")
     }
 }
