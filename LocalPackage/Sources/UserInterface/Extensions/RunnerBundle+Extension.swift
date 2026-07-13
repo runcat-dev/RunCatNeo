@@ -19,7 +19,6 @@
  */
 
 import DataSource
-import Model
 import SwiftUI
 
 extension RunnerBundle {

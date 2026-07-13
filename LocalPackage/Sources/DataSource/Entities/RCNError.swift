@@ -18,8 +18,6 @@
  limitations under the License.
  */
 
-import Foundation
-
 public enum RCNError: Error, Equatable {
     case customRunner(CustomRunner)
     case customMetrics(CustomMetrics)

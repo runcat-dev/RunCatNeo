@@ -19,7 +19,6 @@
  */
 
 import AppKit
-import SwiftUI
 
 enum IndicatorKind {
     case sleepingCat
