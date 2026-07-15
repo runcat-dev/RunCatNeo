@@ -4,7 +4,7 @@ RunCat Neo can watch any local JSON file you point it at and render it as a card
 
 ## Overview
 
-You decide what to track (Claude Code usage, GPU temperature, GitHub contributions, remaining reminders, anything else). You write a small script or program that keeps a JSON file on disk up to date. RunCat watches the file with a `DispatchSource` file-system event source and updates the card the moment the file changes. RunCat itself never polls the file and never makes network calls — whether your data comes from the network is entirely up to your script.
+You decide what to track (Claude Code usage, GPU temperature, GitHub contributions, remaining reminders, anything else). You write a small script or program that keeps a JSON file on disk up to date. RunCat watches the file with a `DispatchSource` file-system event source and updates the card the moment the file changes without polling. A remote `iconURL`, when provided, is fetched separately.
 
 To add a source: open RunCat's settings, go to **Metrics** → **Custom Metrics**, and click **Add Custom Metrics Source**, then pick the JSON file. The file is bookmarked with a security-scoped bookmark so the access survives sandbox restarts.
 
@@ -18,6 +18,7 @@ A valid file might look like this:
 {
   "title": "Claude Code",
   "symbol": "staroflife",
+  "iconURL": "https://example.com/icon.png",
   "metricsBarValue": "5.4%",
   "metrics": [
     { "title": "Model",   "formattedValue": "Opus 4.7" },
@@ -37,6 +38,7 @@ The values above are illustrative — `title`, `symbol`, and the metric labels a
 |-------------------|----------------|----------|-------------|
 | `title`           | string         | yes      | Card header text. |
 | `symbol`          | string         | no       | [SF Symbol](https://developer.apple.com/sf-symbols/) identifier shown next to the title. Defaults to `chart.bar.horizontal.page.fill`. |
+| `iconURL`         | string         | no       | `https://` or `file://` URL for the card icon. A remote URL causes a network request to its host. Falls back to `symbol` when the image cannot be loaded. |
 | `metricsBarValue` | string         | no       | Short text shown in the Metrics Bar (the dedicated menu-bar item) next to the source's symbol. Displayed verbatim; keep it short — the bar caps the label width and truncates longer strings. Each source is hidden in the bar by default: click the Metrics Bar and flip the source's toggle to show it. When the source is shown but this field is omitted, the bar renders `---`. |
 | `metrics`         | array<Metric\> | yes      | Rows displayed inside the card. Empty array is allowed. |
 | `lastUpdatedDate` | string         | yes      | ISO 8601 timestamp (e.g. `"2026-06-05T04:50:40Z"`) of when the producer wrote this file. Shown as a relative time (`"3 min ago"`) at the bottom of the card; updates automatically. |
