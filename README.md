@@ -56,6 +56,8 @@ RunCat can watch any local JSON file in the documented format and render it as a
 
 - [JSON schema](docs/CustomMetricsSchema.md)
 - [Claude Code statusLine sample](docs/samples/claude-code/)
+- [Codex integration sample](docs/samples/codex/)
+- [Bitcoin price sample](docs/samples/bitcoin/)
 
 ## Custom Runners
 
