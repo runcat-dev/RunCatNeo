@@ -68,6 +68,11 @@
           "description" : "為開發加油的美味一杯",
           "displayName" : "一杯熱可可",
           "locale" : "zh_Hant"
+        },
+        {
+          "description" : "Geliştirme sürecine küçük bir katkı",
+          "displayName" : "Bir Fincan Sıcak Kakao",
+          "locale" : "tr"
         }
       ],
       "productID" : "com.kyome.Neo.RunCat.donation.onetime",
@@ -177,6 +182,11 @@
           "description" : "",
           "displayName" : "持續支持",
           "locale" : "zh_Hant"
+        },
+        {
+          "description" : "",
+          "displayName" : "Sürekli Destek",
+          "locale" : "tr"
         }
       ],
       "name" : "RunCat Neo Support",
@@ -254,6 +264,11 @@
               "description" : "為日常開發加油的熱可可",
               "displayName" : "熱可可粉",
               "locale" : "zh_Hant"
+            },
+            {
+              "description" : "Günlük geliştirmeye sürekli destek",
+              "displayName" : "Sıcak Kakao Tozu",
+              "locale" : "tr"
             }
           ],
           "productID" : "com.kyome.Neo.RunCat.donation.subscription.yearly",

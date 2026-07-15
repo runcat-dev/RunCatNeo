@@ -1,204 +1,222 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "CFBundleDisplayName" : {
-      "comment" : "Bundle display name",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCat Neo"
+  "sourceLanguage": "en",
+  "strings": {
+    "CFBundleDisplayName": {
+      "comment": "Bundle display name",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCat Neo"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "RunCat Neo"
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "RunCat Neo"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCat Neo"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCat Neo"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCat Neo"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCat Neo"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCat Neo"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCat Neo"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCat Neo"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCat Neo"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCat Neo"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCat Neo"
           }
         },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCat Neo"
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCat Neo"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCat Neo"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCat Neo"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCat Neo"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCat Neo"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCat Neo"
           }
         }
       }
     },
-    "CFBundleName" : {
-      "comment" : "Bundle name",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCatNeo"
+    "CFBundleName": {
+      "comment": "Bundle name",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCatNeo"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "RunCatNeo"
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "RunCatNeo"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCatNeo"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCatNeo"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCatNeo"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCatNeo"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCatNeo"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCatNeo"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCatNeo"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCatNeo"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCatNeo"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCatNeo"
           }
         },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCatNeo"
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCatNeo"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCatNeo"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCatNeo"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RunCatNeo"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCatNeo"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RunCatNeo"
           }
         }
       }
     },
-    "NSHumanReadableCopyright" : {
-      "comment" : "Copyright (human-readable)",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "©︎2026 Takuto Nakamura"
+    "NSHumanReadableCopyright": {
+      "comment": "Copyright (human-readable)",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "©︎2026 Takuto Nakamura"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "©︎2026 Takuto Nakamura"
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "©︎2026 Takuto Nakamura"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "©︎2026 Takuto Nakamura"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "©︎2026 Takuto Nakamura"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "©︎2026 Takuto Nakamura"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "©︎2026 Takuto Nakamura"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "©︎2026 Takuto Nakamura"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "©︎2026 Takuto Nakamura"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "©︎2026 Takuto Nakamura"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "©︎2026 Takuto Nakamura"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "©︎2026 Takuto Nakamura"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "©︎2026 Takuto Nakamura"
           }
         },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "©︎2026 Takuto Nakamura"
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "©︎2026 Takuto Nakamura"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "©︎2026 Takuto Nakamura"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "©︎2026 Takuto Nakamura"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "©︎2026 Takuto Nakamura"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "©︎2026 Takuto Nakamura"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "©︎2026 Takuto Nakamura"
           }
         }
       }
     }
   },
-  "version" : "1.1"
+  "version": "1.1"
 }
