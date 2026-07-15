@@ -23,27 +23,34 @@ import Observation
 
 @MainActor @Observable
 public final class GeneralSettings: Composable {
+    private let appStateClient: AppStateClient
     private let launchAtLoginRepository: LaunchAtLoginRepository
     private let userDefaultsRepository: UserDefaultsRepository
     private let logService: LogService
     private let systemMetricsService: SystemMetricsService
+    private let runnerService: RunnerService
 
     public var updateInterval: UpdateInterval
     public var launchesAtLogin: Bool
+    public var showingResetConfirmationDialog: Bool
     public let action: (Action) async -> Void
 
     public init(
         _ appDependencies: AppDependencies,
         updateInterval: UpdateInterval? = nil,
         launchesAtLogin: Bool? = nil,
+        showingResetConfirmationDialog: Bool = false,
         action: @escaping (Action) async -> Void = { _ in }
     ) {
+        self.appStateClient = appDependencies.appStateClient
         self.launchAtLoginRepository = .init(appDependencies.smAppServiceClient)
         self.userDefaultsRepository = .init(appDependencies.userDefaultsClient)
         self.logService = .init(appDependencies)
         self.systemMetricsService = .init(appDependencies)
+        self.runnerService = .init(appDependencies)
         self.updateInterval = updateInterval ?? userDefaultsRepository.updateInterval
         self.launchesAtLogin = launchesAtLogin ?? launchAtLoginRepository.isEnabled
+        self.showingResetConfirmationDialog = showingResetConfirmationDialog
         self.action = action
     }
 
@@ -65,6 +72,28 @@ public final class GeneralSettings: Composable {
             case let .failure(.switchFailed(value)):
                 launchesAtLogin = value
             }
+
+        case .resetToDefaultsButtonTapped:
+            showingResetConfirmationDialog = true
+
+        case .resetToDefaultsCancelled:
+            showingResetConfirmationDialog = false
+
+        case .resetToDefaultsConfirmed:
+            showingResetConfirmationDialog = false
+            userDefaultsRepository.resetToDefaults()
+            updateInterval = userDefaultsRepository.updateInterval
+            systemMetricsService.stopMonitoring()
+            systemMetricsService.startMonitoring()
+            do {
+                try runnerService.update(runner: .default)
+            } catch {
+                logService.critical(.unknown(error))
+            }
+            let cpuInfo = systemMetricsService.currentSystemInfoBundle.cpuInfo
+            runnerService.updateRunnerSpeed(from: cpuInfo)
+            systemMetricsService.emitConfigurationChange()
+            appStateClient.send(\.settingsResets, ())
         }
     }
 
@@ -72,5 +101,8 @@ public final class GeneralSettings: Composable {
         case task(String)
         case updateIntervalChanged(UpdateInterval)
         case launchAtLoginToggleSwitched(Bool)
+        case resetToDefaultsButtonTapped
+        case resetToDefaultsCancelled
+        case resetToDefaultsConfirmed
     }
 }

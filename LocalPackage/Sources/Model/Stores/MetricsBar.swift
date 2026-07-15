@@ -83,6 +83,12 @@ public final class MetricsBar: Composable {
                             self?.updateMetricsBarConfiguration()
                         }
                     }
+                    group.addImmediateTask {
+                        let stream = appStateClient.withLock(\.settingsResets.stream)
+                        for await _ in stream {
+                            self?.updateMetricsBarConfiguration()
+                        }
+                    }
                 }
             }
 

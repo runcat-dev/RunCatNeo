@@ -33,6 +33,7 @@ public struct AppState: Sendable {
     public var runnerBundleLists = AsyncStreamBundle<[RunnerBundle]>()
     public var runnerBundles = AsyncStreamBundle<RunnerBundle>()
     public var runnerSpeeds = AsyncStreamBundle<Float>()
+    public var settingsResets = AsyncStreamBundle<Void>()
 
     init(
         name: String = "",

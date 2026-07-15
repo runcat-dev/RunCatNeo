@@ -73,6 +73,8 @@ public final class RunnerSettings: Composable {
         switch action {
         case let .task(screenName):
             logService.notice(.screenView(name: screenName))
+            speedDecreasesUnderLoad = userDefaultsRepository.speedDecreasesUnderLoad
+            isFlippedHorizontally = userDefaultsRepository.isFlippedHorizontally
             if let runnerBundle = appStateClient.withLock(\.runnerBundles.latestValue) {
                 currentRunner = runnerBundle.runner
             }
@@ -89,6 +91,12 @@ public final class RunnerSettings: Composable {
                         let stream = appStateClient.withLock(\.runnerBundleLists.stream)
                         for await value in stream {
                             self?.update(runnerBundleList: value)
+                        }
+                    }
+                    group.addImmediateTask {
+                        let stream = appStateClient.withLock(\.settingsResets.stream)
+                        for await _ in stream {
+                            self?.resetToDefaults()
                         }
                     }
                 }
@@ -134,6 +142,18 @@ public final class RunnerSettings: Composable {
 
     private func update(runnerBundleList: [RunnerBundle]) {
         self.runnerBundleList = runnerBundleList
+    }
+
+    private func resetToDefaults() {
+        speedDecreasesUnderLoad = userDefaultsRepository.speedDecreasesUnderLoad
+        isFlippedHorizontally = userDefaultsRepository.isFlippedHorizontally
+        do {
+            try runnerService.update(runner: .default)
+        } catch {
+            logService.critical(.unknown(error))
+        }
+        let cpuInfo = systemMetricsService.currentSystemInfoBundle.cpuInfo
+        runnerService.updateRunnerSpeed(from: cpuInfo)
     }
 
     public enum Action: Sendable {

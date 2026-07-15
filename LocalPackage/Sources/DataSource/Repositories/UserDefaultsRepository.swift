@@ -115,6 +115,16 @@ public struct UserDefaultsRepository: Sendable {
         }
     }
 
+    public func resetToDefaults() {
+        userDefaultsClient.removeObject(.runnerID)
+        userDefaultsClient.removeObject(.speedDecreasesUnderLoad)
+        userDefaultsClient.removeObject(.isFlippedHorizontally)
+        userDefaultsClient.removeObject(.updateInterval)
+        userDefaultsClient.removeObject(.systemMetricsConfiguration)
+        userDefaultsClient.removeObject(.showsMetricsBar)
+        userDefaultsClient.removeObject(.metricsBarConfiguration)
+    }
+
     private func showAllData() {
         guard let dict = userDefaultsClient.persistentDomain(Bundle.main.bundleIdentifier!) else {
             return

@@ -185,4 +185,62 @@ struct MetricsSettingsTests {
         #expect(sut.error == .customMetrics(.fileUnreadable))
         #expect(sut.showingAlert == true)
     }
+
+    @MainActor @Test
+    func send_task_refreshes_showsMetricsBar_and_configuration_when_settingsResets_is_emitted() async throws {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let storage = UserDefaultsClient.storage()
+        let sut = MetricsSettings(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: storage.client
+        ), showsMetricsBar: true)
+        await sut.send(.task("MetricsSettingsTests"))
+        let updatedConfiguration = SystemMetricsConfiguration(
+            monitorsMemory: false,
+            monitorsStorage: false,
+            monitorsBattery: false,
+            monitorsNetwork: false
+        )
+        let encodedConfiguration = try JSONEncoder().encode(updatedConfiguration)
+        storage.lock.withLock { $0[.systemMetricsConfiguration] = encodedConfiguration }
+        appState.withLock { $0.settingsResets.send() }
+        await waitUntil { sut.showsMetricsBar == false }
+        #expect(sut.showsMetricsBar == false)
+        #expect(sut.systemMetricsConfiguration == updatedConfiguration)
+        await sut.send(.onDisappear)
+    }
+
+    @MainActor @Test
+    func send_task_resyncs_showsMetricsBar_and_configuration_when_revisited_after_external_change() async throws {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let configurationData = AllocatedUnfairLock<Data?>(initialState: nil)
+        let showsMetricsBarFlag = AllocatedUnfairLock<Bool>(initialState: true)
+        let userDefaultsClient = testDependency(of: UserDefaultsClient.self) {
+            $0.bool = { _ in showsMetricsBarFlag.withLock(\.self) }
+            $0.data = { _ in configurationData.withLock(\.self) }
+        }
+        let sut = MetricsSettings(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: userDefaultsClient
+        ))
+        await sut.send(.task("MetricsSettingsTests"))
+        #expect(sut.showsMetricsBar == true)
+        #expect(sut.systemMetricsConfiguration == .default)
+        await sut.send(.onDisappear)
+
+        // Simulate a reset performed elsewhere while this tab was not visible.
+        showsMetricsBarFlag.withLock { $0 = false }
+        let updatedConfiguration = SystemMetricsConfiguration(
+            monitorsMemory: false,
+            monitorsStorage: false,
+            monitorsBattery: false,
+            monitorsNetwork: false
+        )
+        configurationData.withLock { $0 = try? JSONEncoder().encode(updatedConfiguration) }
+
+        await sut.send(.task("MetricsSettingsTests"))
+        #expect(sut.showsMetricsBar == false)
+        #expect(sut.systemMetricsConfiguration == updatedConfiguration)
+        await sut.send(.onDisappear)
+    }
 }
