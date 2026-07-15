@@ -7,6 +7,8 @@ body:
     attributes:
       value: |
         We do not accept requests in languages other than English.
+        Requests to add new runners are not accepted here.
+        Custom runners are distributed in the [Runner Gallery](https://runcat-dev.github.io/RunnerGallery/) — please make your request there.
 
   - type: textarea
     id: overview
@@ -40,6 +42,8 @@ body:
         - label: "I have read the [CONTRIBUTING.md](https://github.com/runcat-dev/RunCatNeo/blob/main/CONTRIBUTING.md) and agree to follow it."
           required: true
         - label: "The proposed feature is beneficial to a wide range of users and not just a personal preference."
+          required: true
+        - label: "This is not a request to add a new runner. Runner requests belong in the [Runner Gallery](https://runcat-dev.github.io/RunnerGallery/)."
           required: true
         - label: "Checked that no similar requests already exist."
           required: true

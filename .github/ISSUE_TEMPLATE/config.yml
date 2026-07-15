@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Request or Share a Runner
+    url: https://runcat-dev.github.io/RunnerGallery/
+    about: Requests to add new runners are not handled in this repository. Custom runners are showcased and distributed in the Runner Gallery — please make your request there.

@@ -104,7 +104,11 @@ No. RunCat Neo is a next-generation RunCat, newly built for modern macOS. It is 
 :::
 
 :::details Where do I report a bug or request a feature?
-Open an Issue on the [GitHub repository](https://github.com/runcat-dev/RunCatNeo) following the template. For contributor discussion, the [RunCat Developers community](https://runcat-dev.github.io) is the place to be.
+Open an Issue on the [GitHub repository](https://github.com/runcat-dev/RunCatNeo) following the template. Requests to add a new runner are the one exception — those belong in the [Runner Gallery](https://runcat-dev.github.io/RunnerGallery/). For contributor discussion, the [RunCat Developers community](https://runcat-dev.github.io) is the place to be.
+:::
+
+:::details How do I request a new runner?
+Runners are managed in the [Runner Gallery](https://runcat-dev.github.io/RunnerGallery/), not in the RunCat Neo repository. Please make your request there. The same goes for sharing a runner you made yourself.
 :::
 
 :::footer

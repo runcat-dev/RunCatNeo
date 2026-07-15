@@ -14,6 +14,7 @@ This document describes the rules, steps, and expectations for contributing to t
 - **Only contributions in English are accepted.** Any contribution in another language may be closed.
 - **This project is macOS-only.** Issues or requests related to Windows, Linux, or other platforms will not be accepted.
 - Always use the provided **Issue** and **Pull Request** templates. Submissions that do not follow the templates may be closed.
+- **Runner requests do not belong here.** Custom runners are managed in the [Runner Gallery](https://runcat-dev.github.io/RunnerGallery/). Requests to add a new runner, or contributions of a runner you made, should go there instead.
 - Be respectful, constructive, and professional in all interactions.
 
 ---
@@ -53,6 +54,11 @@ To report a bug:
 ---
 
 ### Feature Requests
+
+> [!IMPORTANT]
+> Requests to add a new runner are out of scope for this repository.
+> Custom runners are showcased and distributed in the [Runner Gallery](https://runcat-dev.github.io/RunnerGallery/) — please make such requests there.
+> Feature requests here should be about the app itself.
 
 To suggest a new feature:
 

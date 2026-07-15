@@ -7,6 +7,7 @@
 > - This project is for macOS, so we do not accept inquiries about Windows version.
 > - We do not accept issues or pull requests in languages other than English.
 > - Issues that do not follow the Issue Template will be closed without question.
+> - Requests to add new runners are not accepted here. Please make them in the [Runner Gallery](https://runcat-dev.github.io/RunnerGallery/).
 
 [![Issues](https://img.shields.io/github/issues/runcat-dev/RunCatNeo)](https://github.com/runcat-dev/RunCatNeo/issues)
 [![Forks](https://img.shields.io/github/forks/runcat-dev/RunCatNeo)](https://github.com/runcat-dev/RunCatNeo/network/members)
@@ -62,6 +63,8 @@ RunCat can watch any local JSON file in the documented format and render it as a
 ## Custom Runners
 
 By creating your own keyframe animations, you can have any runner you like dashing across your menu bar. You can also find resources for custom runners showcased and distributed in the [Runner Gallery](https://runcat-dev.github.io/RunnerGallery/).
+
+Runners are managed in the Runner Gallery, not in this repository. If you want a new runner added, or want to share one you made, please head to the [Runner Gallery](https://runcat-dev.github.io/RunnerGallery/) instead of opening an Issue here.
 
 ## RunCat Developers' Community
 
