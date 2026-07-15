@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sample launchd agent for runcat-usage-poll.py (UNOFFICIAL — see USAGE-OUT-OF-BAND.md).
+  Replace /Users/YOU with your home path, then:
+    cp com.example.runcat-usage-poll.plist ~/Library/LaunchAgents/
+    launchctl load -w ~/Library/LaunchAgents/com.example.runcat-usage-poll.plist
+  Runs every 10 minutes while your Mac is unlocked. Stop with `launchctl unload …`.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.example.runcat-usage-poll</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/python3</string>
+    <string>/Users/YOU/.claude/runcat-usage-poll.py</string>
+  </array>
+  <key>StartInterval</key>
+  <integer>600</integer>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/Users/YOU/.claude/runcat-usage-poll.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/YOU/.claude/runcat-usage-poll.log</string>
+</dict>
+</plist>

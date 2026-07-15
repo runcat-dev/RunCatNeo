@@ -33,6 +33,10 @@ The output JSON shape is documented in [`../../CustomMetricsSchema.md`](../../Cu
 
 `RUNCAT_OUT_FILE` overrides where the snapshot is written (default: `~/.claude/runcat-usage.json`).
 
+## Usage limits & out-of-band updates
+
+The card refreshes only while Claude Code is running. For reset countdowns, what the statusLine can and can't tell you about your 5h/7d subscription limits, and an **unofficial, experimental** way to update the card without a Claude Code session, see [`USAGE-OUT-OF-BAND.md`](USAGE-OUT-OF-BAND.md).
+
 ## Troubleshooting
 
 - Card shows nothing → confirm Claude Code is calling the statusLine. Run the script by hand to see what it writes:
