@@ -112,6 +112,34 @@ struct MetricsBarSettingsTests {
     }
 
     @MainActor @Test
+    func send_valueStyleChanged_persists_pie_style_and_emits_change() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let storage = UserDefaultsClient.storage()
+        let sut = MetricsBarSettings(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: storage.client
+        ))
+        await sut.send(.valueStyleChanged(.pie))
+        #expect(sut.metricsBarConfiguration.resolvedValueStyle == .pie)
+        #expect(storage.currentMetricsBarConfiguration()?.resolvedValueStyle == .pie)
+        #expect(appState.withLock(\.systemMetricsConfigurationChanges.latestValue) != nil)
+    }
+
+    @MainActor @Test
+    func send_batteryStyleChanged_persists_compact_style_and_emits_change() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let storage = UserDefaultsClient.storage()
+        let sut = MetricsBarSettings(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: storage.client
+        ))
+        await sut.send(.batteryStyleChanged(.compact))
+        #expect(sut.metricsBarConfiguration.resolvedBatteryStyle == .compact)
+        #expect(storage.currentMetricsBarConfiguration()?.resolvedBatteryStyle == .compact)
+        #expect(appState.withLock(\.systemMetricsConfigurationChanges.latestValue) != nil)
+    }
+
+    @MainActor @Test
     func send_showsSystemMetricsToggleSwitched_cpu_does_not_toggle_activation() async {
         let activationCount = AllocatedUnfairLock<Int>(initialState: 0)
         let storage = UserDefaultsClient.storage()
