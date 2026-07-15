@@ -6,7 +6,7 @@ Writes ~/.claude/runcat-usage.json shaped like:
 
     {
       "title": "Claude Code",
-      "symbol": "staroflife",
+      "symbol": "circle.lefthalf.filled",
       "metricsBarValue": "67%",
       "metrics": [
         {"title": "Model",   "formattedValue": "Opus 4.7"},
@@ -16,6 +16,11 @@ Writes ~/.claude/runcat-usage.json shaped like:
       ],
       "lastUpdatedDate": "2026-06-07T05:55:36Z"
     }
+
+The card icon reflects how close you are to your plan limit: an empty circle
+fills up as the 5h / 7d usage rises, and becomes a warning triangle once you
+are near the cap. RunCat renders the menu-bar icon monochrome, so the level is
+conveyed by SHAPE rather than colour.
 """
 
 import json
@@ -34,6 +39,19 @@ def pct(title, value):
     return {"title": title, "formattedValue": f"{value:g}%", "normalizedValue": round(value / 100, 4)}
 
 
+def limit_symbol(value):
+    """SF Symbol whose shape reflects how full the plan limit is."""
+    if value is None:
+        return "staroflife"
+    if value >= 85:
+        return "exclamationmark.triangle.fill"
+    if value >= 66:
+        return "circle.fill"
+    if value >= 33:
+        return "circle.lefthalf.filled"
+    return "circle"
+
+
 try:
     payload = json.load(sys.stdin)
     if not isinstance(payload, dict):
@@ -47,9 +65,12 @@ rate_limits = payload.get("rate_limits") or {}
 five = (rate_limits.get("five_hour") or {}).get("used_percentage")
 seven = (rate_limits.get("seven_day") or {}).get("used_percentage")
 
+# icon warns as you approach whichever plan limit is closest to its cap
+limit_level = max([v for v in (five, seven) if v is not None], default=None)
+
 snapshot = {
     "title": "Claude Code",
-    "symbol": "staroflife",
+    "symbol": limit_symbol(limit_level),
     "metrics": [m for m in [
         {"title": "Model", "formattedValue": model},
         pct("Context", ctx),
