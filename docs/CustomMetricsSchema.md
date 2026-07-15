@@ -4,9 +4,9 @@ RunCat Neo can watch any local JSON file you point it at and render it as a card
 
 ## Overview
 
-You decide what to track (Claude Code usage, GPU temperature, GitHub contributions, remaining reminders, anything else). You write a small script or program that keeps a JSON file on disk up to date. RunCat watches the file with a `DispatchSource` file-system event source and updates the card the moment the file changes — no polling, no network calls.
+You decide what to track (Claude Code usage, GPU temperature, GitHub contributions, remaining reminders, anything else). You write a small script or program that keeps a JSON file on disk up to date. RunCat watches the file with a `DispatchSource` file-system event source and updates the card the moment the file changes. RunCat itself never polls the file and never makes network calls — whether your data comes from the network is entirely up to your script.
 
-To add a source: open RunCat's settings, go to **Custom Metrics**, and click **Add JSON Source**, then pick the JSON file. The file is bookmarked with a security-scoped bookmark so the access survives sandbox restarts.
+To add a source: open RunCat's settings, go to **Metrics** → **Custom Metrics**, and click **Add Custom Metrics Source**, then pick the JSON file. The file is bookmarked with a security-scoped bookmark so the access survives sandbox restarts.
 
 ## Schema
 

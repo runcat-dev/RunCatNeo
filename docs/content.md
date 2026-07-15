@@ -29,7 +29,7 @@ The cat speeds up as your CPU gets busier and slows to a stroll when things are 
 
 ### Rich system metrics
 
-CPU, GPU, memory, temperature, storage, and network — keep an eye on everything that matters right from the taskbar.
+CPU, memory, storage, battery, and network — keep an eye on everything that matters right from the menu bar.
 :::
 
 :::warp comfort
@@ -70,15 +70,16 @@ You can check the metrics you're interested in on the dashboard, which can be op
 :::
 
 :::warp custom-metrics-description
-Beyond CPU, RunCat Neo can watch a JSON file you maintain and render it as a card — refreshed the moment the file changes, with no polling and no network calls. Track Claude Code usage, GPU temperature, a Bitcoin price, GitHub contributions — anything you can write to a file.
+Beyond CPU, RunCat Neo can watch a JSON file you maintain and render it as a card — refreshed the moment the file changes. RunCat Neo itself simply reacts to file-system events: it never polls the file and never touches the network. Track Claude Code usage, GPU temperature, a Bitcoin price, GitHub contributions — anything you can write to a file.
 
 - [JSON schema reference](https://github.com/runcat-dev/RunCatNeo/blob/main/docs/CustomMetricsSchema.md)
 - [Claude Code statusLine sample](https://github.com/runcat-dev/RunCatNeo/tree/main/docs/samples/claude-code)
+- [Codex hook sample](https://github.com/runcat-dev/RunCatNeo/tree/main/docs/samples/codex)
 - [Bitcoin price sample](https://github.com/runcat-dev/RunCatNeo/tree/main/docs/samples/bitcoin)
 
 :::
 
-# Custom runners
+## Custom Runners
 
 ~ | [~custom-runners-shot] | [~custom-runners-description] |
 ~ | :--- | :--- |
