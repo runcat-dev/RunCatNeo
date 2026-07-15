@@ -38,7 +38,23 @@ struct CustomMetricsCardView: View {
         }
     }
 
+    private var textOverflow: CustomMetricsTextOverflow {
+        snapshot.textOverflow ?? .expand
+    }
+
     var body: some View {
+        ViewThatFits(in: .vertical) {
+            cardContent
+                .fixedSize(horizontal: false, vertical: true)
+            ScrollView {
+                cardContent
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .scrollIndicators(.visible)
+        }
+    }
+
+    private var cardContent: some View {
         HStack(alignment: .center, spacing: 16) {
             Image(systemName: snapshot.displaySymbol)
                 .resizable()
@@ -46,10 +62,12 @@ struct CustomMetricsCardView: View {
                 .frame(width: 24, height: 24)
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: snapshot.title)
+                    .lineLimit(textOverflow == .wrap ? nil : 1)
                 Group {
                     ForEach(snapshot.metrics.enumerated(), id: \.offset) { _, metric in
                         Text(verbatim: "\(metric.title): \(metric.formattedValue)")
                             .font(.caption)
+                            .lineLimit(textOverflow == .wrap ? nil : 1)
                         if let normalizedValue = metric.normalizedValue {
                             BarGraphView(value: max(0, min(1, normalizedValue)) * 100)
                         }
@@ -61,7 +79,6 @@ struct CustomMetricsCardView: View {
                 .padding(.leading, 12)
             }
         }
-        .fixedSize()
         .padding(.leading, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(8)

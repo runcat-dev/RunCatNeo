@@ -18,6 +18,7 @@ A valid file might look like this:
 {
   "title": "Claude Code",
   "symbol": "staroflife",
+  "textOverflow": "truncate",
   "metricsBarValue": "5.4%",
   "metrics": [
     { "title": "Model",   "formattedValue": "Opus 4.7" },
@@ -37,6 +38,7 @@ The values above are illustrative — `title`, `symbol`, and the metric labels a
 |-------------------|----------------|----------|-------------|
 | `title`           | string         | yes      | Card header text. |
 | `symbol`          | string         | no       | [SF Symbol](https://developer.apple.com/sf-symbols/) identifier shown next to the title. Defaults to `chart.bar.horizontal.page.fill`. |
+| `textOverflow`    | string         | no       | Long-line behavior: `truncate`, `wrap`, or `expand`. Defaults to `expand` to preserve the original behavior. |
 | `metricsBarValue` | string         | no       | Short text shown in the Metrics Bar (the dedicated menu-bar item) next to the source's symbol. Displayed verbatim; keep it short — the bar caps the label width and truncates longer strings. Each source is hidden in the bar by default: click the Metrics Bar and flip the source's toggle to show it. When the source is shown but this field is omitted, the bar renders `---`. |
 | `metrics`         | array<Metric\> | yes      | Rows displayed inside the card. Empty array is allowed. |
 | `lastUpdatedDate` | string         | yes      | ISO 8601 timestamp (e.g. `"2026-06-05T04:50:40Z"`) of when the producer wrote this file. Shown as a relative time (`"3 min ago"`) at the bottom of the card; updates automatically. |
@@ -56,6 +58,10 @@ The values above are illustrative — `title`, `symbol`, and the metric labels a
 - The bar is drawn in the accent color regardless of the value — it does not change color as the value grows. Encode any severity you want to convey in `formattedValue` itself.
 - If `metrics` is empty, the card shows only its title and the last-updated line.
 - `metricsBarValue` is rendered verbatim in the Metrics Bar with a monospaced digit font, prefixed by the source's `symbol`.
+- `truncate` and `wrap` do not widen a column. They use the width established by other cards in the same column, or the dashboard's original width when no card widens it. `truncate` keeps text on one line, while `wrap` uses as many lines as needed.
+- `expand` preserves the original behavior: a card's content can widen its column.
+- Cards are arranged into additional columns only when the dashboard would exceed the screen's visible height.
+- A single card taller than the visible height is clipped to that height and becomes internally scrollable.
 
 ## Failure behavior
 
