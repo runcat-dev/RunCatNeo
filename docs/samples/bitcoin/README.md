@@ -47,4 +47,4 @@ The output JSON shape is documented in [`../../CustomMetricsSchema.md`](../../Cu
 
 - File never appears → run the script by hand (step 2). `curl` errors print to stderr.
 - File exists but stops updating → check the agent is loaded: `launchctl print gui/$(id -u)/dev.runcat.bitcoin-sample`.
-- Card flips to **missing** badge → the file became unreadable or contains invalid JSON. Re-run the script by hand and re-add the source if you moved the file.
+- Card footer shows **Last updated: Failed** in red → the file became unreadable or contains invalid JSON. Re-run the script by hand (step 2); the card recovers on the next successful read.

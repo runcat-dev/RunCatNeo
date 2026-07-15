@@ -40,4 +40,4 @@ The output JSON shape is documented in [`../../CustomMetricsSchema.md`](../../Cu
   printf '{}' | ~/.claude/runcat-statusline.py && python3 -m json.tool ~/.claude/runcat-usage.json
   ```
 - Card stays at the same values → check `~/.claude/runcat-usage.json`'s mtime. If it doesn't update on every Claude Code turn, Claude Code isn't invoking the statusLine.
-- Card flips to **missing** badge → the file became unreadable. Re-add it from **Settings → Metrics → Custom Metrics**.
+- Card footer shows **Last updated: Failed** in red → the file became unreadable. Confirm `~/.claude/runcat-usage.json` still exists, then run another Claude Code turn; the card recovers on the next successful read.

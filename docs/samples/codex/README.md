@@ -71,4 +71,4 @@ The output JSON shape is documented in [`../../CustomMetricsSchema.md`](../../Cu
   ```
 - The card shows only **Model** → the transcript did not contain a recognized `token_count` event. Check that `transcript_path` exists and compare its latest token-count event with `latest_token_count()` in the script.
 - The hook does not run → open `/hooks` in Codex and confirm the hook is enabled and trusted.
-- The card flips to **missing** → confirm `~/.codex/runcat-usage.json` still exists and is readable, then complete another Codex turn.
+- The card footer shows **Last updated: Failed** in red → confirm `~/.codex/runcat-usage.json` still exists and is readable, then complete another Codex turn.

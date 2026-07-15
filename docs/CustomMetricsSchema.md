@@ -4,7 +4,7 @@ RunCat Neo can watch any local JSON file you point it at and render it as a card
 
 ## Overview
 
-You decide what to track (Claude Code usage, GPU temperature, GitHub contributions, remaining reminders, anything else). You write a small script or program that keeps a JSON file on disk up to date. RunCat watches the file with FSEvents/DispatchSource and updates the card the moment the file changes — no polling, no network calls.
+You decide what to track (Claude Code usage, GPU temperature, GitHub contributions, remaining reminders, anything else). You write a small script or program that keeps a JSON file on disk up to date. RunCat watches the file with a `DispatchSource` file-system event source and updates the card the moment the file changes — no polling, no network calls.
 
 To add a source: open RunCat's settings, go to **Custom Metrics**, and click **Add JSON Source**, then pick the JSON file. The file is bookmarked with a security-scoped bookmark so the access survives sandbox restarts.
 
@@ -29,7 +29,7 @@ A valid file might look like this:
 }
 ```
 
-The values above are illustrative — `title`, `symbol`, and the metric labels are all your choice; pick whatever makes sense for what you're tracking. The `Model` row omits `normalizedValue`, so RunCat renders just the text on the right with no bar; the other three rows include it, so a bar is drawn alongside the formatted text.
+The values above are illustrative — `title`, `symbol`, and the metric labels are all your choice; pick whatever makes sense for what you're tracking. The `Model` row omits `normalizedValue`, so RunCat renders just the text with no bar; the other three rows include it, so a bar is drawn under the text.
 
 ### Top level
 
@@ -45,27 +45,30 @@ The values above are illustrative — `title`, `symbol`, and the metric labels a
 
 | Field             | Type    | Required | Description |
 |-------------------|---------|----------|-------------|
-| `title`           | string  | yes      | Row label shown on the left. |
+| `title`           | string  | yes      | Row label. The row is rendered as `title: formattedValue`. |
 | `formattedValue`  | string  | yes      | The completed display string. Include any units, currency symbols, or suffixes (e.g. `"5.4%"`, `"$3.21"`, `"42 days"`). |
-| `normalizedValue` | number  | no       | A value between 0 and 1. When present, a horizontal progress bar is drawn whose tint color reflects the value: `< 0.5` green, `< 0.7` yellow, `< 0.9` orange, otherwise red. When omitted, only `formattedValue` is shown. |
+| `normalizedValue` | number  | no       | A value between 0 and 1. When present, a horizontal progress bar is drawn under the row. When omitted, only the `title: formattedValue` text is shown. |
 
 ## Display rules
 
 - Producer-side formatting is intentional. RunCat does **not** apply units, percent signs, or rounding — whatever you put in `formattedValue` is shown verbatim.
 - `normalizedValue` is clamped to `[0, 1]` before the bar is drawn.
-- The card uses a monospaced digit font for `formattedValue` so values stay aligned across updates.
-- If `metrics` is empty, the card shows a faint "no metrics" placeholder until your file contains rows.
+- The bar is drawn in the accent color regardless of the value — it does not change color as the value grows. Encode any severity you want to convey in `formattedValue` itself.
+- If `metrics` is empty, the card shows only its title and the last-updated line.
 - `metricsBarValue` is rendered verbatim in the Metrics Bar with a monospaced digit font, prefixed by the source's `symbol`.
 
 ## Failure behavior
 
-If the file becomes unreadable (deleted, moved, permission revoked) or contains invalid JSON, the previous snapshot stays on the dashboard but is flagged as stale:
+If the file becomes unreadable (deleted, moved, permission revoked) or contains invalid JSON, the previous snapshot stays on the dashboard but is flagged as failed:
 
-- **Dashboard**: the card's footer shows a red `⚠ missing` badge next to the `lastUpdatedDate`. Once the file becomes readable again, the badge clears on the next successful read.
-- **Settings → Metrics → Custom Metrics**: the row's title and file name turn red with a `missing` badge next to the title.
+- **Dashboard**: the card's footer shows `Last updated: Failed` in red instead of the relative time. Once the file becomes readable again, the timestamp returns on the next successful read.
+- **Settings → Metrics → Custom Metrics**: a yellow `⚠︎ Error Detected` label appears next to the source's file path.
 - **Metrics Bar**: the symbol stays and the value is replaced with `---` until the file is readable again.
 
-RunCat keeps retrying every few seconds until the file is reachable again — there is nothing to "reset". Fixing the producer (re-writing the file) is enough.
+Recovery is automatic — there is nothing to "reset", and fixing the producer is enough:
+
+- If the file was deleted or renamed, RunCat re-opens it, retrying every 5 seconds while it stays unreachable. This is also what makes the atomic `mv` pattern below work.
+- If the file is still there but held invalid JSON, the watch stays alive and the card recovers on your next write.
 
 ## Constraints
 
@@ -75,7 +78,7 @@ RunCat keeps retrying every few seconds until the file is reachable again — th
 
 ## Update frequency
 
-There is no minimum cadence. Update the file every second, or only when something interesting changes — RunCat reacts to filesystem events. A debounce on the consumer side prevents bursts from saturating the dashboard.
+There is no minimum cadence. Update the file every second, or only when something interesting changes — RunCat reacts to filesystem events. The watch stream keeps only the newest pending event, so a burst of writes collapses into a single re-read instead of queueing up.
 
 ## Examples
 
