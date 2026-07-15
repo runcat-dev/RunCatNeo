@@ -17,10 +17,12 @@ Writes ~/.claude/runcat-usage.json shaped like:
       "lastUpdatedDate": "2026-06-07T05:55:36Z"
     }
 
-The card icon reflects how close you are to your plan limit: an empty circle
-fills up as the 5h / 7d usage rises, and becomes a warning triangle once you
-are near the cap. RunCat renders the menu-bar icon monochrome, so the level is
-conveyed by SHAPE rather than colour.
+This sample is limit-aware: the menu-bar value shows the 5h session limit %
+(the number that tells you how close you are to being rate-limited), and the
+card icon fills up as the 5h / 7d usage rises, turning into a warning triangle
+near the cap. RunCat renders the menu-bar icon monochrome, so the level is
+conveyed by SHAPE rather than colour. Both fall back gracefully (context % on
+the bar, staroflife icon) when no rate-limit data is present.
 """
 
 import json
@@ -79,8 +81,10 @@ snapshot = {
     ] if m is not None],
     "lastUpdatedDate": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
 }
-if ctx is not None:
-    snapshot["metricsBarValue"] = f"{ctx:g}%"
+# menu-bar value: prefer the 5h session limit; fall back to context %
+bar_value = five if five is not None else ctx
+if bar_value is not None:
+    snapshot["metricsBarValue"] = f"{bar_value:g}%"
 
 OUT.parent.mkdir(parents=True, exist_ok=True)
 fd, tmp = tempfile.mkstemp(prefix=".runcat-", dir=str(OUT.parent))
