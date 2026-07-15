@@ -26,6 +26,7 @@ struct MenuView: View {
     @Environment(\.openWindow) private var openWindow
     var appName: String
     var isPreview: Bool
+    var isPaused: Bool
     var buttonTapped: (Dashboard.Action) async -> Void
 
     private var aboutBody: AttributedString {
@@ -65,6 +66,25 @@ struct MenuView: View {
                     Text("openActivityMonitor", bundle: .module)
                 } icon: {
                     Image(.activityMonitor)
+                }
+            }
+            Button {
+                Task {
+                    await buttonTapped(.pauseButtonTapped)
+                }
+            } label: {
+                if isPaused {
+                    Label {
+                        Text("resumeAnimation", bundle: .module)
+                    } icon: {
+                        Image(systemName: "play.fill")
+                    }
+                } else {
+                    Label {
+                        Text("pauseAnimation", bundle: .module)
+                    } icon: {
+                        Image(systemName: "pause.fill")
+                    }
                 }
             }
             Divider()

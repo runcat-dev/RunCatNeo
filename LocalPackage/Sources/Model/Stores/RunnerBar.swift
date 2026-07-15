@@ -82,6 +82,12 @@ public final class RunnerBar: Composable {
                             self?.update(runnerSpeed: value)
                         }
                     }
+                    group.addImmediateTask {
+                        let stream = appStateClient.withLock(\.runnerPauses.stream)
+                        for await value in stream {
+                            self?.update(isPaused: value)
+                        }
+                    }
                 }
             }
 
@@ -134,6 +140,10 @@ public final class RunnerBar: Composable {
         eventBridge?.setSpeed(runnerSpeed)
     }
 
+    private func update(isPaused: Bool) {
+        eventBridge?.setPaused(isPaused)
+    }
+
     public enum Action: Sendable {
         case task(String, EventBridge)
         case onDisappear
@@ -144,19 +154,22 @@ public final class RunnerBar: Composable {
             public var setFrames: @MainActor @Sendable ([NSImage], Bool) -> Void
             public var setColor: @MainActor @Sendable (CGColor, Bool) -> Void
             public var setSpeed: @MainActor @Sendable (Float) -> Void
+            public var setPaused: @MainActor @Sendable (Bool) -> Void
 
             public init(
                 getBundleImage: @escaping @MainActor @Sendable (String) -> NSImage,
                 setSize: @escaping @MainActor @Sendable (CGSize) -> Void,
                 setFrames: @escaping @MainActor @Sendable ([NSImage], Bool) -> Void,
                 setColor: @escaping @MainActor @Sendable (CGColor, Bool) -> Void,
-                setSpeed: @escaping @MainActor @Sendable (Float) -> Void
+                setSpeed: @escaping @MainActor @Sendable (Float) -> Void,
+                setPaused: @escaping @MainActor @Sendable (Bool) -> Void
             ) {
                 self.getBundleImage = getBundleImage
                 self.setSize = setSize
                 self.setFrames = setFrames
                 self.setColor = setColor
                 self.setSpeed = setSpeed
+                self.setPaused = setPaused
             }
         }
     }

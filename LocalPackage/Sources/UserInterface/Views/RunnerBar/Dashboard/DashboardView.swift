@@ -35,6 +35,7 @@ struct DashboardView: View {
                 MenuView(
                     appName: store.appName,
                     isPreview: store.isPreview,
+                    isPaused: store.isPaused,
                     buttonTapped: { action in
                         await store.send(action)
                     }
