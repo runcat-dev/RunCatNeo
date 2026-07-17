@@ -38,6 +38,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
         let customMetricsService = CustomMetricsService(appDependencies)
         let systemMetricsService = SystemMetricsService(appDependencies)
         let runnerService = RunnerService(appDependencies)
+        let ipAddressService = IPAddressService(appDependencies)
         Task {
             await withTaskGroup { group in
                 group.addTask {
@@ -59,6 +60,18 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
                     for await value in stream {
                         systemMetricsService.updateMetrics(from: value)
                         runnerService.updateRunnerSpeed(from: value.cpuInfo)
+                    }
+                }
+                group.addTask {
+                    let stream = appStateClient.withLock(\.systemMetricsConfigurationChanges.stream)
+                    for await _ in stream {
+                        await ipAddressService.refreshNow()
+                    }
+                }
+                group.addTask {
+                    while !Task.isCancelled {
+                        await ipAddressService.refreshNow()
+                        try? await Task.sleep(for: .seconds(30))
                     }
                 }
             }

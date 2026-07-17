@@ -25,16 +25,19 @@ public struct Metrics: Sendable {
     public var cpuRingBuffer: RingBuffer
     public var memoryRingBuffer: RingBuffer
     public var customMetricsBundles: [CustomMetricsBundle]
+    public var ipAddressInfo: IPAddressInfo
 
     public init(
         systemInfoBundle: SystemInfoBundle = .cpuZero(),
         cpuRingBuffer: RingBuffer = .init(),
         memoryRingBuffer: RingBuffer = .init(),
-        customMetricsBundles: [CustomMetricsBundle] = []
+        customMetricsBundles: [CustomMetricsBundle] = [],
+        ipAddressInfo: IPAddressInfo = .init()
     ) {
         self.systemInfoBundle = systemInfoBundle
         self.cpuRingBuffer = cpuRingBuffer
         self.memoryRingBuffer = memoryRingBuffer
         self.customMetricsBundles = customMetricsBundles
+        self.ipAddressInfo = ipAddressInfo
     }
 }

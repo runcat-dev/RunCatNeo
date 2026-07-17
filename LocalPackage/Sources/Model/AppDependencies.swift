@@ -27,6 +27,7 @@ public struct AppDependencies: Sendable {
     public var dateClient = DateClient.liveValue
     public var fileManagerClient = FileManagerClient.liveValue
     public var fileWatcherClient = FileWatcherClient.liveValue
+    public var ipAddressClient = IPAddressClient.liveValue
     public var loggingSystemClient = LoggingSystemClient.liveValue
     public var nsAppClient = NSAppClient.liveValue
     public var nsWorkspaceClient = NSWorkspaceClient.liveValue
@@ -50,6 +51,7 @@ extension AppDependencies {
         dateClient: DateClient = .testValue,
         fileManagerClient: FileManagerClient = .testValue,
         fileWatcherClient: FileWatcherClient = .testValue,
+        ipAddressClient: IPAddressClient = .testValue,
         loggingSystemClient: LoggingSystemClient = .testValue,
         nsAppClient: NSAppClient = .testValue,
         nsWorkspaceClient: NSWorkspaceClient = .testValue,
@@ -65,6 +67,7 @@ extension AppDependencies {
             dateClient: dateClient,
             fileManagerClient: fileManagerClient,
             fileWatcherClient: fileWatcherClient,
+            ipAddressClient: ipAddressClient,
             loggingSystemClient: loggingSystemClient,
             nsAppClient: nsAppClient,
             nsWorkspaceClient: nsWorkspaceClient,

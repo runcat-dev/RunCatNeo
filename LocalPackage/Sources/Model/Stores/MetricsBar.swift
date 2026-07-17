@@ -34,6 +34,7 @@ public final class MetricsBar: Composable {
     public var metricsBarConfiguration: MetricsBarConfiguration
     public var systemInfoBundle: SystemInfoBundle
     public var customMetricsBundles: [CustomMetricsBundle]
+    public var ipAddressInfo: IPAddressInfo
     public let isPreview: Bool
     public let action: (Action) async -> Void
 
@@ -42,6 +43,7 @@ public final class MetricsBar: Composable {
         metricsBarConfiguration: MetricsBarConfiguration? = nil,
         systemInfoBundle: SystemInfoBundle = .init(),
         customMetricsBundles: [CustomMetricsBundle] = [],
+        ipAddressInfo: IPAddressInfo = .init(),
         isPreview: Bool? = nil,
         action: @escaping (Action) async -> Void = { _ in }
     ) {
@@ -51,6 +53,7 @@ public final class MetricsBar: Composable {
         self.metricsBarConfiguration = metricsBarConfiguration ?? userDefaultsRepository.metricsBarConfiguration
         self.systemInfoBundle = systemInfoBundle
         self.customMetricsBundles = customMetricsBundles
+        self.ipAddressInfo = ipAddressInfo
         self.isPreview = isPreview ?? ProcessInfo.isPreview
         self.action = action
     }
@@ -95,6 +98,7 @@ public final class MetricsBar: Composable {
     private func updateMetrics(from metrics: Metrics) {
         systemInfoBundle = metrics.systemInfoBundle
         customMetricsBundles = metrics.customMetricsBundles
+        ipAddressInfo = metrics.ipAddressInfo
     }
 
     private func updateMetricsBarConfiguration() {

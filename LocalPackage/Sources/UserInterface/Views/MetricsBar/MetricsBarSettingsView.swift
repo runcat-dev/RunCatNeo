@@ -58,6 +58,36 @@ struct MetricsBarSettingsView: View {
                 )) {
                     Text("showNetworkConnectivity", bundle: .module)
                 }
+                HStack {
+                    Text("showIPAddress", bundle: .module)
+                    Spacer()
+                    Picker(selection: Binding<IPAddressDisplayFormat>(
+                        get: { store.metricsBarConfiguration.ipAddressDisplayFormat },
+                        asyncSet: { await store.send(.ipAddressDisplayFormatChanged($0)) }
+                    )) {
+                        ForEach(IPAddressDisplayFormat.allCases) { format in
+                            switch format {
+                            case .both:
+                                Text("ipAddressDisplayFormatDefault", bundle: .module).tag(format)
+                            case .local:
+                                Text("ipAddressDisplayFormatLocal", bundle: .module).tag(format)
+                            case .publicAddress:
+                                Text("ipAddressDisplayFormatPublic", bundle: .module).tag(format)
+                            }
+                        }
+                    } label: {
+                        EmptyView()
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                    Toggle(isOn: Binding<Bool>(
+                        get: { store.metricsBarConfiguration.showsIPAddress },
+                        asyncSet: { await store.send(.showsIPAddressToggleSwitched($0)) }
+                    )) {
+                        EmptyView()
+                    }
+                    .labelsHidden()
+                }
             } header: {
                 Text("metricsBarSettings", bundle: .module)
             }

@@ -111,6 +111,16 @@ public final class MetricsBarSettings: Composable {
             }
             userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
             systemMetricsService.emitConfigurationChange()
+
+        case let .showsIPAddressToggleSwitched(isOn):
+            metricsBarConfiguration.showsIPAddress = isOn
+            userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
+            systemMetricsService.emitConfigurationChange()
+
+        case let .ipAddressDisplayFormatChanged(format):
+            metricsBarConfiguration.ipAddressDisplayFormat = format
+            userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
+            systemMetricsService.emitConfigurationChange()
         }
     }
 
@@ -124,5 +134,7 @@ public final class MetricsBarSettings: Composable {
         case onDisappear
         case showsSystemMetricsToggleSwitched(SystemInfoType, Bool)
         case showsCustomMetricsToggleSwitched(UUID, Bool)
+        case showsIPAddressToggleSwitched(Bool)
+        case ipAddressDisplayFormatChanged(IPAddressDisplayFormat)
     }
 }

@@ -26,6 +26,7 @@ enum IndicatorKind {
     case spacer
     case usageFullLabel
     case usageHalfLabel
+    case ipAddressHalfLabel
 
     var size: CGSize {
         switch self {
@@ -39,6 +40,8 @@ enum IndicatorKind {
             CGSize(width: 40.0, height: 16.0)
         case .usageHalfLabel:
             CGSize(width: 46.0, height: 8.0)
+        case .ipAddressHalfLabel:
+            CGSize(width: 80.0, height: 8.0)
         }
     }
 
@@ -49,5 +52,11 @@ enum IndicatorKind {
         let measuredWidth = NSAttributedString(string: text, attributes: [.font: font]).size().width
         let width = min(ceil(measuredWidth) + 4.0, customValueLabelMaxWidth)
         return CGSize(width: width, height: 16.0)
+    }
+
+    static func ipAddressFullLabelSize(for text: String) -> CGSize {
+        let font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+        let measuredWidth = NSAttributedString(string: text, attributes: [.font: font]).size().width
+        return CGSize(width: ceil(measuredWidth) + 4.0, height: 16.0)
     }
 }
