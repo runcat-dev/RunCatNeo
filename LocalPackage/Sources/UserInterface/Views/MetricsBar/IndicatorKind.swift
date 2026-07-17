@@ -50,4 +50,10 @@ enum IndicatorKind {
         let width = min(ceil(measuredWidth) + 4.0, customValueLabelMaxWidth)
         return CGSize(width: width, height: 16.0)
     }
+
+    static func storageByteValueLabelSize(for text: String) -> CGSize {
+        let font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+        let measuredWidth = NSAttributedString(string: text, attributes: [.font: font]).size().width
+        return CGSize(width: ceil(measuredWidth) + 4.0, height: 16.0)
+    }
 }

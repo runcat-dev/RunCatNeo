@@ -111,6 +111,11 @@ public final class MetricsBarSettings: Composable {
             }
             userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
             systemMetricsService.emitConfigurationChange()
+
+        case let .storageDisplayFormatChanged(format):
+            metricsBarConfiguration.storageDisplayFormat = format
+            userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
+            systemMetricsService.emitConfigurationChange()
         }
     }
 
@@ -124,5 +129,6 @@ public final class MetricsBarSettings: Composable {
         case onDisappear
         case showsSystemMetricsToggleSwitched(SystemInfoType, Bool)
         case showsCustomMetricsToggleSwitched(UUID, Bool)
+        case storageDisplayFormatChanged(StorageDisplayFormat)
     }
 }

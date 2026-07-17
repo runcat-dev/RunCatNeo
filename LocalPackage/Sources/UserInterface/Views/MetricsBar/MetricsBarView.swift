@@ -35,8 +35,16 @@ struct MetricsBarView: View {
         if store.metricsBarConfiguration.showsMemory, store.systemInfoBundle.memoryInfo != nil {
             widthArray.append(iconWidth + IndicatorKind.usageFullLabel.size.width)
         }
-        if store.metricsBarConfiguration.showsStorage, store.systemInfoBundle.storageInfo != nil {
-            widthArray.append(iconWidth + IndicatorKind.usageFullLabel.size.width)
+        if store.metricsBarConfiguration.showsStorage, let storageInfo = store.systemInfoBundle.storageInfo {
+            let storageLabelWidth = switch store.metricsBarConfiguration.storageDisplayFormat {
+            case .percentage:
+                IndicatorKind.usageFullLabel.size.width
+            case .used:
+                IndicatorKind.storageByteValueLabelSize(for: storageInfo.used.menuBarDescription(type: .storage)).width
+            case .available:
+                IndicatorKind.storageByteValueLabelSize(for: storageInfo.available.menuBarDescription(type: .storage)).width
+            }
+            widthArray.append(iconWidth + storageLabelWidth)
         }
         if store.metricsBarConfiguration.showsBattery,
            let batteryInfo = store.systemInfoBundle.batteryInfo?.simulated(store.isPreview) {
@@ -104,11 +112,36 @@ struct MetricsBarView: View {
         point.x += iconSize.width
 
         switch systemInfo {
-        case is CPUInfo, is MemoryInfo, is StorageInfo:
+        case is CPUInfo, is MemoryInfo:
             context.drawBlackText(origin: point, size: IndicatorKind.usageFullLabel.size) {
                 Text(verbatim: systemInfo.percentage.menuBarDescription)
             }
             point.x += IndicatorKind.usageFullLabel.size.width + IndicatorKind.spacer.size.width
+
+        case let storageInfo as StorageInfo:
+            switch store.metricsBarConfiguration.storageDisplayFormat {
+            case .percentage:
+                context.drawBlackText(origin: point, size: IndicatorKind.usageFullLabel.size) {
+                    Text(verbatim: storageInfo.percentage.menuBarDescription)
+                }
+                point.x += IndicatorKind.usageFullLabel.size.width + IndicatorKind.spacer.size.width
+            case .used:
+                let text = storageInfo.used.menuBarDescription(type: .storage)
+                let labelSize = IndicatorKind.storageByteValueLabelSize(for: text)
+                context.drawBlackText(origin: point, size: labelSize) {
+                    Text(verbatim: text)
+                        .monospacedDigit()
+                }
+                point.x += labelSize.width + IndicatorKind.spacer.size.width
+            case .available:
+                let text = storageInfo.available.menuBarDescription(type: .storage)
+                let labelSize = IndicatorKind.storageByteValueLabelSize(for: text)
+                context.drawBlackText(origin: point, size: labelSize) {
+                    Text(verbatim: text)
+                        .monospacedDigit()
+                }
+                point.x += labelSize.width + IndicatorKind.spacer.size.width
+            }
 
         case let batteryInfo as BatteryInfo:
             if batteryInfo.isInstalled {

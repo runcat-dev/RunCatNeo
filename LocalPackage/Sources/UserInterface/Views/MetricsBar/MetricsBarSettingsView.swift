@@ -40,11 +40,35 @@ struct MetricsBarSettingsView: View {
                 )) {
                     Text("showMemoryPressure", bundle: .module)
                 }
-                Toggle(isOn: Binding<Bool>(
-                    get: { store.metricsBarConfiguration.showsStorage },
-                    asyncSet: { await store.send(.showsSystemMetricsToggleSwitched(.storage, $0)) }
-                )) {
+                HStack {
                     Text("showStorageCapacity", bundle: .module)
+                    Spacer()
+                    Picker(selection: Binding<StorageDisplayFormat>(
+                        get: { store.metricsBarConfiguration.storageDisplayFormat },
+                        asyncSet: { await store.send(.storageDisplayFormatChanged($0)) }
+                    )) {
+                        ForEach(StorageDisplayFormat.allCases) { format in
+                            switch format {
+                            case .percentage:
+                                Text(verbatim: "%").tag(format)
+                            case .used:
+                                Text("storageDisplayFormatUsed", bundle: .module).tag(format)
+                            case .available:
+                                Text("storageDisplayFormatAvailable", bundle: .module).tag(format)
+                            }
+                        }
+                    } label: {
+                        EmptyView()
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                    Toggle(isOn: Binding<Bool>(
+                        get: { store.metricsBarConfiguration.showsStorage },
+                        asyncSet: { await store.send(.showsSystemMetricsToggleSwitched(.storage, $0)) }
+                    )) {
+                        EmptyView()
+                    }
+                    .labelsHidden()
                 }
                 Toggle(isOn: Binding<Bool>(
                     get: { store.metricsBarConfiguration.showsBattery },
