@@ -24,13 +24,25 @@ import SwiftUI
 struct CustomMetricsSourceRowView: View {
     var source: CustomMetricsSource
     var isErrorDetected: Bool
+    var dragStarted: () -> Void
     var removeButtonTapped: () async -> Void
     var sourceLinkTapped: () async -> Void
 
     var body: some View {
         LabeledContent {
-            Image(systemName: "line.3.horizontal")
-                .foregroundStyle(.secondary)
+            VStack(spacing: 0) {
+                Spacer(minLength: 0)
+                Image(systemName: "line.3.horizontal")
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 0)
+            }
+            .frame(width: 24)
+            .frame(maxHeight: .infinity)
+            .contentShape(Rectangle())
+            .onDrag {
+                dragStarted()
+                return NSItemProvider(object: source.id.uuidString as NSString)
+            }
             Button(role: .destructive) {
                 Task {
                     await removeButtonTapped()

@@ -34,6 +34,9 @@ struct CustomMetricsSettingsSectionView: View {
                 CustomMetricsSourceRowView(
                     source: source,
                     isErrorDetected: store.failedCustomMetricsSourceIDs.contains(source.id),
+                    dragStarted: {
+                        dragState.begin(sourceID: source.id)
+                    },
                     removeButtonTapped: {
                         await store.send(.removeCustomMetricsSourceButtonTapped(source.id))
                     },
@@ -41,11 +44,7 @@ struct CustomMetricsSettingsSectionView: View {
                         await store.send(.customMetricsSourceLinkTapped(source))
                     }
                 )
-                .opacity(dragState.sourceID == source.id ? 0 : 1)
-                .onDrag {
-                    dragState.begin(sourceID: source.id)
-                    return NSItemProvider(object: source.id.uuidString as NSString)
-                }
+                .opacity(dragState.hiddenSourceID == source.id ? 0 : 1)
                 .onDrop(
                     of: [.text],
                     delegate: CustomMetricsSourceDropDelegate(
@@ -148,11 +147,15 @@ struct CustomMetricsSettingsSectionView: View {
 @MainActor @Observable
 private final class CustomMetricsSourceDragState {
     var sourceID: UUID?
+    var hiddenSourceID: UUID?
 
     @ObservationIgnored private var mouseUpMonitor: Any?
+    @ObservationIgnored private var revealTask: Task<Void, Never>?
 
     func begin(sourceID: UUID) {
+        revealTask?.cancel()
         self.sourceID = sourceID
+        hiddenSourceID = sourceID
         guard mouseUpMonitor == nil else { return }
         mouseUpMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseUp) { [weak self] event in
             self?.end()
@@ -161,10 +164,20 @@ private final class CustomMetricsSourceDragState {
     }
 
     func end() {
+        let wasDragging = sourceID != nil
         sourceID = nil
-        guard let mouseUpMonitor else { return }
-        NSEvent.removeMonitor(mouseUpMonitor)
-        self.mouseUpMonitor = nil
+        if let mouseUpMonitor {
+            NSEvent.removeMonitor(mouseUpMonitor)
+            self.mouseUpMonitor = nil
+        }
+        guard wasDragging else { return }
+        revealTask?.cancel()
+        revealTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(200))
+            guard !Task.isCancelled else { return }
+            self?.hiddenSourceID = nil
+            self?.revealTask = nil
+        }
     }
 }
 
