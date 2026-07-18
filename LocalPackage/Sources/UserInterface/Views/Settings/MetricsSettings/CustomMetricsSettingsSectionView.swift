@@ -39,21 +39,23 @@ struct CustomMetricsSettingsSectionView: View {
                         await store.send(.customMetricsSourceLinkTapped(source))
                     }
                 )
+                .opacity(draggedSourceID == source.id ? 0 : 1)
                 .onDrag {
                     draggedSourceID = source.id
                     return NSItemProvider(object: source.id.uuidString as NSString)
                 }
-                .onDrop(of: [.text], isTargeted: nil) { _ in
-                    guard let draggedSourceID,
-                          draggedSourceID != source.id else {
-                        return false
-                    }
-                    Task {
-                        await store.send(.customMetricsSourceMoved(draggedSourceID, source.id))
-                    }
-                    self.draggedSourceID = nil
-                    return true
-                }
+                .onDrop(
+                    of: [.text],
+                    delegate: CustomMetricsSourceDropDelegate(
+                        destinationSourceID: source.id,
+                        draggedSourceID: $draggedSourceID,
+                        move: { sourceID, destinationID in
+                            Task {
+                                await store.send(.customMetricsSourceMoved(sourceID, destinationID))
+                            }
+                        }
+                    )
+                )
             }
             HStack {
                 Spacer()
@@ -137,5 +139,28 @@ struct CustomMetricsSettingsSectionView: View {
                 await store.send(.onDisappear)
             }
         }
+    }
+}
+
+private struct CustomMetricsSourceDropDelegate: DropDelegate {
+    var destinationSourceID: UUID
+    @Binding var draggedSourceID: UUID?
+    var move: (UUID, UUID) -> Void
+
+    func dropEntered(info: DropInfo) {
+        guard let draggedSourceID,
+              draggedSourceID != destinationSourceID else {
+            return
+        }
+        move(draggedSourceID, destinationSourceID)
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        draggedSourceID = nil
+        return true
     }
 }
