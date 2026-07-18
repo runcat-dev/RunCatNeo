@@ -20,9 +20,11 @@
 
 import Model
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct CustomMetricsSettingsSectionView: View {
     @State var store: CustomMetricsSettings
+    @State private var draggedSourceID: UUID?
 
     var body: some View {
         Section {
@@ -37,15 +39,19 @@ struct CustomMetricsSettingsSectionView: View {
                         await store.send(.customMetricsSourceLinkTapped(source))
                     }
                 )
-                .dropDestination(for: String.self) { items, _ in
-                    guard let value = items.first,
-                          let sourceID = UUID(uuidString: value),
-                          sourceID != source.id else {
+                .onDrag {
+                    draggedSourceID = source.id
+                    return NSItemProvider(object: source.id.uuidString as NSString)
+                }
+                .onDrop(of: [.text], isTargeted: nil) { _ in
+                    guard let draggedSourceID,
+                          draggedSourceID != source.id else {
                         return false
                     }
                     Task {
-                        await store.send(.customMetricsSourceMoved(sourceID, source.id))
+                        await store.send(.customMetricsSourceMoved(draggedSourceID, source.id))
                     }
+                    self.draggedSourceID = nil
                     return true
                 }
             }
