@@ -29,16 +29,33 @@ struct CustomMetricsSourceRowView: View {
     var sourceLinkTapped: () async -> Void
 
     var body: some View {
-        LabeledContent {
-            VStack(spacing: 0) {
-                Spacer(minLength: 0)
+        HStack {
+            VStack(alignment: .leading) {
+                Text(source.displayName)
+                    .truncationMode(.middle)
+                HStack(spacing: 8) {
+                    Text(LocalizedStringKey(stringLiteral: "\(source.fileURL.relativePath) [→](/)"))
+                        .environment(\.openURL, OpenURLAction { _ in
+                            Task {
+                                await sourceLinkTapped()
+                            }
+                            return .handled
+                        })
+                    if isErrorDetected {
+                        Text("errorDetected", bundle: .module)
+                            .foregroundStyle(Color.yellow)
+                    }
+                }
+            }
+            Spacer()
+            ZStack {
+                Color.clear
+                    .contentShape(Rectangle())
                 Image(systemName: "line.3.horizontal")
                     .foregroundStyle(.secondary)
-                Spacer(minLength: 0)
             }
             .frame(width: 24)
             .frame(maxHeight: .infinity)
-            .contentShape(Rectangle())
             .onDrag {
                 dragStarted()
                 return NSItemProvider(object: source.id.uuidString as NSString)
@@ -52,22 +69,6 @@ struct CustomMetricsSourceRowView: View {
                     .foregroundStyle(Color.red)
             }
             .buttonStyle(.borderless)
-        } label: {
-            Text(source.displayName)
-                .truncationMode(.middle)
-            HStack(spacing: 8) {
-                Text(LocalizedStringKey(stringLiteral: "\(source.fileURL.relativePath) [→](/)"))
-                    .environment(\.openURL, OpenURLAction { _ in
-                        Task {
-                            await sourceLinkTapped()
-                        }
-                        return .handled
-                    })
-                if isErrorDetected {
-                    Text("errorDetected", bundle: .module)
-                        .foregroundStyle(Color.yellow)
-                }
-            }
         }
     }
 }
