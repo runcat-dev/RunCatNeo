@@ -22,8 +22,6 @@ import DataSource
 import SwiftUI
 
 struct CustomMetricsSourceRowView: View {
-    @State private var rowSize: CGSize = .zero
-
     var source: CustomMetricsSource
     var isErrorDetected: Bool
     var dragStarted: () -> Void
@@ -58,31 +56,6 @@ struct CustomMetricsSourceRowView: View {
             }
             .frame(width: 24)
             .frame(maxHeight: .infinity)
-            .onDrag {
-                dragStarted()
-                return NSItemProvider(object: source.id.uuidString as NSString)
-            } preview: {
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text(source.displayName)
-                            .truncationMode(.middle)
-                        HStack(spacing: 8) {
-                            Text(LocalizedStringKey(stringLiteral: "\(source.fileURL.relativePath) [→](/)"))
-                            if isErrorDetected {
-                                Text("errorDetected", bundle: .module)
-                                    .foregroundStyle(Color.yellow)
-                            }
-                        }
-                    }
-                    Spacer()
-                    Image(systemName: "line.3.horizontal")
-                        .foregroundStyle(.secondary)
-                        .frame(width: 24)
-                    Image(systemName: "minus.circle")
-                        .foregroundStyle(Color.red)
-                }
-                .frame(width: rowSize.width, height: rowSize.height)
-            }
             Button(role: .destructive) {
                 Task {
                     await removeButtonTapped()
@@ -92,11 +65,19 @@ struct CustomMetricsSourceRowView: View {
                     .foregroundStyle(Color.red)
             }
             .buttonStyle(.borderless)
+            .frame(width: 24)
         }
-        .onGeometryChange(for: CGSize.self) { proxy in
-            proxy.size
-        } action: { size in
-            rowSize = size
+        .contentShape(.interaction, CustomMetricsSourceDragHandleShape())
+        .contentShape(.dragPreview, Rectangle())
+        .onDrag {
+            dragStarted()
+            return NSItemProvider(object: source.id.uuidString as NSString)
         }
+    }
+}
+
+private struct CustomMetricsSourceDragHandleShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        Path(CGRect(x: rect.maxX - 56, y: rect.minY, width: 24, height: rect.height))
     }
 }
