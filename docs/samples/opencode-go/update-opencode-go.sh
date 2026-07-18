@@ -6,7 +6,7 @@
 #
 #     {
 #       "title": "OpenCode Go",
-#       "symbol": "rectangle.portrait",
+#       "symbol": "rectangle.ratio.3.to.4",
 #       "metricsBarValue": "12.5%",
 #       "metrics": [
 #         { "title": "Rolling (5h)", "formattedValue": "12.5%", "normalizedValue": 0.125 },
@@ -59,7 +59,7 @@ temporaryFile=$(mktemp "$outputDirectory/.opencode-go-XXXXXX")
 cat > "$temporaryFile" <<EOF
 {
   "title": "OpenCode Go",
-  "symbol": "rectangle.portrait",
+  "symbol": "rectangle.ratio.3.to.4",
   "metricsBarValue": "$(formatPct "$rollingPct")",
   "metrics": [
     { "title": "Rolling (5h)", "formattedValue": "$(formatPct "$rollingPct")",  "normalizedValue": $rollingNorm },
