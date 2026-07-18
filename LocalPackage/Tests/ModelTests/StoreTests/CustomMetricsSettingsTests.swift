@@ -235,6 +235,30 @@ struct CustomMetricsSettingsTests {
     }
 
     @MainActor @Test
+    func send_customMetricsSourcesMoved_reorders_sources_persists_and_emits_change() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let sources = (1...3).map {
+            CustomMetricsSource(
+                id: UUID($0),
+                displayName: "Source \($0)",
+                fileURL: URL(filePath: "/tmp/source-\($0).json"),
+                bookmark: Data(),
+                createdAt: Date(timeIntervalSince1970: 0)
+            )
+        }
+        let storage = UserDefaultsClient.storage(initialSources: sources)
+        let sut = CustomMetricsSettings(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: storage.client
+        ))
+        await sut.send(.customMetricsSourcesMoved([0], 3))
+        let expectedSources = [sources[1], sources[2], sources[0]]
+        #expect(sut.customMetricsSources == expectedSources)
+        #expect(storage.currentConfiguration()?.sources == expectedSources)
+        #expect(appState.withLock(\.customMetricsConfigurationChanges.latestValue) != nil)
+    }
+
+    @MainActor @Test
     func send_customMetricsSourceLinkTapped_activates_file_viewer_with_resolved_url() async {
         let resolvedURL = URL(filePath: "/tmp/resolved.json")
         let activatedURLs = AllocatedUnfairLock<[URL]>(initialState: [])

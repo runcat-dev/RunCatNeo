@@ -38,6 +38,11 @@ struct CustomMetricsSettingsSectionView: View {
                     }
                 )
             }
+            .onMove { sourceOffsets, destinationOffset in
+                Task {
+                    await store.send(.customMetricsSourcesMoved(sourceOffsets, destinationOffset))
+                }
+            }
             HStack {
                 Spacer()
                 Button {
