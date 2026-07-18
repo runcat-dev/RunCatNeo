@@ -37,10 +37,16 @@ struct CustomMetricsSettingsSectionView: View {
                         await store.send(.customMetricsSourceLinkTapped(source))
                     }
                 )
-            }
-            .onMove { sourceOffsets, destinationOffset in
-                Task {
-                    await store.send(.customMetricsSourcesMoved(sourceOffsets, destinationOffset))
+                .dropDestination(for: String.self) { items, _ in
+                    guard let value = items.first,
+                          let sourceID = UUID(uuidString: value),
+                          sourceID != source.id else {
+                        return false
+                    }
+                    Task {
+                        await store.send(.customMetricsSourceMoved(sourceID, source.id))
+                    }
+                    return true
                 }
             }
             HStack {

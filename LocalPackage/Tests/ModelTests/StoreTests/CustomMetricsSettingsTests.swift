@@ -235,7 +235,7 @@ struct CustomMetricsSettingsTests {
     }
 
     @MainActor @Test
-    func send_customMetricsSourcesMoved_reorders_sources_persists_and_emits_change() async {
+    func send_customMetricsSourceMoved_reorders_sources_persists_and_emits_change() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let sources = (1...3).map {
             CustomMetricsSource(
@@ -251,7 +251,7 @@ struct CustomMetricsSettingsTests {
             appStateClient: .testDependency(appState),
             userDefaultsClient: storage.client
         ))
-        await sut.send(.customMetricsSourcesMoved([0], 3))
+        await sut.send(.customMetricsSourceMoved(sources[0].id, sources[2].id))
         let expectedSources = [sources[1], sources[2], sources[0]]
         #expect(sut.customMetricsSources == expectedSources)
         #expect(storage.currentConfiguration()?.sources == expectedSources)

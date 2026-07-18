@@ -29,6 +29,9 @@ struct CustomMetricsSourceRowView: View {
 
     var body: some View {
         LabeledContent {
+            Image(systemName: "line.3.horizontal")
+                .foregroundStyle(.secondary)
+                .draggable(source.id.uuidString)
             Button(role: .destructive) {
                 Task {
                     await removeButtonTapped()
