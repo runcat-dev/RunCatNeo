@@ -22,6 +22,8 @@ import DataSource
 import SwiftUI
 
 struct CustomMetricsSourceRowView: View {
+    @State private var rowSize: CGSize = .zero
+
     var source: CustomMetricsSource
     var isErrorDetected: Bool
     var dragStarted: () -> Void
@@ -59,6 +61,27 @@ struct CustomMetricsSourceRowView: View {
             .onDrag {
                 dragStarted()
                 return NSItemProvider(object: source.id.uuidString as NSString)
+            } preview: {
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(source.displayName)
+                            .truncationMode(.middle)
+                        HStack(spacing: 8) {
+                            Text(LocalizedStringKey(stringLiteral: "\(source.fileURL.relativePath) [→](/)"))
+                            if isErrorDetected {
+                                Text("errorDetected", bundle: .module)
+                                    .foregroundStyle(Color.yellow)
+                            }
+                        }
+                    }
+                    Spacer()
+                    Image(systemName: "line.3.horizontal")
+                        .foregroundStyle(.secondary)
+                        .frame(width: 24)
+                    Image(systemName: "minus.circle")
+                        .foregroundStyle(Color.red)
+                }
+                .frame(width: rowSize.width, height: rowSize.height)
             }
             Button(role: .destructive) {
                 Task {
@@ -69,6 +92,11 @@ struct CustomMetricsSourceRowView: View {
                     .foregroundStyle(Color.red)
             }
             .buttonStyle(.borderless)
+        }
+        .onGeometryChange(for: CGSize.self) { proxy in
+            proxy.size
+        } action: { size in
+            rowSize = size
         }
     }
 }
