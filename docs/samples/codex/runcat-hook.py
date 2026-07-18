@@ -88,11 +88,14 @@ def write_snapshot(hook_input):
     if not model:
         model = "Codex"
     token_count = latest_token_count(hook_input.get("transcript_path"))
+    rate_metrics = rate_limit_metrics(token_count)
+    if OUT.exists() and (token_count is None or not rate_metrics):
+        return
     context = context_metric(token_count)
     metrics = [{"title": "Model", "formattedValue": model}]
     if context is not None:
         metrics.append(context)
-    metrics.extend(rate_limit_metrics(token_count))
+    metrics.extend(rate_metrics)
     snapshot = {
         "title": "Codex",
         "symbol": "camera.aperture",

@@ -48,7 +48,7 @@ hooks = true
 - **Context** — the latest context token count divided by the model's context-window size.
 - **5h**, **7d**, or another duration — each rate-limit window included in the latest token-count event.
 
-Missing data is simply omitted. For example, API-key or local-model sessions may not include ChatGPT account rate limits. The script always exits successfully so a parsing failure does not interrupt Codex.
+If a snapshot already exists, sessions without a recognized token-count event or account rate limits leave the last valid snapshot untouched. This prevents concurrent API-key, local-model, or incomplete sessions from replacing account usage with a Model-only card. The script always exits successfully so a parsing failure does not interrupt Codex.
 
 ## Customizing the output
 
@@ -69,6 +69,6 @@ The output JSON shape is documented in [`../../CustomMetricsSchema.md`](../../Cu
     | ~/.codex/runcat-hook.py
   python3 -m json.tool ~/.codex/runcat-usage.json
   ```
-- The card shows only **Model** → the transcript did not contain a recognized `token_count` event. Check that `transcript_path` exists and compare its latest token-count event with `latest_token_count()` in the script.
+- The card shows only **Model** → no valid snapshot existed before a transcript without a recognized `token_count` event was processed. Check that `transcript_path` exists and compare its latest token-count event with `latest_token_count()` in the script.
 - The hook does not run → open `/hooks` in Codex and confirm the hook is enabled and trusted.
 - The card footer shows **Last updated: Failed** in red → confirm `~/.codex/runcat-usage.json` still exists and is readable, then complete another Codex turn.
