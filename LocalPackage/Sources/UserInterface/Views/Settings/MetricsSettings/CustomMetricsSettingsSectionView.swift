@@ -18,13 +18,15 @@
  limitations under the License.
  */
 
+import AppKit
 import Model
+import Observation
 import SwiftUI
 import UniformTypeIdentifiers
 
 struct CustomMetricsSettingsSectionView: View {
     @State var store: CustomMetricsSettings
-    @State private var draggedSourceID: UUID?
+    @State private var dragState = CustomMetricsSourceDragState()
 
     var body: some View {
         Section {
@@ -39,16 +41,16 @@ struct CustomMetricsSettingsSectionView: View {
                         await store.send(.customMetricsSourceLinkTapped(source))
                     }
                 )
-                .opacity(draggedSourceID == source.id ? 0 : 1)
+                .opacity(dragState.sourceID == source.id ? 0 : 1)
                 .onDrag {
-                    draggedSourceID = source.id
+                    dragState.begin(sourceID: source.id)
                     return NSItemProvider(object: source.id.uuidString as NSString)
                 }
                 .onDrop(
                     of: [.text],
                     delegate: CustomMetricsSourceDropDelegate(
                         destinationSourceID: source.id,
-                        draggedSourceID: $draggedSourceID,
+                        dragState: dragState,
                         move: { sourceID, destinationID in
                             Task {
                                 await store.send(.customMetricsSourceMoved(sourceID, destinationID))
@@ -96,11 +98,6 @@ struct CustomMetricsSettingsSectionView: View {
         } header: {
             Text("customMetrics", bundle: .module)
         }
-        .simultaneousGesture(
-            DragGesture().onEnded { _ in
-                draggedSourceID = nil
-            }
-        )
         .fileImporter(
             isPresented: $store.showingFileImporter,
             allowedContentTypes: [.json],
@@ -140,6 +137,7 @@ struct CustomMetricsSettingsSectionView: View {
             await store.send(.task)
         }
         .onDisappear {
+            dragState.end()
             Task {
                 await store.send(.onDisappear)
             }
@@ -147,13 +145,36 @@ struct CustomMetricsSettingsSectionView: View {
     }
 }
 
+@MainActor @Observable
+private final class CustomMetricsSourceDragState {
+    var sourceID: UUID?
+
+    @ObservationIgnored private var mouseUpMonitor: Any?
+
+    func begin(sourceID: UUID) {
+        self.sourceID = sourceID
+        guard mouseUpMonitor == nil else { return }
+        mouseUpMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseUp) { [weak self] event in
+            self?.end()
+            return event
+        }
+    }
+
+    func end() {
+        sourceID = nil
+        guard let mouseUpMonitor else { return }
+        NSEvent.removeMonitor(mouseUpMonitor)
+        self.mouseUpMonitor = nil
+    }
+}
+
 private struct CustomMetricsSourceDropDelegate: DropDelegate {
     var destinationSourceID: UUID
-    @Binding var draggedSourceID: UUID?
+    var dragState: CustomMetricsSourceDragState
     var move: (UUID, UUID) -> Void
 
     func dropEntered(info: DropInfo) {
-        guard let draggedSourceID,
+        guard let draggedSourceID = dragState.sourceID,
               draggedSourceID != destinationSourceID else {
             return
         }
@@ -165,7 +186,7 @@ private struct CustomMetricsSourceDropDelegate: DropDelegate {
     }
 
     func performDrop(info: DropInfo) -> Bool {
-        draggedSourceID = nil
+        dragState.end()
         return true
     }
 }
