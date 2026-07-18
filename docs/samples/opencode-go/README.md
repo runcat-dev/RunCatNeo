@@ -82,8 +82,6 @@ Click the Metrics Bar and flip the source's toggle to show the rolling usage (`m
 | **Weekly** | Current weekly window usage with progress bar |
 | **Monthly** | Current monthly window usage with progress bar |
 
-The card title is "OpenCode Go" with a `rectangle.ratio.3.to.4` symbol. The `metricsBarValue` shows the rolling (5h) percentage.
-
 ## Environment variables
 
 | Variable | Default | Description |
@@ -121,7 +119,7 @@ launchctl bootout gui/$(id -u)/dev.runcat.opencode-go
 ```json
 {
   "title": "OpenCode Go",
-  "symbol": "rectangle.portrait",
+  "symbol": "rectangle.ratio.3.to.4",
   "metricsBarValue": "38%",
   "metrics": [
     { "title": "Rolling (5h)", "formattedValue": "38%",  "normalizedValue": 0.38 },
