@@ -96,6 +96,11 @@ struct CustomMetricsSettingsSectionView: View {
         } header: {
             Text("customMetrics", bundle: .module)
         }
+        .simultaneousGesture(
+            DragGesture().onEnded { _ in
+                draggedSourceID = nil
+            }
+        )
         .fileImporter(
             isPresented: $store.showingFileImporter,
             allowedContentTypes: [.json],
