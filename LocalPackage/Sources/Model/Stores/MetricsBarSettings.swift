@@ -111,6 +111,16 @@ public final class MetricsBarSettings: Composable {
             }
             userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
             systemMetricsService.emitConfigurationChange()
+
+        case let .valueStyleChanged(style):
+            metricsBarConfiguration.valueStyle = style
+            userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
+            systemMetricsService.emitConfigurationChange()
+
+        case let .batteryStyleChanged(style):
+            metricsBarConfiguration.batteryStyle = style
+            userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
+            systemMetricsService.emitConfigurationChange()
         }
     }
 
@@ -124,5 +134,7 @@ public final class MetricsBarSettings: Composable {
         case onDisappear
         case showsSystemMetricsToggleSwitched(SystemInfoType, Bool)
         case showsCustomMetricsToggleSwitched(UUID, Bool)
+        case valueStyleChanged(MetricsBarValueStyle)
+        case batteryStyleChanged(MetricsBarBatteryStyle)
     }
 }
