@@ -73,6 +73,25 @@ struct CustomMetricsSnapshotTests {
     }
 
     @Test
+    func decode_snapshot_with_textOverflow() throws {
+        let json = """
+            {
+              "title": "Sessions",
+              "textOverflow": "wrap",
+              "metrics": [],
+              "lastUpdatedDate": "2026-06-05T04:50:40Z"
+            }
+            """.data(using: .utf8)!
+        #expect(
+            try decoder.decode(CustomMetricsSnapshot.self, from: json) == CustomMetricsSnapshot(
+                title: "Sessions",
+                textOverflow: .wrap,
+                lastUpdatedDate: try #require(ISO8601DateFormatter().date(from: "2026-06-05T04:50:40Z"))
+            )
+        )
+    }
+
+    @Test
     func decode_throws_when_title_missing() {
         let json = """
             {
