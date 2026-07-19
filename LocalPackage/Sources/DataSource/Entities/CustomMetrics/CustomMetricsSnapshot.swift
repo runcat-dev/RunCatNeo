@@ -23,6 +23,7 @@ import Foundation
 public struct CustomMetricsSnapshot: Codable, Sendable, Equatable {
     public var title: String
     public var symbol: String?
+    public var contentLayout: CustomMetricsContentLayout?
     public var metricsBarValue: String?
     public var metrics: [CustomMetric]
     public var lastUpdatedDate: Date
@@ -30,14 +31,21 @@ public struct CustomMetricsSnapshot: Codable, Sendable, Equatable {
     public init(
         title: String,
         symbol: String? = nil,
+        contentLayout: CustomMetricsContentLayout? = nil,
         metricsBarValue: String? = nil,
         metrics: [CustomMetric] = [],
         lastUpdatedDate: Date
     ) {
         self.title = title
         self.symbol = symbol
+        self.contentLayout = contentLayout
         self.metricsBarValue = metricsBarValue
         self.metrics = metrics
         self.lastUpdatedDate = lastUpdatedDate
     }
+}
+
+public enum CustomMetricsContentLayout: String, Codable, Sendable, Equatable {
+    case compact
+    case indented
 }
