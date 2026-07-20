@@ -83,6 +83,34 @@ struct MetricsBarTests {
     }
 
     @MainActor @Test
+    func send_task_refreshes_configuration_when_settingsResets_is_emitted() async throws {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let configurationData = AllocatedUnfairLock<Data?>(initialState: nil)
+        let sut = MetricsBar(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
+                $0.data = { _ in configurationData.withLock(\.self) }
+            }
+        ))
+        await sut.send(.task("MetricsBarTests"))
+        #expect(sut.metricsBarConfiguration == .default)
+        let updatedConfiguration = MetricsBarConfiguration(
+            showsCPU: true,
+            showsMemory: true,
+            showsStorage: true,
+            showsBattery: false,
+            showsNetwork: false,
+            visibleCustomMetricsSourceIDs: []
+        )
+        let encodedConfiguration = try JSONEncoder().encode(updatedConfiguration)
+        configurationData.withLock { $0 = encodedConfiguration }
+        appState.withLock { $0.settingsResets.send() }
+        await waitUntil { sut.metricsBarConfiguration == updatedConfiguration }
+        #expect(sut.metricsBarConfiguration == updatedConfiguration)
+        await sut.send(.onDisappear)
+    }
+
+    @MainActor @Test
     func send_onDisappear_stops_observing_streams() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let sut = MetricsBar(.testDependencies(appStateClient: .testDependency(appState)))

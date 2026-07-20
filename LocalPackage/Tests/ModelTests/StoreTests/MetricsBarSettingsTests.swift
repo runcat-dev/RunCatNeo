@@ -112,6 +112,25 @@ struct MetricsBarSettingsTests {
     }
 
     @MainActor @Test
+    func send_task_refreshes_configuration_when_settingsResets_is_emitted() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let storage = UserDefaultsClient.storage(initialSources: [makeSource(id: UUID(1))])
+        let sut = MetricsBarSettings(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: storage.client
+        ))
+        await sut.send(.task("MetricsBarSettingsTests"))
+        #expect(sut.customMetricsSources == [makeSource(id: UUID(1))])
+        storage.lock.withLock { $0[.customMetricsConfiguration] = nil }
+        storage.lock.withLock { $0[.metricsBarConfiguration] = nil }
+        appState.withLock { $0.settingsResets.send() }
+        await waitUntil { sut.customMetricsSources.isEmpty }
+        #expect(sut.customMetricsSources.isEmpty)
+        #expect(sut.metricsBarConfiguration == .default)
+        await sut.send(.onDisappear)
+    }
+
+    @MainActor @Test
     func send_showsSystemMetricsToggleSwitched_cpu_does_not_toggle_activation() async {
         let activationCount = AllocatedUnfairLock<Int>(initialState: 0)
         let storage = UserDefaultsClient.storage()

@@ -109,4 +109,64 @@ struct RunnerSettingsTests {
         #expect(sut.error == .customRunner(.loadingFailed))
         #expect(sut.showingAlert == true)
     }
+
+    @MainActor @Test
+    func send_task_resets_appearance_and_runner_when_settingsResets_is_emitted() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        appState.withLock {
+            $0.runnerBundles.send(RunnerBundle(runner: Runner(kind: .dog), frame: .preset("dog-frame-0")))
+        }
+        let recorder = makeSetRecorder()
+        let sut = RunnerSettings(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: recorder.client
+        ), speedDecreasesUnderLoad: true, isFlippedHorizontally: true)
+        await sut.send(.task("RunnerSettingsTests"))
+        appState.withLock { $0.settingsResets.send() }
+        await waitUntil { sut.currentRunner == Runner.default }
+        #expect(sut.speedDecreasesUnderLoad == false)
+        #expect(sut.isFlippedHorizontally == false)
+        #expect(sut.currentRunner == Runner.default)
+        #expect(appState.withLock(\.runnerBundles.latestValue)?.runner == Runner.default)
+        await sut.send(.onDisappear)
+    }
+
+    @MainActor @Test
+    func send_task_resyncs_toggles_and_runner_when_revisited_after_external_change() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        appState.withLock {
+            $0.runnerBundles.send(RunnerBundle(runner: Runner(kind: .dog), frame: .preset("dog-frame-0")))
+        }
+        let flags = AllocatedUnfairLock<[String: Bool]>(initialState: [
+            .speedDecreasesUnderLoad: true,
+            .isFlippedHorizontally: true,
+        ])
+        let userDefaultsClient = testDependency(of: UserDefaultsClient.self) {
+            $0.bool = { key in flags.withLock { $0[key] ?? false } }
+        }
+        let sut = RunnerSettings(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: userDefaultsClient
+        ))
+        await sut.send(.task("RunnerSettingsTests"))
+        #expect(sut.speedDecreasesUnderLoad == true)
+        #expect(sut.isFlippedHorizontally == true)
+        #expect(sut.currentRunner == Runner(kind: .dog))
+        await sut.send(.onDisappear)
+
+        // Simulate a reset performed elsewhere while this tab was not visible.
+        flags.withLock {
+            $0[.speedDecreasesUnderLoad] = false
+            $0[.isFlippedHorizontally] = false
+        }
+        appState.withLock {
+            $0.runnerBundles.send(RunnerBundle(runner: .default, frame: .preset("cat-frame-0")))
+        }
+
+        await sut.send(.task("RunnerSettingsTests"))
+        #expect(sut.speedDecreasesUnderLoad == false)
+        #expect(sut.isFlippedHorizontally == false)
+        #expect(sut.currentRunner == Runner.default)
+        await sut.send(.onDisappear)
+    }
 }

@@ -52,8 +52,47 @@ struct GeneralSettingsView: View {
             } header: {
                 Text("monitoring", bundle: .module)
             }
+            Section {
+                LabeledContent {
+                    Button {
+                        Task {
+                            await store.send(.resetToDefaultsButtonTapped)
+                        }
+                    } label: {
+                        Text("resetToDefaults", bundle: .module)
+                    }
+                    .buttonStyle(.borderless)
+                } label: {
+                    Text("resetToDefaultsDescription", bundle: .module)
+                }
+            } header: {
+                Text("reset", bundle: .module)
+            }
         }
         .formStyle(.grouped)
+        .confirmationDialog(
+            Text("resetToDefaultsConfirmationTitle", bundle: .module),
+            isPresented: $store.showingResetConfirmationDialog,
+            actions: {
+                Button(role: .destructive) {
+                    Task {
+                        await store.send(.resetToDefaultsConfirmed)
+                    }
+                } label: {
+                    Text("resetToDefaults", bundle: .module)
+                }
+                Button(role: .cancel) {
+                    Task {
+                        await store.send(.resetToDefaultsCancelled)
+                    }
+                } label: {
+                    Text("cancel", bundle: .module)
+                }
+            },
+            message: {
+                Text("resetToDefaultsConfirmationMessage", bundle: .module)
+            }
+        )
         .task {
             await store.send(.task(String(describing: Self.self)))
         }

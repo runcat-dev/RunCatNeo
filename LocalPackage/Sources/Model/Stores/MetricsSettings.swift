@@ -74,11 +74,23 @@ public final class MetricsSettings: Composable {
         switch action {
         case let .task(screenName):
             logService.notice(.screenView(name: screenName))
+            showsMetricsBar = userDefaultsRepository.showsMetricsBar
+            refreshSystemMetricsConfiguration()
             task?.cancel()
             task = Task.immediate { [weak self, appStateClient] in
-                let stream = appStateClient.withLock(\.systemMetricsConfigurationChanges.stream)
-                for await _ in stream {
-                    self?.refreshSystemMetricsConfiguration()
+                await withTaskGroup { group in
+                    group.addImmediateTask {
+                        let stream = appStateClient.withLock(\.systemMetricsConfigurationChanges.stream)
+                        for await _ in stream {
+                            self?.refreshSystemMetricsConfiguration()
+                        }
+                    }
+                    group.addImmediateTask {
+                        let stream = appStateClient.withLock(\.settingsResets.stream)
+                        for await _ in stream {
+                            self?.resetToDefaults()
+                        }
+                    }
                 }
             }
 
@@ -139,6 +151,11 @@ public final class MetricsSettings: Composable {
 
     private func refreshSystemMetricsConfiguration() {
         systemMetricsConfiguration = userDefaultsRepository.systemMetricsConfiguration
+    }
+
+    private func resetToDefaults() {
+        showsMetricsBar = userDefaultsRepository.showsMetricsBar
+        refreshSystemMetricsConfiguration()
     }
 
     public enum Action: Sendable {
