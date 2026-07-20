@@ -10,6 +10,9 @@ from pathlib import Path
 
 
 OUT = Path(os.environ.get("RUNCAT_OUT_FILE", str(Path.home() / ".codex" / "runcat-usage.json")))
+BAR_MODE_FILE = Path(
+    os.environ.get("RUNCAT_BAR_MODE_FILE", str(Path.home() / ".codex" / "runcat-bar-mode"))
+)
 
 
 def percentage_metric(title, used_percentage):
@@ -79,6 +82,43 @@ def rate_limit_metrics(token_count):
     return metrics
 
 
+def weekly_remaining_metric(token_count):
+    rate_limits = (token_count or {}).get("rate_limits") or {}
+    for key in ("primary", "secondary"):
+        limit = rate_limits.get(key) or {}
+        if window_title(limit.get("window_minutes")) != "7d":
+            continue
+        used_percentage = limit.get("used_percent")
+        if isinstance(used_percentage, (int, float)):
+            return percentage_metric("7d Left", 100 - used_percentage)
+    return None
+
+
+def bar_mode():
+    mode = os.environ.get("RUNCAT_BAR_MODE", "").strip().lower()
+    if not mode:
+        try:
+            mode = BAR_MODE_FILE.read_text(encoding="utf-8").strip().lower()
+        except OSError:
+            mode = ""
+    return mode if mode in {"context", "weekly"} else "context"
+
+
+def metrics_bar_value(token_count, context):
+    weekly = weekly_remaining_metric(token_count)
+    if bar_mode() == "context":
+        if context is not None:
+            return context["formattedValue"]
+        if weekly is not None:
+            return f"7d {weekly['formattedValue']}"
+    else:
+        if weekly is not None:
+            return f"7d {weekly['formattedValue']}"
+        if context is not None:
+            return context["formattedValue"]
+    return None
+
+
 def write_snapshot(hook_input):
     model = hook_input.get("model")
     if isinstance(model, str):
@@ -102,8 +142,9 @@ def write_snapshot(hook_input):
         "metrics": metrics,
         "lastUpdatedDate": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
-    if context is not None:
-        snapshot["metricsBarValue"] = context["formattedValue"]
+    bar_value = metrics_bar_value(token_count, context)
+    if bar_value is not None:
+        snapshot["metricsBarValue"] = bar_value
     OUT.parent.mkdir(parents=True, exist_ok=True)
     file_descriptor, temporary_path = tempfile.mkstemp(prefix=".runcat-", dir=str(OUT.parent))
     try:
