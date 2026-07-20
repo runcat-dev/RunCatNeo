@@ -101,7 +101,7 @@ def bar_mode():
             mode = BAR_MODE_FILE.read_text(encoding="utf-8").strip().lower()
         except OSError:
             mode = ""
-    return mode if mode in {"context", "weekly"} else "weekly"
+    return mode if mode in {"context", "weekly"} else "context"
 
 
 def metrics_bar_value(token_count, context):

@@ -33,7 +33,7 @@ This sample uses Codex's local session transcript, whose format may change betwe
 3. Restart Codex, then use `/hooks` to review and trust the new hook if prompted.
 4. Complete a turn in Codex. The script creates `~/.codex/runcat-usage.json` after the turn finishes.
 5. In RunCat Neo, open **Settings → Metrics → Custom Metrics**, click **Add JSON Source**, and choose `~/.codex/runcat-usage.json`.
-6. Optional: click the Metrics Bar and flip the source's toggle to show its value in the menu bar. The default value is the remaining 7-day allowance, such as `7d 77%`.
+6. Optional: click the Metrics Bar and flip the source's toggle to show context usage in the menu bar.
 
 The hook feature is enabled by default in current Codex releases. If `/hooks` is unavailable, add this to `~/.codex/config.toml` and restart Codex:
 
@@ -47,19 +47,23 @@ hooks = true
 - **Model** — the active model slug provided to the hook.
 - **Context** — the latest context token count divided by the model's context-window size.
 - **5h**, **7d**, or another duration — the used percentage for each rate-limit window included in the latest token-count event.
-- **Metrics Bar** — the remaining 7-day allowance by default. For example, a `7d` row showing `23%` used produces `7d 77%` in the menu bar.
+- **Metrics Bar** — context-window usage by default. Weekly mode shows the remaining 7-day allowance; for example, a `7d` row showing `23%` used produces `7d 77%` in the menu bar.
 
 If a snapshot already exists, sessions without a recognized token-count event or account rate limits leave the last valid snapshot untouched. This prevents concurrent API-key, local-model, or incomplete sessions from replacing account usage with a Model-only card. The script always exits successfully so a parsing failure does not interrupt Codex.
 
 ## Choose the Metrics Bar value
 
-RunCat Neo's toggle controls whether the Custom Metrics source is visible in the Metrics Bar; it does not select one of the card's rows. This sample therefore reads the desired value from `~/.codex/runcat-bar-mode`:
+RunCat Neo's toggle controls whether the Custom Metrics source is visible in the Metrics Bar; it does not select one of the card's rows. Context usage remains the default for compatibility.
+
+To show the remaining 7-day allowance instead, create `~/.codex/runcat-bar-mode` with `weekly` as its content:
 
 ```bash
-# Show the remaining 7-day allowance (default).
 printf 'weekly\n' > ~/.codex/runcat-bar-mode
+```
 
-# Show context-window usage instead.
+The mode file is optional and is not created automatically. If it is missing or invalid, the script uses `context`. You can also select that mode explicitly:
+
+```bash
 printf 'context\n' > ~/.codex/runcat-bar-mode
 ```
 
