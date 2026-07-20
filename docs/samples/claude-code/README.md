@@ -19,7 +19,7 @@ A minimal Python script that lets RunCat Neo's Custom Metrics card show your Cla
    }
    ```
    Replace `/Users/YOU` with your home path. The shebang at the top of the script picks up `python3` automatically.
-3. In RunCat Neo, open **Settings → Metrics → Custom Metrics**, click **Add JSON Source**, and choose `~/.claude/runcat-usage.json`. The card appears on the dashboard immediately.
+3. In RunCat Neo, open **Settings → Metrics → Custom Metrics**, click **Add Custom Metrics Source**, and choose `~/.claude/runcat-usage.json`. The card appears on the dashboard immediately.
 4. Run Claude Code. The card updates each turn.
 5. Optional: click the Metrics Bar and flip the source's toggle to show the context usage (`metricsBarValue`) directly in the menu bar.
 

@@ -28,7 +28,7 @@ Unlike the Claude Code sample, nothing triggers the script for you, so this samp
    ```bash
    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/dev.runcat.bitcoin-sample.plist
    ```
-4. In RunCat Neo, open **Settings → Metrics → Custom Metrics**, click **Add JSON Source**, and choose `~/.runcat/bitcoin.json`. The folder is hidden in the open panel — press `⌘⇧.` or `⌘⇧G` and type the path. The card appears on the dashboard immediately.
+4. In RunCat Neo, open **Settings → Metrics → Custom Metrics**, click **Add Custom Metrics Source**, and choose `~/.runcat/bitcoin.json`. The folder is hidden in the open panel — press `⌘⇧.` or `⌘⇧G` and type the path. The card appears on the dashboard immediately.
 5. Optional: click the Metrics Bar and flip the source's toggle to show the price (`metricsBarValue`, e.g. `$61.9K`) directly in the menu bar.
 
 To stop updating, unload the agent:
