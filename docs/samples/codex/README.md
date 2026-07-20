@@ -32,7 +32,7 @@ This sample uses Codex's local session transcript, whose format may change betwe
    Replace `/Users/YOU` with your home path. If you already have `~/.codex/hooks.json`, add the inner entry to its existing `Stop` array instead of replacing the file.
 3. Restart Codex, then use `/hooks` to review and trust the new hook if prompted.
 4. Complete a turn in Codex. The script creates `~/.codex/runcat-usage.json` after the turn finishes.
-5. In RunCat Neo, open **Settings → Metrics → Custom Metrics**, click **Add JSON Source**, and choose `~/.codex/runcat-usage.json`.
+5. In RunCat Neo, open **Settings → Metrics → Custom Metrics**, click **Add Custom Metrics Source**, and choose `~/.codex/runcat-usage.json`.
 6. Optional: click the Metrics Bar and flip the source's toggle to show the context usage directly in the menu bar.
 
 The hook feature is enabled by default in current Codex releases. If `/hooks` is unavailable, add this to `~/.codex/config.toml` and restart Codex:
