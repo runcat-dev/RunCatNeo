@@ -74,6 +74,7 @@ Beyond CPU, RunCat Neo can watch a JSON file you maintain and render it as a car
 
 - [JSON schema reference](https://github.com/runcat-dev/RunCatNeo/blob/main/docs/CustomMetricsSchema.md)
 - [Claude Code statusLine sample](https://github.com/runcat-dev/RunCatNeo/tree/main/docs/samples/claude-code)
+- [GitHub Copilot rate limits sample](https://github.com/runcat-dev/RunCatNeo/tree/main/docs/samples/copilot-rate-limits)
 - [Codex hook sample](https://github.com/runcat-dev/RunCatNeo/tree/main/docs/samples/codex)
 - [Bitcoin price sample](https://github.com/runcat-dev/RunCatNeo/tree/main/docs/samples/bitcoin)
 

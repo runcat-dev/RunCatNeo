@@ -85,6 +85,7 @@ There is no minimum cadence. Update the file every second, or only when somethin
 See `docs/samples/` for working scripts:
 
 - `docs/samples/claude-code/` — Claude Code statusLine integration that writes model, context-window, and rate-limit rows.
+- `docs/samples/copilot-rate-limits/` — launchd-scheduled script that shows how much of your GitHub Copilot plan's premium-request quota is left.
 - `docs/samples/codex/` — Codex lifecycle hook that writes model, context-window, and rate-limit rows.
 - `docs/samples/bitcoin/` — launchd-scheduled shell script that shows the current Bitcoin price in USD via the CoinGecko public API.
 
