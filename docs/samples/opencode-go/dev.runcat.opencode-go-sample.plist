@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>dev.runcat.opencode-go-sample</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/YOU/.runcat/update-opencode-go.sh</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>OPENCODE_WORKSPACE</key>
+        <string>wrk_YOUR_WORKSPACE_ID</string>
+    </dict>
+    <key>StartInterval</key>
+    <integer>600</integer>
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>
