@@ -26,6 +26,9 @@ This document describes the rules, steps, and expectations for contributing to t
   - [Bug Reports](#bug-reports)
   - [Feature Requests](#feature-requests)
   - [Other Issues](#other-issues)
+- [Localization](#localization)
+  - [Requesting a New Language](#requesting-a-new-language)
+  - [Contributing a Translation](#contributing-a-translation)
 - [Pull Requests](#pull-requests)
   - [Before Opening a Pull Request](#before-opening-a-pull-request)
   - [Cloning and Working on the Repository](#cloning-and-working-on-the-repository)
@@ -39,6 +42,11 @@ This document describes the rules, steps, and expectations for contributing to t
 ---
 
 ## Issues
+
+> [!IMPORTANT]
+> **One issue = one topic.** If your report or request is not exactly the same as an existing issue, open a **new** issue instead of piling replies onto the existing one. Cross-link related issues by writing `Related: #123` in a comment — but do not stack similar-but-distinct problems or ideas as a tree of comments under a single issue. Each issue must be triageable, discussable, and closeable on its own.
+
+---
 
 ### Bug Reports
 
@@ -60,14 +68,20 @@ To report a bug:
 > Custom runners are showcased and distributed in the [Runner Gallery](https://runcat-dev.github.io/RunnerGallery/) — please make such requests there.
 > Feature requests here should be about the app itself.
 
+> [!IMPORTANT]
+> **"Would be convenient" is not sufficient.** Every accepted feature carries an ongoing maintenance cost — code to keep alive, edge cases to test, translations to ship, regressions to answer for. A request is accepted only when its **benefit × breadth of need** clearly outweighs that cost. Requests that mainly serve a single user, replicate what the OS or an existing feature already handles, or trade a large maintenance surface for a small convenience will be declined even if the idea itself is reasonable.
+
 To suggest a new feature:
 
-1. Check if a similar feature request already exists.  
-   If so, please contribute to the existing discussion instead of opening a new one.
-2. Ensure your suggestion benefits a broad range of users and is not only a personal preference.
+1. Check if the **same** feature request already exists.  
+   If it does, add supporting information there instead of opening a duplicate. For a **similar-but-distinct** idea, open a new issue and cross-link the related one — do not stack it as a reply.
+2. Confirm that the feature benefits a broad range of users and that its benefit clearly exceeds the ongoing maintenance cost it would add.
 3. Click `New issue` and select the `Feature Request` template.
-4. Fill out the template as clearly and completely as possible.
+4. Fill out the template as clearly and completely as possible — in particular, explain **who** benefits, **how much**, and **why the benefit is worth the maintenance cost**.
 5. Submit the issue and remain available for follow-up questions.
+
+> [!NOTE]
+> Requests to add a new **UI language** are welcome as Feature Requests — see [Localization](#localization).
 
 ---
 
@@ -83,6 +97,30 @@ To suggest a new feature:
 
 ---
 
+## Localization
+
+RunCat Neo ships translations that real users read every day, so localization is treated as its own contribution track with rules that differ from ordinary code contributions.
+
+### Requesting a New Language
+
+If you want RunCat Neo to support a language it does not yet ship with, **open an issue** using the `Feature Request` template and state:
+
+- the target language, and
+- your reason for the request (e.g. size of the audience, personal need).
+
+**Do not open a translation pull request unless you can meet the standard in [Contributing a Translation](#contributing-a-translation).** Filing an issue is enough, and it is the preferred path — maintainers will decide whether and when to add the language.
+
+### Contributing a Translation
+
+Translation pull requests are held to a strict standard because the strings ship to real users:
+
+- **Only hand-crafted, human-authored translations are accepted.** Pull requests whose strings were produced by machine translators or LLMs (e.g. Google Translate, DeepL, ChatGPT, Claude) will be closed without merge. If machine-quality translation were acceptable here, maintainers would run it themselves — the value of a community translation PR is the human care put into every single string.
+- Translate **every entry** in [`Localizable.xcstrings`](LocalPackage/Sources/UserInterface/Resources/Localizable.xcstrings) and [`RunnerNames.xcstrings`](LocalPackage/Sources/UserInterface/Resources/RunnerNames.xcstrings). Verify each string fits its UI context (menu items, tooltips, settings labels) and that punctuation, spacing, and casing follow your language's conventions.
+- Declare in the pull request description that the translation is entirely human-authored, and note whether you are a native or fluent speaker of the target language.
+- If you cannot translate every string by hand, please file a [language request issue](#requesting-a-new-language) instead of opening a partial or machine-assisted PR.
+
+---
+
 ## Pull Requests
 
 ### Before Opening a Pull Request
@@ -92,6 +130,8 @@ To suggest a new feature:
 - Follow the existing formatting and conventions used in the codebase.
 - Keep each pull request focused on **a single change or context**.
   For multiple unrelated changes, create separate pull requests.
+- **Keep the diff minimal.** Small, focused pull requests get reviewed faster and more carefully. Do not fold refactors, cleanup, whitespace fixes, or drive-by improvements into a change request — file those as separate PRs. Reviewer attention is the bottleneck; every unrelated line you add costs some of it.
+- **Localization pull requests have additional rules.** See [Localization](#localization) — only hand-crafted, human-authored translations are accepted.
 - Keep code clean, readable, and easy to understand.
 - This repository is licensed under **Apache-2.0**.
 
@@ -153,8 +193,18 @@ To suggest a new feature:
 
 ## Code Style Guidelines
 
-All style rules are defined in [CODING_STYLE.md](CODING_STYLE.md).
-Follow them together with the existing conventions in the codebase.
+Two documents define the rules for code shape. Follow both, together with the existing conventions in the codebase:
+
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** — the [LUCA architecture](https://github.com/Kyome22/LUCA) rules: layer responsibilities, dependency direction, `DependencyClient` boundaries, the Store/Composable pattern, and resource placement.
+- **[CODING_STYLE.md](CODING_STYLE.md)** — line-level style: naming, formatting, comments, patterns, license headers.
+
+Key architectural rules that most PRs need to check:
+
+- **`DependencyClient` is a spot-mock boundary, not a place for logic.** Clients are never covered by tests, so anything more than one direct call into the underlying system API silently degrades the test guarantees the rest of the code depends on.
+- **`UserInterface` (SwiftUI views) must not contain logic.** All state changes go through a `Composable` store's `Action`.
+- **`Model` must not reference Asset Catalog or String Catalog resources.** Resource lookup lives only in `UserInterface`.
+
+Pull requests that violate these boundaries will need to be restructured before merge.
 
 ---
 
