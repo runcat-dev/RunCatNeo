@@ -28,7 +28,7 @@ struct SegmentedButtonStyle: PrimitiveButtonStyle {
             configuration.label
                 .font(.body)
                 .frame(width: 16, height: 16)
-                .contentShape(Rectangle())
+                .contentShape(.rect)
         }
         .buttonStyle(.plain)
         .padding(4)

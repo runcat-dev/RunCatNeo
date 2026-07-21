@@ -39,6 +39,6 @@ struct FrameImageCellView: View {
         }
         .border(isSelected ? Color.accentColor : Color.clear)
         .padding(4)
-        .contentShape(Rectangle())
+        .contentShape(.rect)
     }
 }

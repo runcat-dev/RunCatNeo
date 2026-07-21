@@ -37,27 +37,17 @@ struct FrameImagesCollectionView: View {
                             isTemplate: store.isTemplate,
                             isSelected: store.selectingFrameImage == frameImage
                         )
-                        .onDrag {
-                            Task {
-                                await store.send(.onDragFrameImageCell(frameImage))
-                            }
-                            return NSItemProvider(object: NSString(string: frameImage.id.uuidString))
-                        } preview: {
-                            Color.clear.frame(width: 40, height: 40)
-                        }
-                        .onDrop(
-                            of: [.item],
-                            delegate: FrameImageDropDelegate(
-                                index: index,
-                                frameImages: $store.frameImages,
-                                draggingFrameImage: $store.selectingFrameImage
-                            )
-                        )
                         .onTapGesture {
                             Task {
                                 await store.send(.onTapFrameImageCell(frameImage))
                             }
                         }
+                        .sortable(
+                            index: index,
+                            item: frameImage,
+                            items: $store.frameImages,
+                            draggingItem: $store.selectingFrameImage
+                        )
                     }
                 }
             }
@@ -69,7 +59,7 @@ struct FrameImagesCollectionView: View {
             }
             .dropDestination(for: URL.self) { urls, _ in
                 Task {
-                    await store.send(.onDropCollection(urls))
+                    await store.send(.onDropFiles(urls))
                 }
                 return true
             }
@@ -107,42 +97,5 @@ struct FrameImagesCollectionView: View {
         }
         .frame(width: 256, height: 180) // 256 = 48 × 5 + 4 × 4
         .border(Color(.separatorColor))
-    }
-}
-
-private struct FrameImageDropDelegate: DropDelegate {
-    var index: Int
-    @Binding var frameImages: [FrameImage]
-    @Binding var draggingFrameImage: FrameImage?
-
-    func performDrop(info: DropInfo) -> Bool {
-        if draggingFrameImage != nil, info.hasItemsConforming(to: [.text]) {
-            true
-        } else {
-            false
-        }
-    }
-
-    func dropEntered(info: DropInfo) {
-        guard let draggingFrameImage,
-              info.hasItemsConforming(to: [.text]),
-              let fromIndex = frameImages.firstIndex(of: draggingFrameImage),
-              fromIndex != index else {
-            return
-        }
-        withAnimation(.bouncy) {
-            frameImages.move(
-                fromOffsets: IndexSet(integer: fromIndex),
-                toOffset: index > fromIndex ? index + 1 : index
-            )
-        }
-    }
-
-    func dropUpdated(info: DropInfo) -> DropProposal? {
-        if info.hasItemsConforming(to: [.text]) {
-            DropProposal(operation: .move)
-        } else {
-            DropProposal(operation: .forbidden)
-        }
     }
 }

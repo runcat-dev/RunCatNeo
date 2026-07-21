@@ -89,10 +89,10 @@ struct CustomRunnerSettingsTests {
     }
 
     @MainActor @Test
-    func send_onDropCollection_appends_valid_png_and_ignores_other_extensions() async {
+    func send_onDropFiles_appends_valid_png_and_ignores_other_extensions() async {
         let recorder = errorRecorder()
         let sut = CustomRunnerSettings(.testDependencies(), action: recorder.action)
-        await sut.send(.onDropCollection([
+        await sut.send(.onDropFiles([
             URL.fixture(name: "solid_red_30x36"),
             URL(filePath: "/tmp/ignored.json"),
         ]))
@@ -101,10 +101,10 @@ struct CustomRunnerSettingsTests {
     }
 
     @MainActor @Test
-    func send_onDropCollection_forwards_error_when_image_size_is_invalid() async {
+    func send_onDropFiles_forwards_error_when_image_size_is_invalid() async {
         let recorder = errorRecorder()
         let sut = CustomRunnerSettings(.testDependencies(), action: recorder.action)
-        await sut.send(.onDropCollection([URL.fixture(name: "solid_red_10x18")]))
+        await sut.send(.onDropFiles([URL.fixture(name: "solid_red_10x18")]))
         #expect(recorder.lock.withLock(\.self) == .customRunner(.invalidFrameImage))
         #expect(sut.frameImages.isEmpty)
     }
@@ -262,14 +262,6 @@ struct CustomRunnerSettingsTests {
         #expect(sut.isTemplate == false)
         await sut.send(.selectRenderingMode(.monochrome))
         #expect(sut.isTemplate == true)
-    }
-
-    @MainActor @Test
-    func send_onDragFrameImageCell_selects_frame() async {
-        let frameImage = FrameImage.dummy()
-        let sut = CustomRunnerSettings(.testDependencies())
-        await sut.send(.onDragFrameImageCell(frameImage))
-        #expect(sut.selectingFrameImage == frameImage)
     }
 
     @MainActor @Test
