@@ -1,6 +1,6 @@
 # Coding Style Guidelines
 
-These are the authoritative style rules for all Swift code in this repository.
+These are the authoritative line-level style rules for all Swift code in this repository. For architecture-level rules (layering, `DependencyClient` boundaries, Store/View responsibilities, resource placement), see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Language
 

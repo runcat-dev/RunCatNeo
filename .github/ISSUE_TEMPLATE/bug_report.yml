@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        We do not accept issues in languages other than English.
+        English only. One issue per bug — file related-but-distinct bugs separately. See [CONTRIBUTING.md](https://github.com/runcat-dev/RunCatNeo/blob/main/CONTRIBUTING.md).
 
   - type: input
     id: app-version
@@ -33,7 +33,6 @@ body:
     id: bug-description
     attributes:
       label: "Describe the bug"
-      description: "A clear and concise description of what the bug is."
     validations:
       required: true
 
@@ -41,7 +40,6 @@ body:
     id: steps-to-reproduce
     attributes:
       label: "How to reproduce"
-      description: "Steps to reproduce the bug."
       value: |
         1.
         2.
@@ -54,15 +52,13 @@ body:
     id: expected-behavior
     attributes:
       label: "Expected behavior"
-      description: "A description of what you expected to happen."
     validations:
       required: true
 
   - type: textarea
     id: screenshots
     attributes:
-      label: "Screenshots"
-      description: "If possible, attach screenshots."
+      label: "Screenshots (optional)"
     validations:
       required: false
 
@@ -71,11 +67,9 @@ body:
     attributes:
       label: "Check List"
       options:
-        - label: "I have read the [CONTRIBUTING.md](https://github.com/runcat-dev/RunCatNeo/blob/main/CONTRIBUTING.md) and agree to follow it."
+        - label: "I have read [CONTRIBUTING.md](https://github.com/runcat-dev/RunCatNeo/blob/main/CONTRIBUTING.md)."
           required: true
-        - label: "Uninstalled App."
+        - label: "I reinstalled the app, rebooted my Mac, and the bug still reproduces."
           required: true
-        - label: "Re-launched your computer."
-          required: true
-        - label: "Checked that no similar issues already exist."
+        - label: "No duplicate exists. I will file any related-but-distinct bugs as separate issues."
           required: true

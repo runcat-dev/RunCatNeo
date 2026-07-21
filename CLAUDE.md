@@ -16,24 +16,14 @@ CI (`.github/workflows/test.yml`) runs on tag pushes only — local test runs ar
 
 ## Architecture (LUCA)
 
-The codebase follows the [LUCA architecture](https://github.com/Kyome22/LUCA) — three SPM library targets with strict layering:
+The codebase follows the [LUCA architecture](https://github.com/Kyome22/LUCA) — three SPM library targets with strict, one-way layering: `DataSource` (leaf) ← `Model` ← `UserInterface`. Never invert.
 
-- **`DataSource`** — leaf layer. Holds `Entities` (plain values: `AppState`, `Metrics`, `Runner`, `AsyncStreamBundle`, etc.), `Dependencies` (thin `Sendable` wrappers around system APIs like `UserDefaults`, `NSWorkspace`, `FileManager`, `SMAppService`), and `Repositories` (composed of dependencies). Every dependency conforms to `DependencyClient` and exposes `liveValue` + `testValue` so tests can inject overrides via `testDependency(of:injection:)`.
-- **`Model`** — depends on `DataSource`. Holds `Services` (long-lived workers wired in `AppDelegate` — `MetricsService`, `RunnerService`, `LogService`) and `Stores` (`@MainActor @Observable` view-models conforming to `Composable`: `Dashboard`, `RunnerBar`, `MetricsBar`, settings stores). Also exposes `AppDependencies`, the bag of all dependency clients passed everywhere, plus the `AppDelegate`.
-- **`UserInterface`** — depends on `DataSource` + `Model`. Holds SwiftUI `Scenes` (`RunnerBarScene`, `MetricsBarScene`, `SettingsWindowScene`) and `Views`. Localized strings and assets live in `UserInterface/Resources`.
+- **`DataSource`** — `Entities`, `Dependencies` (conform to `DependencyClient`, expose `liveValue` + `testValue`), `Repositories`.
+- **`Model`** — `Services` (`MetricsService`, `RunnerService`, `LogService`), `Stores` (`@MainActor @Observable`, conform to `Composable`: `Dashboard`, `RunnerBar`, `MetricsBar`, settings stores), `AppDependencies`, `AppDelegate`. Application logic lives here.
+- **`UserInterface`** — SwiftUI `Scenes` (`RunnerBarScene`, `MetricsBarScene`, `SettingsWindowScene`), `Views`, and resources in `UserInterface/Resources/`.
 
-Never invert these dependencies (UI must not be imported by Model; Model must not be imported by DataSource).
-
-### Stores and the Composable pattern
-
-Stores implement `Composable`: they expose an `Action` enum and a `reduce(_ action:)` async function, with `send(_:)` calling `reduce` then forwarding to a parent-provided `action` closure. This is the only way views mutate state. When adding a new screen, create a `Store` in `Model/Stores/`, define its `Action`, and pair it with a SwiftUI `View` that calls `store.send(...)`.
-
-### Cross-cutting state
-
-Global app state flows through `AppStateClient` (an `AllocatedUnfairLock<AppState>`). Async streams in `AppState` (e.g. `metrics`, `runnerBundles`, `runnerSpeeds`) are produced by services and consumed by stores via `for await` loops launched inside `reduce(.task)`.
-
-`AppDependencies.shared` is the live singleton injected through the `\.appDependencies` SwiftUI environment value; tests construct one via `AppDependencies.testDependencies(...)`, overriding only the clients they care about.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the authoritative rules — including how `DependencyClient` couples with test design (thin, untested boundaries; logic lives in `Service`/`Store`), the Composable/Store pattern (Views mutate state only via `store.send(Action)`), cross-cutting state via `AppStateClient` and `AppDependencies`, and resource-layering constraints (`Model` must not reference Asset/String Catalog resources).
 
 ## Code Conventions
 
-`CODING_STYLE.md` defines the authoritative style rules (language, naming, comments, formatting, license headers) — read and follow it when editing code. Contribution process rules (one PR per concern, PR/issue templates, review etiquette) live in `CONTRIBUTING.md`.
+`CODING_STYLE.md` defines line-level style rules (language, naming, comments, formatting, license headers). Architecture-level rules live in `ARCHITECTURE.md`. Contribution process rules (one PR per concern, PR/issue templates, review etiquette, localization policy, feature-request cost/benefit bar) live in `CONTRIBUTING.md`.

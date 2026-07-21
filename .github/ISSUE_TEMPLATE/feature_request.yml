@@ -6,31 +6,29 @@ body:
   - type: markdown
     attributes:
       value: |
-        We do not accept requests in languages other than English.
-        Requests to add new runners are not accepted here.
-        Custom runners are distributed in the [Runner Gallery](https://runcat-dev.github.io/RunnerGallery/) — please make your request there.
+        English only. Runner requests → [Runner Gallery](https://runcat-dev.github.io/RunnerGallery/) (not here). New UI languages ARE welcome here.
+
+        Skim [CONTRIBUTING.md](https://github.com/runcat-dev/RunCatNeo/blob/main/CONTRIBUTING.md) first — it defines the acceptance bar (benefit must outweigh maintenance cost) and the one-issue-per-topic rule.
 
   - type: textarea
     id: overview
     attributes:
       label: "Overview of the requested feature"
-      description: "Please provide a brief summary of the feature you're requesting."
     validations:
       required: true
 
   - type: textarea
     id: reason
     attributes:
-      label: "Reason for the request"
-      description: "Explain why this feature is needed and what motivated your request."
+      label: "Why this feature is worth the maintenance cost"
+      description: "Who benefits, how broadly, and why the benefit outweighs the ongoing cost of shipping and maintaining it."
     validations:
       required: true
 
   - type: textarea
     id: related-issues
     attributes:
-      label: "Related Issues"
-      description: "Link to related issues, if applicable."
+      label: "Related Issues (optional)"
     validations:
       required: false
 
@@ -39,11 +37,11 @@ body:
     attributes:
       label: "Check List"
       options:
-        - label: "I have read the [CONTRIBUTING.md](https://github.com/runcat-dev/RunCatNeo/blob/main/CONTRIBUTING.md) and agree to follow it."
+        - label: "I have read [CONTRIBUTING.md](https://github.com/runcat-dev/RunCatNeo/blob/main/CONTRIBUTING.md)."
           required: true
-        - label: "The proposed feature is beneficial to a wide range of users and not just a personal preference."
+        - label: "This benefits a wide range of users, and its benefit clearly outweighs the ongoing maintenance cost."
           required: true
-        - label: "This is not a request to add a new runner. Runner requests belong in the [Runner Gallery](https://runcat-dev.github.io/RunnerGallery/)."
+        - label: "Not a runner request (those go to the [Runner Gallery](https://runcat-dev.github.io/RunnerGallery/))."
           required: true
-        - label: "Checked that no similar requests already exist."
+        - label: "No duplicate exists. I will file any similar-but-distinct ideas as separate issues rather than stacking them here."
           required: true
