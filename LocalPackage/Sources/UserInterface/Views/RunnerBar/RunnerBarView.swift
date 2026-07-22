@@ -65,7 +65,8 @@ struct RunnerBarView: View {
                     setSize: { backgroundLayer.setSize($0) },
                     setFrames: { runnerLayer.setFrames($0, $1) },
                     setColor: { runnerLayer.setColor($0, $1) },
-                    setSpeed: { runnerLayer.setSpeed($0) }
+                    setSpeed: { runnerLayer.setSpeed($0) },
+                    setPaused: { runnerLayer.setPaused($0) }
                 )
             ))
         }

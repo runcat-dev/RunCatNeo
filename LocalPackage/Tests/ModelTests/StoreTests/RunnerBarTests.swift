@@ -22,6 +22,9 @@ struct RunnerBarTests {
             setColor: { _, _ in },
             setSpeed: { speed in
                 callStack.withLock { $0.append("setSpeed: \(speed)") }
+            },
+            setPaused: { isPaused in
+                callStack.withLock { $0.append("setPaused: \(isPaused)") }
             }
         )
     }
@@ -60,6 +63,18 @@ struct RunnerBarTests {
         await sut.send(.task("RunnerBarTests", makeEventBridge(recording: callStack)))
         await waitUntil { !callStack.withLock(\.self).isEmpty }
         #expect(callStack.withLock(\.self) == ["setSpeed: 12.5"])
+        await sut.send(.onDisappear)
+    }
+
+    @MainActor @Test
+    func send_task_applies_runner_paused_to_event_bridge() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        appState.withLock { $0.runnerPauses.send(true) }
+        let callStack = AllocatedUnfairLock<[String]>(initialState: [])
+        let sut = RunnerBar(.testDependencies(appStateClient: .testDependency(appState)))
+        await sut.send(.task("RunnerBarTests", makeEventBridge(recording: callStack)))
+        await waitUntil { !callStack.withLock(\.self).isEmpty }
+        #expect(callStack.withLock(\.self) == ["setPaused: true"])
         await sut.send(.onDisappear)
     }
 
