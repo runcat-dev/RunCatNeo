@@ -33,15 +33,17 @@ private struct SortableViewModifier<Item: Hashable & Identifiable>: ViewModifier
             }
             .dropDestination(
                 for: DraggableItem.self,
-                action: { _, _ in
-                    draggingItem = nil
-                    return false
-                },
-                isTargeted: { status in
-                    guard status, let draggingItem, draggingItem != item,
-                          let fromIndex = items.firstIndex(of: draggingItem) else {
-                        return
+                isEnabled: true,
+                action: { _, session in
+                    if session.phase == .ended(.move) {
+                        draggingItem = nil
                     }
+                }
+            )
+            .dropConfiguration { session in
+                if session.phase == .entering,
+                   let draggingItem, draggingItem != item,
+                   let fromIndex = items.firstIndex(of: draggingItem) {
                     withAnimation(.bouncy) {
                         items.move(
                             fromOffsets: IndexSet(integer: fromIndex),
@@ -49,7 +51,8 @@ private struct SortableViewModifier<Item: Hashable & Identifiable>: ViewModifier
                         )
                     }
                 }
-            )
+                return DropConfiguration(operation: .move)
+            }
     }
 
     private func hook(_ item: Item) -> DraggableItem {

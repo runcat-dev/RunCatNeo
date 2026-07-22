@@ -18,7 +18,7 @@
  limitations under the License.
  */
 
-public enum DisplayFormat: Sendable, Equatable {
+public enum DisplayFormat: Sendable, Hashable {
     case keyFrameAnimation([Frame])
     case thumbnail(Frame)
 }

@@ -26,7 +26,7 @@ struct CustomRunnerSettingsSectionView: View {
 
     var body: some View {
         Section {
-            ForEach(store.customRunnerBundleList, id: \.runner) { runnerBundle in
+            ForEach(store.customRunnerBundleList.enumerated(), id: \.element.runner) { offset, runnerBundle in
                 LabeledContent {
                     Button(role: .destructive) {
                         Task {
@@ -44,6 +44,12 @@ struct CustomRunnerSettingsSectionView: View {
                         runnerBundle.thumbnail
                     }
                 }
+                .sortable(
+                    index: offset,
+                    item: runnerBundle,
+                    items: $store.customRunnerBundleList,
+                    draggingItem: $store.draggingRunnerBundle
+                )
             }
             HStack {
                 Spacer()

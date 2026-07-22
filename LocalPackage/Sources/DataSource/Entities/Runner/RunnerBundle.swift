@@ -18,9 +18,11 @@
  limitations under the License.
  */
 
-public struct RunnerBundle: Sendable, Equatable {
+public struct RunnerBundle: Sendable, Hashable, Identifiable {
     public var runner: Runner
     public var displayFormat: DisplayFormat
+
+    public var id: Runner.ID { runner.id }
 
     public init(runner: Runner, frames: [Frame]) {
         self.runner = runner

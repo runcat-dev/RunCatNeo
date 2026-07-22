@@ -34,6 +34,7 @@ public final class CustomRunnerSettings: Composable {
     @ObservationIgnored private var index = Int.zero
 
     public var customRunnerBundleList: [RunnerBundle]
+    public var draggingRunnerBundle: RunnerBundle?
     public var showingCustomRunnerEditorSheet: Bool
     public var runnerName: String
     public var isTemplate: Bool
