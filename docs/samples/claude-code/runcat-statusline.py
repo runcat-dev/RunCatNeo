@@ -6,7 +6,7 @@ Writes ~/.claude/runcat-usage.json shaped like:
 
     {
       "title": "Claude Code",
-      "symbol": "staroflife",
+      "symbol": "circle.lefthalf.filled",
       "metricsBarValue": "67%",
       "metrics": [
         {"title": "Model",   "formattedValue": "Opus 4.7"},
@@ -16,6 +16,13 @@ Writes ~/.claude/runcat-usage.json shaped like:
       ],
       "lastUpdatedDate": "2026-06-07T05:55:36Z"
     }
+
+This sample is limit-aware: the menu-bar value shows the 5h session limit %
+(the number that tells you how close you are to being rate-limited), and the
+card icon fills up as the 5h / 7d usage rises, turning into a warning triangle
+near the cap. RunCat renders the menu-bar icon monochrome, so the level is
+conveyed by SHAPE rather than colour. Both fall back gracefully (context % on
+the bar, staroflife icon) when no rate-limit data is present.
 """
 
 import json
@@ -34,6 +41,19 @@ def pct(title, value):
     return {"title": title, "formattedValue": f"{value:g}%", "normalizedValue": round(value / 100, 4)}
 
 
+def limit_symbol(value):
+    """SF Symbol whose shape reflects how full the plan limit is."""
+    if value is None:
+        return "staroflife"
+    if value >= 85:
+        return "exclamationmark.triangle.fill"
+    if value >= 66:
+        return "circle.fill"
+    if value >= 33:
+        return "circle.lefthalf.filled"
+    return "circle"
+
+
 try:
     payload = json.load(sys.stdin)
     if not isinstance(payload, dict):
@@ -47,9 +67,12 @@ rate_limits = payload.get("rate_limits") or {}
 five = (rate_limits.get("five_hour") or {}).get("used_percentage")
 seven = (rate_limits.get("seven_day") or {}).get("used_percentage")
 
+# icon warns as you approach whichever plan limit is closest to its cap
+limit_level = max([v for v in (five, seven) if v is not None], default=None)
+
 snapshot = {
     "title": "Claude Code",
-    "symbol": "staroflife",
+    "symbol": limit_symbol(limit_level),
     "metrics": [m for m in [
         {"title": "Model", "formattedValue": model},
         pct("Context", ctx),
@@ -58,8 +81,10 @@ snapshot = {
     ] if m is not None],
     "lastUpdatedDate": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
 }
-if ctx is not None:
-    snapshot["metricsBarValue"] = f"{ctx:g}%"
+# menu-bar value: prefer the 5h session limit; fall back to context %
+bar_value = five if five is not None else ctx
+if bar_value is not None:
+    snapshot["metricsBarValue"] = f"{bar_value:g}%"
 
 OUT.parent.mkdir(parents=True, exist_ok=True)
 fd, tmp = tempfile.mkstemp(prefix=".runcat-", dir=str(OUT.parent))
