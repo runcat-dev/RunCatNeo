@@ -18,12 +18,16 @@
  limitations under the License.
  */
 
+import AppKit
 import DataSource
+import Model
 import SwiftUI
 
 struct CustomMetricsCardView: View {
     var snapshot: CustomMetricsSnapshot
     var isFailed: Bool
+    @Environment(\.appDependencies) private var appDependencies
+    @State private var loadedIcon: NSImage?
 
     init(customMetricsBundle: CustomMetricsBundle) {
         self.snapshot = customMetricsBundle.snapshot
@@ -40,9 +44,7 @@ struct CustomMetricsCardView: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
-            Image(systemName: snapshot.displaySymbol)
-                .resizable()
-                .scaledToFit()
+            icon
                 .frame(width: 24, height: 24)
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: snapshot.title)
@@ -66,5 +68,28 @@ struct CustomMetricsCardView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(8)
         .materialCellStyle()
+        .task(id: snapshot.iconURL) {
+            loadedIcon = await loadIcon(from: snapshot.iconURL)
+        }
+    }
+
+    @ViewBuilder
+    private var icon: some View {
+        if let loadedIcon {
+            Image(nsImage: loadedIcon)
+                .resizable()
+                .scaledToFit()
+                .accessibilityHidden(true)
+        } else {
+            Image(systemName: snapshot.displaySymbol)
+                .resizable()
+                .scaledToFit()
+                .accessibilityHidden(true)
+        }
+    }
+
+    private func loadIcon(from url: URL?) async -> NSImage? {
+        guard let url, let data = try? await appDependencies.dataClient.fetch(url) else { return nil }
+        return NSImage(data: data)
     }
 }
