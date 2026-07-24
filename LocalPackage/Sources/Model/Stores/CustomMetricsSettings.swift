@@ -115,6 +115,19 @@ public final class CustomMetricsSettings: Composable {
         case .removingCustomMetricsSourceCancelled:
             pendingRemovalSourceID = nil
 
+        case let .customMetricsSourceMoved(sourceID, destinationID):
+            guard let sourceIndex = customMetricsSources.firstIndex(where: { $0.id == sourceID }),
+                  let destinationIndex = customMetricsSources.firstIndex(where: { $0.id == destinationID }),
+                  sourceIndex != destinationIndex else {
+                return
+            }
+            let source = customMetricsSources.remove(at: sourceIndex)
+            customMetricsSources.insert(source, at: destinationIndex)
+            var configuration = userDefaultsRepository.customMetricsConfiguration
+            configuration.sources = customMetricsSources
+            userDefaultsRepository.customMetricsConfiguration = configuration
+            customMetricsService.emitConfigurationChange()
+
         case let .customMetricsSourceLinkTapped(source):
             do {
                 try customMetricsService.perform(
@@ -150,6 +163,7 @@ public final class CustomMetricsSettings: Composable {
         case removeCustomMetricsSourceButtonTapped(UUID)
         case removingCustomMetricsSourceConfirmed
         case removingCustomMetricsSourceCancelled
+        case customMetricsSourceMoved(UUID, UUID)
         case customMetricsSourceLinkTapped(CustomMetricsSource)
         case onError(RCNError)
     }

@@ -18,11 +18,15 @@
  limitations under the License.
  */
 
+import AppKit
 import Model
+import Observation
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct CustomMetricsSettingsSectionView: View {
     @State var store: CustomMetricsSettings
+    @State private var dragState = CustomMetricsSourceDragState()
 
     var body: some View {
         Section {
@@ -30,12 +34,28 @@ struct CustomMetricsSettingsSectionView: View {
                 CustomMetricsSourceRowView(
                     source: source,
                     isErrorDetected: store.failedCustomMetricsSourceIDs.contains(source.id),
+                    dragStarted: {
+                        dragState.begin(sourceID: source.id)
+                    },
                     removeButtonTapped: {
                         await store.send(.removeCustomMetricsSourceButtonTapped(source.id))
                     },
                     sourceLinkTapped: {
                         await store.send(.customMetricsSourceLinkTapped(source))
                     }
+                )
+                .opacity(dragState.hiddenSourceID == source.id ? 0 : 1)
+                .onDrop(
+                    of: [.text],
+                    delegate: CustomMetricsSourceDropDelegate(
+                        destinationSourceID: source.id,
+                        dragState: dragState,
+                        move: { sourceID, destinationID in
+                            Task {
+                                await store.send(.customMetricsSourceMoved(sourceID, destinationID))
+                            }
+                        }
+                    )
                 )
             }
             HStack {
@@ -116,9 +136,70 @@ struct CustomMetricsSettingsSectionView: View {
             await store.send(.task)
         }
         .onDisappear {
+            dragState.end()
             Task {
                 await store.send(.onDisappear)
             }
         }
+    }
+}
+
+@MainActor @Observable
+private final class CustomMetricsSourceDragState {
+    var sourceID: UUID?
+    var hiddenSourceID: UUID?
+
+    @ObservationIgnored private var mouseUpMonitor: Any?
+    @ObservationIgnored private var revealTask: Task<Void, Never>?
+
+    func begin(sourceID: UUID) {
+        revealTask?.cancel()
+        self.sourceID = sourceID
+        hiddenSourceID = sourceID
+        guard mouseUpMonitor == nil else { return }
+        mouseUpMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseUp) { [weak self] event in
+            self?.end()
+            return event
+        }
+    }
+
+    func end() {
+        let wasDragging = sourceID != nil
+        sourceID = nil
+        if let mouseUpMonitor {
+            NSEvent.removeMonitor(mouseUpMonitor)
+            self.mouseUpMonitor = nil
+        }
+        guard wasDragging else { return }
+        revealTask?.cancel()
+        revealTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(200))
+            guard !Task.isCancelled else { return }
+            self?.hiddenSourceID = nil
+            self?.revealTask = nil
+        }
+    }
+}
+
+private struct CustomMetricsSourceDropDelegate: DropDelegate {
+    var destinationSourceID: UUID
+    var dragState: CustomMetricsSourceDragState
+    var move: (UUID, UUID) -> Void
+
+    func dropEntered(info: DropInfo) {
+        guard let draggedSourceID = dragState.sourceID,
+              draggedSourceID != destinationSourceID else {
+            return
+        }
+        move(draggedSourceID, destinationSourceID)
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        dragState.end()
+        return true
     }
 }

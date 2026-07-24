@@ -22,22 +22,32 @@ import DataSource
 import SwiftUI
 
 struct CustomMetricsSourceRowView: View {
+    private let controlWidth: CGFloat = 24
+    private let controlSpacing: CGFloat = 8
+
     var source: CustomMetricsSource
     var isErrorDetected: Bool
+    var dragStarted: () -> Void
     var removeButtonTapped: () async -> Void
     var sourceLinkTapped: () async -> Void
 
     var body: some View {
         LabeledContent {
-            Button(role: .destructive) {
-                Task {
-                    await removeButtonTapped()
+            HStack(spacing: controlSpacing) {
+                Image(systemName: "line.3.horizontal")
+                    .foregroundStyle(.secondary)
+                    .frame(width: controlWidth)
+                Button(role: .destructive) {
+                    Task {
+                        await removeButtonTapped()
+                    }
+                } label: {
+                    Image(systemName: "minus.circle")
+                        .foregroundStyle(Color.red)
                 }
-            } label: {
-                Image(systemName: "minus.circle")
-                    .foregroundStyle(Color.red)
+                .buttonStyle(.borderless)
+                .frame(width: controlWidth)
             }
-            .buttonStyle(.borderless)
         } label: {
             Text(source.displayName)
                 .truncationMode(.middle)
@@ -55,5 +65,31 @@ struct CustomMetricsSourceRowView: View {
                 }
             }
         }
+        .contentShape(
+            .interaction,
+            CustomMetricsSourceDragHandleShape(
+                width: controlWidth,
+                trailingInset: controlWidth + controlSpacing
+            )
+        )
+        .contentShape(.dragPreview, Rectangle())
+        .onDrag {
+            dragStarted()
+            return NSItemProvider(object: source.id.uuidString as NSString)
+        }
+    }
+}
+
+private struct CustomMetricsSourceDragHandleShape: Shape {
+    var width: CGFloat
+    var trailingInset: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        Path(CGRect(
+            x: rect.maxX - trailingInset - width,
+            y: rect.minY,
+            width: width,
+            height: rect.height
+        ))
     }
 }
