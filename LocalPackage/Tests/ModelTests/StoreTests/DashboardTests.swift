@@ -125,6 +125,29 @@ struct DashboardTests {
 
 
     @MainActor @Test
+    func send_pauseButtonTapped_toggles_isPaused_and_sends_runnerPauses() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let setCallStack = AllocatedUnfairLock<[String]>(initialState: [])
+        let sut = Dashboard(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
+                $0.set = { value, key in
+                    let entry = "set: \(key) = \(value ?? "nil")"
+                    setCallStack.withLock { $0.append(entry) }
+                }
+            }
+        ))
+        #expect(sut.isPaused == false)
+        await sut.send(.pauseButtonTapped)
+        #expect(sut.isPaused == true)
+        #expect(appState.withLock(\.runnerPauses.latestValue) == true)
+        #expect(setCallStack.withLock(\.self) == ["set: IS_RUNNER_PAUSED = true"])
+        await sut.send(.pauseButtonTapped)
+        #expect(sut.isPaused == false)
+        #expect(appState.withLock(\.runnerPauses.latestValue) == false)
+    }
+
+    @MainActor @Test
     func send_quitButtonTapped() async {
         let callStack = AllocatedUnfairLock<[String]>(initialState: [])
         let sut = Dashboard(.testDependencies(

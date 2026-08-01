@@ -30,6 +30,7 @@ public final class Dashboard: Composable {
     private let nsWorkspaceClient: NSWorkspaceClient
     private let userDefaultsRepository: UserDefaultsRepository
     private let logService: LogService
+    private let runnerService: RunnerService
 
     @ObservationIgnored private var task: Task<Void, Never>?
 
@@ -38,6 +39,7 @@ public final class Dashboard: Composable {
     public var cpuRingBuffer: RingBuffer
     public var memoryRingBuffer: RingBuffer
     public var customMetricsBundles: [CustomMetricsBundle]
+    public var isPaused: Bool
     public let isPreview: Bool
     public let action: (Action) async -> Void
 
@@ -48,6 +50,7 @@ public final class Dashboard: Composable {
         cpuRingBuffer: RingBuffer = .init(),
         memoryRingBuffer: RingBuffer = .init(),
         customMetricsBundles: [CustomMetricsBundle] = [],
+        isPaused: Bool? = nil,
         isPreview: Bool? = nil,
         action: @escaping (Action) async -> Void =  { _ in }
     ) {
@@ -56,11 +59,13 @@ public final class Dashboard: Composable {
         self.nsWorkspaceClient = appDependencies.nsWorkspaceClient
         self.userDefaultsRepository = .init(appDependencies.userDefaultsClient)
         self.logService = .init(appDependencies)
+        self.runnerService = .init(appDependencies)
         self.appName = appName ?? appStateClient.withLock(\.name)
         self.systemInfoBundle = systemInfoBundle
         self.cpuRingBuffer = cpuRingBuffer
         self.memoryRingBuffer = memoryRingBuffer
         self.customMetricsBundles = customMetricsBundles
+        self.isPaused = isPaused ?? userDefaultsRepository.isRunnerPaused
         self.isPreview = isPreview ?? ProcessInfo.isPreview
         self.action = action
     }
@@ -104,6 +109,10 @@ public final class Dashboard: Composable {
         case .reportIssueButtonTapped:
             _ = nsWorkspaceClient.open(URL.githubIssues)
 
+        case .pauseButtonTapped:
+            isPaused.toggle()
+            runnerService.updateRunnerPaused(isPaused)
+
         case .quitButtonTapped:
             nsAppClient.terminate(nil)
 
@@ -130,6 +139,7 @@ public final class Dashboard: Composable {
         case aboutButtonTapped(AttributedString)
         case openSourceLicenseButtonTapped(OpenWindowActionWrapper)
         case reportIssueButtonTapped
+        case pauseButtonTapped
         case quitButtonTapped
         case debugSleepButtonTapped
         case debugWakeUpButtonTapped

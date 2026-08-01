@@ -25,6 +25,8 @@ final class RunnerLayer: CALayer {
     private var width = CGFloat.zero
     private let maskLayer = CALayer()
     private var keyFrameAnimation = CAKeyframeAnimation(keyPath: "contents")
+    private var lastSpeed = Float(1.0)
+    private var isPaused = false
 
     init(gap: CGFloat) {
         self.gap = gap
@@ -69,6 +71,7 @@ final class RunnerLayer: CALayer {
             add(keyFrameAnimation, forKey: "running")
         }
         CATransaction.commit()
+        applySpeed(isPaused ? .zero : lastSpeed)
     }
 
     func setColor(_ tintColor: CGColor, _ isTemplate: Bool) {
@@ -79,6 +82,18 @@ final class RunnerLayer: CALayer {
     }
 
     func setSpeed(_ speed: Float) {
+        lastSpeed = speed
+        guard !isPaused else { return }
+        applySpeed(speed)
+    }
+
+    func setPaused(_ paused: Bool) {
+        guard paused != isPaused else { return }
+        isPaused = paused
+        applySpeed(paused ? .zero : lastSpeed)
+    }
+
+    private func applySpeed(_ speed: Float) {
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         if mask == nil {

@@ -84,6 +84,12 @@ struct RunnerService {
             try update(runner: .default)
         }
         loadRunnerBundleList()
+        appStateClient.send(\.runnerPauses, userDefaultsRepository.isRunnerPaused)
+    }
+
+    func updateRunnerPaused(_ isPaused: Bool) {
+        userDefaultsRepository.isRunnerPaused = isPaused
+        appStateClient.send(\.runnerPauses, isPaused)
     }
 
     func updateRunnerSpeed(from cpuInfo: CPUInfo?) {

@@ -38,6 +38,11 @@ public struct UserDefaultsRepository: Sendable {
         nonmutating set { userDefaultsClient.set(newValue, .isFlippedHorizontally) }
     }
 
+    public var isRunnerPaused: Bool {
+        get { userDefaultsClient.bool(.isRunnerPaused) }
+        nonmutating set { userDefaultsClient.set(newValue, .isRunnerPaused) }
+    }
+
     public var updateInterval: UpdateInterval {
         get { UpdateInterval(rawValue: userDefaultsClient.integer(.updateInterval)) ?? .default }
         nonmutating set { userDefaultsClient.set(newValue.rawValue, .updateInterval) }
@@ -108,6 +113,7 @@ public struct UserDefaultsRepository: Sendable {
             .runnerID: RunnerKind.cat.id,
             .speedDecreasesUnderLoad: false,
             .isFlippedHorizontally: false,
+            .isRunnerPaused: false,
             .updateInterval: UpdateInterval.default.rawValue,
         ])
         if ProcessInfo.needsShowAllData {

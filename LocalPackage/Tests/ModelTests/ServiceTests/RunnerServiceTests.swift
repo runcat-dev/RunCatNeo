@@ -228,6 +228,37 @@ struct RunnerServiceTests {
     }
 
     @Test
+    func setup_sends_persisted_paused_state() throws {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let sut = RunnerService(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
+                $0.bool = { _ in true }
+            }
+        ))
+        try sut.setup()
+        #expect(appState.withLock(\.runnerPauses.latestValue) == true)
+    }
+
+    @Test
+    func updateRunnerPaused_stores_and_sends_paused_state() {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let setCallStack = AllocatedUnfairLock<[String]>(initialState: [])
+        let sut = RunnerService(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
+                $0.set = { value, key in
+                    let entry = "set: \(key) = \(value ?? "nil")"
+                    setCallStack.withLock { $0.append(entry) }
+                }
+            }
+        ))
+        sut.updateRunnerPaused(true)
+        #expect(appState.withLock(\.runnerPauses.latestValue) == true)
+        #expect(setCallStack.withLock(\.self) == ["set: IS_RUNNER_PAUSED = true"])
+    }
+
+    @Test
     func updateRunnerSpeed_sends_speed_proportional_to_cpu_usage() {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let sut = RunnerService(.testDependencies(appStateClient: .testDependency(appState)))
