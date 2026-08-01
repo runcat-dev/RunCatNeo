@@ -18,6 +18,7 @@
  limitations under the License.
  */
 
+import Foundation
 import ImageIO
 import UniformTypeIdentifiers
 
@@ -25,6 +26,7 @@ public struct DataClient: DependencyClient {
     public var read: @Sendable (URL) throws -> Data
     public var write: @Sendable (Data, URL) throws -> Void
     public var convert: @Sendable (CGImage, UTType) throws -> Data
+    public var fetch: @Sendable (URL) async throws -> Data
 
     public static let liveValue = Self(
         read: { try Data(contentsOf: $0) },
@@ -39,12 +41,23 @@ public struct DataClient: DependencyClient {
                 throw CGError.failure.nsError
             }
             return data as Data
+        },
+        fetch: { url in
+            if url.isFileURL {
+                return try Data(contentsOf: url)
+            }
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard (response as? HTTPURLResponse)?.statusCode == 200 else {
+                throw URLError(.badServerResponse)
+            }
+            return data
         }
     )
 
     public static let testValue = Self(
         read: { _ in Data() },
         write: { _, _ in },
-        convert: { _, _ in Data() }
+        convert: { _, _ in Data() },
+        fetch: { _ in Data() }
     )
 }

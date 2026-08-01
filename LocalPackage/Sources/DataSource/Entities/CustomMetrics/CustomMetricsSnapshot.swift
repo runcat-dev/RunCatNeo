@@ -23,6 +23,7 @@ import Foundation
 public struct CustomMetricsSnapshot: Codable, Sendable, Equatable {
     public var title: String
     public var symbol: String?
+    public var iconURL: URL?
     public var metricsBarValue: String?
     public var metrics: [CustomMetric]
     public var lastUpdatedDate: Date
@@ -30,12 +31,14 @@ public struct CustomMetricsSnapshot: Codable, Sendable, Equatable {
     public init(
         title: String,
         symbol: String? = nil,
+        iconURL: URL? = nil,
         metricsBarValue: String? = nil,
         metrics: [CustomMetric] = [],
         lastUpdatedDate: Date
     ) {
         self.title = title
         self.symbol = symbol
+        self.iconURL = iconURL
         self.metricsBarValue = metricsBarValue
         self.metrics = metrics
         self.lastUpdatedDate = lastUpdatedDate
