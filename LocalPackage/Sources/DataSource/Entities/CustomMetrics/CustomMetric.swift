@@ -22,10 +22,27 @@ public struct CustomMetric: Codable, Sendable, Equatable {
     public var title: String
     public var formattedValue: String
     public var normalizedValue: Double?
+    public var detail: String?
+    public var state: CustomMetricState?
 
-    public init(title: String, formattedValue: String, normalizedValue: Double? = nil) {
+    public init(
+        title: String,
+        formattedValue: String,
+        normalizedValue: Double? = nil,
+        detail: String? = nil,
+        state: CustomMetricState? = nil
+    ) {
         self.title = title
         self.formattedValue = formattedValue
         self.normalizedValue = normalizedValue
+        self.detail = detail
+        self.state = state
     }
+}
+
+public enum CustomMetricState: String, Codable, Sendable, Equatable {
+    case active
+    case waiting
+    case completed
+    case error
 }
