@@ -26,6 +26,9 @@ enum IndicatorKind {
     case spacer
     case usageFullLabel
     case usageHalfLabel
+    case usageBar
+    case usagePieChart
+    case boltIcon
 
     var size: CGSize {
         switch self {
@@ -39,6 +42,12 @@ enum IndicatorKind {
             CGSize(width: 40.0, height: 16.0)
         case .usageHalfLabel:
             CGSize(width: 46.0, height: 8.0)
+        case .usageBar:
+            CGSize(width: 8.0, height: 16.0)
+        case .usagePieChart:
+            CGSize(width: 14.0, height: 16.0)
+        case .boltIcon:
+            CGSize(width: 10.0, height: 16.0)
         }
     }
 

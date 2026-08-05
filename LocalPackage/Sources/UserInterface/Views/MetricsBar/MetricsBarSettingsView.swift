@@ -28,6 +28,21 @@ struct MetricsBarSettingsView: View {
     var body: some View {
         Form {
             Section {
+                Picker(selection: Binding<MetricsBarValueStyle>(
+                    get: { store.metricsBarConfiguration.resolvedValueStyle },
+                    asyncSet: { await store.send(.valueStyleChanged($0)) }
+                )) {
+                    ForEach(MetricsBarValueStyle.allCases) { style in
+                        let text = switch style {
+                        case .percentage: Text("metricsBarValueStylePercentage", bundle: .module)
+                        case .pie: Text("metricsBarValueStylePie", bundle: .module)
+                        case .bar: Text("metricsBarValueStyleBar", bundle: .module)
+                        }
+                        text.tag(style)
+                    }
+                } label: {
+                    Text("metricsBarValueStyle", bundle: .module)
+                }
                 Toggle(isOn: Binding<Bool>(
                     get: { store.metricsBarConfiguration.showsCPU },
                     asyncSet: { await store.send(.showsSystemMetricsToggleSwitched(.cpu, $0)) }
@@ -51,6 +66,22 @@ struct MetricsBarSettingsView: View {
                     asyncSet: { await store.send(.showsSystemMetricsToggleSwitched(.battery, $0)) }
                 )) {
                     Text("showBatteryStatus", bundle: .module)
+                }
+                if store.metricsBarConfiguration.showsBattery {
+                    Picker(selection: Binding<MetricsBarBatteryStyle>(
+                        get: { store.metricsBarConfiguration.resolvedBatteryStyle },
+                        asyncSet: { await store.send(.batteryStyleChanged($0)) }
+                    )) {
+                        ForEach(MetricsBarBatteryStyle.allCases) { style in
+                            let text = switch style {
+                            case .compact: Text("metricsBarBatteryStyleCompact", bundle: .module)
+                            case .percentage: Text("metricsBarBatteryStylePercentage", bundle: .module)
+                            }
+                            text.tag(style)
+                        }
+                    } label: {
+                        Text("metricsBarBatteryStyle", bundle: .module)
+                    }
                 }
                 Toggle(isOn: Binding<Bool>(
                     get: { store.metricsBarConfiguration.showsNetwork },
