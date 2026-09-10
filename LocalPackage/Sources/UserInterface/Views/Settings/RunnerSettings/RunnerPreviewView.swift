@@ -22,7 +22,7 @@ import Model
 import SwiftUI
 
 struct RunnerPreviewView: View {
-    @Bindable var store: CustomRunnerSettings
+    @Bindable var store: CustomRunnerEditor
 
     var body: some View {
         HStack(alignment: .center, spacing: 16) {

@@ -22,7 +22,6 @@ import Logging
 
 public enum CriticalEvent {
     case setupFailed(any Error)
-    case savingCustomRunnerFailed(any Error)
     case deletingCustomRunnerFailed(any Error)
     case sortingCustomRunnersFailed(any Error)
     case unknown(any Error)
@@ -31,8 +30,6 @@ public enum CriticalEvent {
         switch self {
         case .setupFailed:
             "Failed to setup."
-        case .savingCustomRunnerFailed:
-            "Failed saving custom runner."
         case .deletingCustomRunnerFailed:
             "Failed deleting custom runner."
         case .sortingCustomRunnersFailed:
@@ -45,7 +42,6 @@ public enum CriticalEvent {
     public var metadata: Logger.Metadata? {
         switch self {
         case let .setupFailed(error),
-            let .savingCustomRunnerFailed(error),
             let .deletingCustomRunnerFailed(error),
             let .sortingCustomRunnersFailed(error),
             let .unknown(error):

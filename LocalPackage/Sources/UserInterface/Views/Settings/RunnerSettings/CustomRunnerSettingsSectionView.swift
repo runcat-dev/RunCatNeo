@@ -22,6 +22,7 @@ import Model
 import SwiftUI
 
 struct CustomRunnerSettingsSectionView: View {
+    @Environment(\.appDependencies) private var appDependencies
     @State var store: CustomRunnerSettings
 
     var body: some View {
@@ -45,7 +46,7 @@ struct CustomRunnerSettingsSectionView: View {
                 Spacer()
                 Button {
                     Task {
-                        await store.send(.addCustomRunnerButtonTapped)
+                        await store.send(.addCustomRunnerButtonTapped(appDependencies))
                     }
                 } label: {
                     Label {
@@ -54,11 +55,7 @@ struct CustomRunnerSettingsSectionView: View {
                         Image(systemName: "plus")
                     }
                 }
-                .sheet(isPresented: $store.showingCustomRunnerEditorSheet) {
-                    Task {
-                        await store.send(.sheetDismissed)
-                    }
-                } content: {
+                .sheet(item: $store.customRunnerEditor) { store in
                     CustomRunnerEditorView(store: store)
                 }
                 Button {
@@ -87,11 +84,6 @@ struct CustomRunnerSettingsSectionView: View {
         }
         .task {
             await store.send(.viewAppeared)
-        }
-        .onDisappear {
-            Task {
-                await store.send(.viewDisappeared)
-            }
         }
     }
 }
