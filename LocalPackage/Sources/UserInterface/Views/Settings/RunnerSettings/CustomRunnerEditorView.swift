@@ -23,7 +23,7 @@ import Model
 import SwiftUI
 
 struct CustomRunnerEditorView: View {
-    @Bindable var store: CustomRunnerSettings
+    @Bindable var store: CustomRunnerEditor
 
     var body: some View {
         NavigationStack {
@@ -60,16 +60,6 @@ struct CustomRunnerEditorView: View {
             }
             .formStyle(.grouped)
             .fixedSize()
-            .fileImporter(
-                isPresented: $store.showingFileImporter,
-                allowedContentTypes: [.png],
-                allowsMultipleSelection: true,
-                onCompletion: { result in
-                    Task {
-                        await store.send(.fileImporterResponse(result))
-                    }
-                }
-            )
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(role: .cancel) {
@@ -87,6 +77,20 @@ struct CustomRunnerEditorView: View {
                         Text("add", bundle: .module)
                     }
                     .disabled(!store.canAdd)
+                }
+            }
+            .alert(
+                isPresented: $store.showingAlert,
+                error: store.error,
+                actions: { _ in },
+                message: { _ in }
+            )
+            .task {
+                await store.send(.viewAppeared)
+            }
+            .onDisappear {
+                Task {
+                    await store.send(.viewDisappeared)
                 }
             }
         }

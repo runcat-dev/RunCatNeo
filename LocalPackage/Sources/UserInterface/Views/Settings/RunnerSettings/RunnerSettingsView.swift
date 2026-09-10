@@ -45,12 +45,6 @@ struct RunnerSettingsView: View {
             CustomRunnerSettingsSectionView(store: store.customRunnerSettings)
         }
         .formStyle(.grouped)
-        .alert(
-            isPresented: $store.showingAlert,
-            error: store.error,
-            actions: { _ in },
-            message: { _ in }
-        )
         .task {
             await store.send(.viewAppeared(String(describing: Self.self)))
         }

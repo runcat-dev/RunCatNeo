@@ -23,7 +23,7 @@ import Model
 import SwiftUI
 
 struct FrameImagesCollectionView: View {
-    @Bindable var store: CustomRunnerSettings
+    @Bindable var store: CustomRunnerEditor
     private let columns = [GridItem](repeating: .init(.flexible(), spacing: 4), count: 5)
 
     var body: some View {
@@ -78,6 +78,16 @@ struct FrameImagesCollectionView: View {
                     .labelStyle(.iconOnly)
                 }
                 .buttonStyle(.segmented)
+                .fileImporter(
+                    isPresented: $store.showingFileImporter,
+                    allowedContentTypes: [.png],
+                    allowsMultipleSelection: true,
+                    onCompletion: { result in
+                        Task {
+                            await store.send(.fileImporterResponse(result))
+                        }
+                    }
+                )
                 Button {
                     Task {
                         await store.send(.deleteFrameButtonTapped)
