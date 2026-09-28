@@ -24,7 +24,7 @@ import SwiftUI
 
 struct MenuView: View {
     @Environment(\.openWindow) private var openWindow
-    var store: Dashboard
+    var store: DashboardMenu
 
     private var aboutBody: AttributedString {
         var attributedString = AttributedString()
@@ -168,5 +168,13 @@ struct MenuView: View {
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
+        .task {
+            await store.send(.viewAppeared)
+        }
+        .onDisappear {
+            Task {
+                await store.send(.viewDisappeared)
+            }
+        }
     }
 }

@@ -31,7 +31,7 @@ struct DashboardView: View {
                     .foregroundStyle(.secondary)
                     .padding(.leading, 8)
                 Spacer()
-                MenuView(store: store)
+                MenuView(store: store.dashboardMenu)
             }
             SystemInfoStackView(
                 systemInfoBundle: store.systemInfoBundle,
