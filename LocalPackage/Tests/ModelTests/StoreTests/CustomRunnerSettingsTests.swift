@@ -105,7 +105,7 @@ struct CustomRunnerSettingsTests {
     @MainActor @Test
     func send_addCustomRunnerButtonTapped_creates_editor() async {
         let sut = CustomRunnerSettings(.testDependencies())
-        await sut.send(.addCustomRunnerButtonTapped(.testDependencies()))
+        await sut.send(.addCustomRunnerButtonTapped)
         #expect(sut.customRunnerEditor != nil)
     }
 

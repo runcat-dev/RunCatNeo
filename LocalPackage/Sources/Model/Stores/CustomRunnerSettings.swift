@@ -24,6 +24,7 @@ import Observation
 
 @MainActor @Observable
 public final class CustomRunnerSettings: Composable {
+    private let appDependencies: AppDependencies
     private let appStateClient: AppStateClient
     private let uuidClient: UUIDClient
     private let logService: LogService
@@ -41,6 +42,7 @@ public final class CustomRunnerSettings: Composable {
         showingGuidancePopover: Bool = false,
         action: @escaping (Action) async -> Void = { _ in }
     ) {
+        self.appDependencies = appDependencies
         self.appStateClient = appDependencies.appStateClient
         self.uuidClient = appDependencies.uuidClient
         self.logService = .init(appDependencies)
@@ -79,7 +81,7 @@ public final class CustomRunnerSettings: Composable {
                 logService.critical(.sortingCustomRunnersFailed(error))
             }
 
-        case let .addCustomRunnerButtonTapped(appDependencies):
+        case .addCustomRunnerButtonTapped:
             customRunnerEditor = .init(
                 appDependencies,
                 id: uuidClient.create(),
@@ -107,7 +109,7 @@ public final class CustomRunnerSettings: Composable {
         case viewAppeared
         case deleteButtonTapped(Runner)
         case customRunnerRowMoved(IndexSet, Int)
-        case addCustomRunnerButtonTapped(AppDependencies)
+        case addCustomRunnerButtonTapped
         case guidanceButtonTapped
         case customRunnerEditor(CustomRunnerEditor.Action)
     }

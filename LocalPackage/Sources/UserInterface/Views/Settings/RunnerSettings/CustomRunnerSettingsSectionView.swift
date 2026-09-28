@@ -22,7 +22,6 @@ import Model
 import SwiftUI
 
 struct CustomRunnerSettingsSectionView: View {
-    @Environment(\.appDependencies) private var appDependencies
     @State var store: CustomRunnerSettings
 
     var body: some View {
@@ -46,7 +45,7 @@ struct CustomRunnerSettingsSectionView: View {
                 Spacer()
                 Button {
                     Task {
-                        await store.send(.addCustomRunnerButtonTapped(appDependencies))
+                        await store.send(.addCustomRunnerButtonTapped)
                     }
                 } label: {
                     Label {

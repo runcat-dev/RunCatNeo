@@ -27,8 +27,6 @@ import SystemInfoKit
 public final class MetricsSettings: Composable {
     private let appStateClient: AppStateClient
     private let userDefaultsRepository: UserDefaultsRepository
-    private let nsWorkspaceClient: NSWorkspaceClient
-    private let customMetricsService: CustomMetricsService
     private let logService: LogService
     private let systemMetricsService: SystemMetricsService
 
@@ -54,8 +52,6 @@ public final class MetricsSettings: Composable {
     ) {
         self.appStateClient = appDependencies.appStateClient
         self.userDefaultsRepository = .init(appDependencies.userDefaultsClient)
-        self.nsWorkspaceClient = appDependencies.nsWorkspaceClient
-        self.customMetricsService = .init(appDependencies)
         self.logService = .init(appDependencies)
         self.systemMetricsService = .init(appDependencies)
         self.showsMetricsBar = showsMetricsBar ?? userDefaultsRepository.showsMetricsBar

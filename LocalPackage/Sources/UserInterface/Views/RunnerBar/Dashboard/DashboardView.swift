@@ -22,7 +22,6 @@ import Model
 import SwiftUI
 
 struct DashboardView: View {
-    @Environment(\.appDependencies) private var appDependencies
     @StateObject var store: Dashboard
 
     var body: some View {

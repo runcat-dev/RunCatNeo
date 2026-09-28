@@ -29,7 +29,6 @@ public final class Dashboard: Composable {
     private let dateClient: DateClient
     private let nsAppClient: NSAppClient
     private let nsWorkspaceClient: NSWorkspaceClient
-    private let userDefaultsRepository: UserDefaultsRepository
     private let logService: LogService
     private let runnerService: RunnerService
 
@@ -63,7 +62,6 @@ public final class Dashboard: Composable {
         self.dateClient = appDependencies.dateClient
         self.nsAppClient = appDependencies.nsAppClient
         self.nsWorkspaceClient = appDependencies.nsWorkspaceClient
-        self.userDefaultsRepository = .init(appDependencies.userDefaultsClient)
         self.logService = .init(appDependencies)
         self.runnerService = .init(appDependencies)
         self.appName = appName ?? appStateClient.withLock(\.name)
