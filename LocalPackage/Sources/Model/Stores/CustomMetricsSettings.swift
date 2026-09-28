@@ -38,6 +38,8 @@ public final class CustomMetricsSettings: Composable {
     public var showingConfirmationDialog: Bool
     public var pendingRemovalSourceID: UUID?
     public var showingGuidancePopover: Bool
+    public var showingAlert: Bool
+    public var error: RCNError?
     public let action: (Action) async -> Void
 
     public init(
@@ -48,6 +50,8 @@ public final class CustomMetricsSettings: Composable {
         showingConfirmationDialog: Bool = false,
         pendingRemovalSourceID: UUID? = nil,
         showingGuidancePopover: Bool = false,
+        showingAlert: Bool = false,
+        error: RCNError? = nil,
         action: @escaping (Action) async -> Void = { _ in }
     ) {
         self.appStateClient = appDependencies.appStateClient
@@ -61,6 +65,8 @@ public final class CustomMetricsSettings: Composable {
         self.showingConfirmationDialog = showingConfirmationDialog
         self.pendingRemovalSourceID = pendingRemovalSourceID
         self.showingGuidancePopover = showingGuidancePopover
+        self.showingAlert = showingAlert
+        self.error = error
         self.action = action
     }
 
@@ -131,8 +137,9 @@ public final class CustomMetricsSettings: Composable {
         case .guidanceButtonTapped:
             showingGuidancePopover = true
 
-        case .errorOccurred:
-            return
+        case let .errorOccurred(error):
+            self.error = error
+            showingAlert = true
         }
     }
 

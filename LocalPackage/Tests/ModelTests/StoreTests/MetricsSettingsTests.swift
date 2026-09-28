@@ -177,12 +177,4 @@ struct MetricsSettingsTests {
         await sut.send(.monitorsSystemMetricsToggleSwitched(.cpu, false))
         #expect(toggleActivationCount.withLock(\.self) == 0)
     }
-
-    @MainActor @Test
-    func send_customMetricsSettings_errorOccurred_shows_alert() async {
-        let sut = MetricsSettings(.testDependencies())
-        await sut.send(.customMetricsSettings(.errorOccurred(.customMetrics(.fileUnreadable))))
-        #expect(sut.error == .customMetrics(.fileUnreadable))
-        #expect(sut.showingAlert)
-    }
 }

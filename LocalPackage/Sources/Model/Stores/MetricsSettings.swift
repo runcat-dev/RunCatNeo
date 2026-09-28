@@ -35,8 +35,6 @@ public final class MetricsSettings: Composable {
     public var showsMetricsBar: Bool
     public var showingMetricsBarNotesSheet: Bool
     public var systemMetricsConfiguration: SystemMetricsConfiguration
-    public var showingAlert: Bool
-    public var error: RCNError?
     public let customMetricsSettings: CustomMetricsSettings
     public let action: (Action) async -> Void
 
@@ -45,8 +43,6 @@ public final class MetricsSettings: Composable {
         showsMetricsBar: Bool? = nil,
         showingMetricsBarNotesSheet: Bool = false,
         systemMetricsConfiguration: SystemMetricsConfiguration? = nil,
-        showingAlert: Bool = false,
-        error: RCNError? = nil,
         customMetricsSettings: CustomMetricsSettings? = nil,
         action: @escaping (Action) async -> Void = { _ in }
     ) {
@@ -57,8 +53,6 @@ public final class MetricsSettings: Composable {
         self.showsMetricsBar = showsMetricsBar ?? userDefaultsRepository.showsMetricsBar
         self.showingMetricsBarNotesSheet = showingMetricsBarNotesSheet
         self.systemMetricsConfiguration = systemMetricsConfiguration ?? userDefaultsRepository.systemMetricsConfiguration
-        self.showingAlert = showingAlert
-        self.error = error
         weak var weakSelf: MetricsSettings? = nil
         self.customMetricsSettings = customMetricsSettings ??
             .init(appDependencies, action: { await weakSelf?.send(.customMetricsSettings($0)) })
@@ -123,10 +117,6 @@ public final class MetricsSettings: Composable {
             userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
             systemMetricsService.toggleSystemMetricsActivation(type: type, isOn: isOn)
             systemMetricsService.emitConfigurationChange()
-
-        case let .customMetricsSettings(.errorOccurred(error)):
-            self.error = error
-            showingAlert = true
 
         case .customMetricsSettings:
             return

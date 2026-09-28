@@ -375,4 +375,12 @@ struct CustomMetricsSettingsTests {
         #expect(sut.pendingRemovalSourceID == nil)
         #expect(sut.customMetricsSources.count == 1)
     }
+
+    @MainActor @Test
+    func send_errorOccurred_shows_alert() async {
+        let sut = CustomMetricsSettings(.testDependencies())
+        await sut.send(.errorOccurred(.customMetrics(.fileUnreadable)))
+        #expect(sut.error == .customMetrics(.fileUnreadable))
+        #expect(sut.showingAlert)
+    }
 }

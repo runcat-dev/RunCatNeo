@@ -69,6 +69,12 @@ struct CustomMetricsSettingsSectionView: View {
                     Text("customMetricsConfirmationMessage", bundle: .module)
                 }
             )
+            .alert(
+                isPresented: $store.showingAlert,
+                error: store.error,
+                actions: { _ in },
+                message: { _ in }
+            )
             HStack {
                 Spacer()
                 Button {
