@@ -20,7 +20,12 @@ A valid file might look like this:
   "symbol": "staroflife",
   "metricsBarValue": "5.4%",
   "metrics": [
-    { "title": "Model",   "formattedValue": "Opus 4.7" },
+    {
+      "title": "Model",
+      "formattedValue": "Opus 4.7",
+      "detail": "~/Projects/example",
+      "state": "active"
+    },
     { "title": "Context", "formattedValue": "5.4%",  "normalizedValue": 0.054 },
     { "title": "5h",      "formattedValue": "16.4%", "normalizedValue": 0.164 },
     { "title": "7d",      "formattedValue": "1.0%",  "normalizedValue": 0.01  }
@@ -29,7 +34,7 @@ A valid file might look like this:
 }
 ```
 
-The values above are illustrative — `title`, `symbol`, and the metric labels are all your choice; pick whatever makes sense for what you're tracking. The `Model` row omits `normalizedValue`, so RunCat renders just the text with no bar; the other three rows include it, so a bar is drawn under the text.
+The values above are illustrative. `title`, `symbol`, and the metric labels are all your choice; pick whatever makes sense for what you're tracking. The `Model` row includes secondary detail and an active-state indicator but omits `normalizedValue`, so it has no bar. The other three rows include `normalizedValue`, so a bar is drawn under their text.
 
 ### Top level
 
@@ -48,6 +53,8 @@ The values above are illustrative — `title`, `symbol`, and the metric labels a
 | `title`           | string  | yes      | Row label. The row is rendered as `title: formattedValue`. |
 | `formattedValue`  | string  | yes      | The completed display string. Include any units, currency symbols, or suffixes (e.g. `"5.4%"`, `"$3.21"`, `"42 days"`). |
 | `normalizedValue` | number  | no       | A value between 0 and 1. When present, a horizontal progress bar is drawn under the row. When omitted, only the `title: formattedValue` text is shown. |
+| `detail`          | string  | no       | Secondary text shown below the row. |
+| `state`           | string  | no       | Semantic status: `active`, `waiting`, `completed`, or `error`. Shown as a colored dot. |
 
 ## Display rules
 
