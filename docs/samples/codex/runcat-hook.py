@@ -37,8 +37,9 @@ def window_title(window_minutes):
 
 def latest_token_count(transcript_path):
     if not transcript_path:
-        return None
+        return None, None
     latest = None
+    latest_timestamp = None
     try:
         with Path(transcript_path).open(encoding="utf-8") as transcript:
             for line in transcript:
@@ -49,9 +50,23 @@ def latest_token_count(transcript_path):
                 payload = event.get("payload") or {}
                 if payload.get("type") == "token_count":
                     latest = payload
+                    latest_timestamp = event.get("timestamp")
     except OSError:
-        return None
-    return latest
+        return None, None
+    return latest, latest_timestamp
+
+
+def should_replace_snapshot(timestamp):
+    try:
+        with OUT.open(encoding="utf-8") as snapshot:
+            last_updated = json.load(snapshot)["lastUpdatedDate"]
+        written = datetime.strptime(last_updated, "%Y-%m-%dT%H:%M:%S%z")
+        if written > datetime.now(timezone.utc):
+            return True
+        taken = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+        return taken.replace(microsecond=0) > written
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return True
 
 
 def context_metric(token_count):
@@ -87,9 +102,11 @@ def write_snapshot(hook_input):
         model = ""
     if not model:
         model = "Codex"
-    token_count = latest_token_count(hook_input.get("transcript_path"))
+    token_count, timestamp = latest_token_count(hook_input.get("transcript_path"))
     rate_metrics = rate_limit_metrics(token_count)
     if OUT.exists() and (token_count is None or not rate_metrics):
+        return
+    if not should_replace_snapshot(timestamp):
         return
     context = context_metric(token_count)
     metrics = [{"title": "Model", "formattedValue": model}]
