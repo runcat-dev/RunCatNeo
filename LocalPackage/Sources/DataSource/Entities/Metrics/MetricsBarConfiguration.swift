@@ -27,6 +27,8 @@ public struct MetricsBarConfiguration: Codable, Sendable, Equatable {
     public var showsBattery: Bool
     public var showsNetwork: Bool
     public var visibleCustomMetricsSourceIDs: Set<UUID>
+    public var valueStyle: MetricsBarValueStyle?
+    public var batteryStyle: MetricsBarBatteryStyle?
 
     public var isEmpty: Bool {
         !showsCPU && !showsMemory && !showsStorage && !showsBattery && !showsNetwork
@@ -37,12 +39,22 @@ public struct MetricsBarConfiguration: Codable, Sendable, Equatable {
         visibleCustomMetricsSourceIDs.contains(id)
     }
 
+    public var resolvedValueStyle: MetricsBarValueStyle {
+        valueStyle ?? .percentage
+    }
+
+    public var resolvedBatteryStyle: MetricsBarBatteryStyle {
+        batteryStyle ?? .percentage
+    }
+
     public static let `default` = Self(
         showsCPU: true,
         showsMemory: false,
         showsStorage: false,
         showsBattery: false,
         showsNetwork: false,
-        visibleCustomMetricsSourceIDs: []
+        visibleCustomMetricsSourceIDs: [],
+        valueStyle: .percentage,
+        batteryStyle: .percentage
     )
 }

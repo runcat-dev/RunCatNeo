@@ -26,22 +26,31 @@ import SystemInfoKit
 struct MetricsBarView: View {
     @StateObject var store: MetricsBar
 
+    private var usageIndicatorKind: IndicatorKind {
+        switch store.metricsBarConfiguration.resolvedValueStyle {
+        case .percentage: .usageFullLabel
+        case .bar: .usageBar
+        case .pie: .usagePieChart
+        }
+    }
+
     private var size: CGSize {
         var widthArray = [CGFloat]()
         let iconWidth = IndicatorKind.categoryIcon.size.width
         if store.metricsBarConfiguration.showsCPU, store.systemInfoBundle.cpuInfo != nil {
-            widthArray.append(iconWidth + IndicatorKind.usageFullLabel.size.width)
+            widthArray.append(iconWidth + usageIndicatorKind.size.width)
         }
         if store.metricsBarConfiguration.showsMemory, store.systemInfoBundle.memoryInfo != nil {
-            widthArray.append(iconWidth + IndicatorKind.usageFullLabel.size.width)
+            widthArray.append(iconWidth + usageIndicatorKind.size.width)
         }
         if store.metricsBarConfiguration.showsStorage, store.systemInfoBundle.storageInfo != nil {
-            widthArray.append(iconWidth + IndicatorKind.usageFullLabel.size.width)
+            widthArray.append(iconWidth + usageIndicatorKind.size.width)
         }
         if store.metricsBarConfiguration.showsBattery,
            let batteryInfo = store.systemInfoBundle.batteryInfo?.simulated(store.isPreview) {
-            if batteryInfo.isInstalled {
-                widthArray.append(iconWidth + IndicatorKind.usageFullLabel.size.width)
+            if batteryInfo.isInstalled && store.metricsBarConfiguration.resolvedBatteryStyle == .percentage {
+                let boltWidth = batteryInfo.isCharging ? IndicatorKind.boltIcon.size.width : 0
+                widthArray.append(iconWidth + boltWidth + IndicatorKind.usageFullLabel.size.width)
             } else {
                 widthArray.append(iconWidth)
             }
@@ -100,18 +109,29 @@ struct MetricsBarView: View {
         systemInfo: any SystemInfo
     ) {
         let iconSize = IndicatorKind.categoryIcon.size
+
+        if let batteryInfo = systemInfo as? BatteryInfo,
+           batteryInfo.isInstalled,
+           store.metricsBarConfiguration.resolvedBatteryStyle == .compact {
+            context.drawBatteryIndicator(origin: point, size: iconSize, percentage: batteryInfo.percentage.value, isCharging: batteryInfo.isCharging)
+            point.x += iconSize.width + IndicatorKind.spacer.size.width
+            return
+        }
+
         context.drawIcon(systemName: systemInfo.icon, point: point, size: iconSize)
         point.x += iconSize.width
 
         switch systemInfo {
         case is CPUInfo, is MemoryInfo, is StorageInfo:
-            context.drawBlackText(origin: point, size: IndicatorKind.usageFullLabel.size) {
-                Text(verbatim: systemInfo.percentage.menuBarDescription)
-            }
-            point.x += IndicatorKind.usageFullLabel.size.width + IndicatorKind.spacer.size.width
+            drawUsage(context: &context, point: point, percentage: systemInfo.percentage)
+            point.x += usageIndicatorKind.size.width + IndicatorKind.spacer.size.width
 
         case let batteryInfo as BatteryInfo:
             if batteryInfo.isInstalled {
+                if batteryInfo.isCharging {
+                    context.drawBoltIcon(point: point, size: IndicatorKind.boltIcon.size)
+                    point.x += IndicatorKind.boltIcon.size.width
+                }
                 context.drawBlackText(origin: point, size: IndicatorKind.usageFullLabel.size) {
                     Text(verbatim: batteryInfo.percentage.menuBarDescription)
                 }
@@ -135,6 +155,23 @@ struct MetricsBarView: View {
 
         default:
             break
+        }
+    }
+
+    private func drawUsage(
+        context: inout GraphicsContext,
+        point: CGPoint,
+        percentage: Percentage
+    ) {
+        switch store.metricsBarConfiguration.resolvedValueStyle {
+        case .percentage:
+            context.drawBlackText(origin: point, size: usageIndicatorKind.size) {
+                Text(verbatim: percentage.menuBarDescription)
+            }
+        case .bar:
+            context.drawUsageBar(origin: point, size: usageIndicatorKind.size, percentage: percentage.value)
+        case .pie:
+            context.drawUsagePieChart(origin: point, size: usageIndicatorKind.size, percentage: percentage.value)
         }
     }
 
