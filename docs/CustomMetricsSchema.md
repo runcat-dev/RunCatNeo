@@ -18,6 +18,7 @@ A valid file might look like this:
 {
   "title": "Claude Code",
   "symbol": "staroflife",
+  "contentLayout": "compact",
   "metricsBarValue": "5.4%",
   "metrics": [
     { "title": "Model",   "formattedValue": "Opus 4.7" },
@@ -37,6 +38,7 @@ The values above are illustrative — `title`, `symbol`, and the metric labels a
 |-------------------|----------------|----------|-------------|
 | `title`           | string         | yes      | Card header text. |
 | `symbol`          | string         | no       | [SF Symbol](https://developer.apple.com/sf-symbols/) identifier shown next to the title. Defaults to `chart.bar.horizontal.page.fill`. |
+| `contentLayout`   | string         | no       | Card body layout: `compact` uses the space below the icon; `indented` aligns all rows to the right of the icon. Defaults to `indented` to preserve the original behavior. |
 | `metricsBarValue` | string         | no       | Short text shown in the Metrics Bar (the dedicated menu-bar item) next to the source's symbol. Displayed verbatim; keep it short — the bar caps the label width and truncates longer strings. Each source is hidden in the bar by default: click the Metrics Bar and flip the source's toggle to show it. When the source is shown but this field is omitted, the bar renders `---`. |
 | `metrics`         | array<Metric\> | yes      | Rows displayed inside the card. Empty array is allowed. |
 | `lastUpdatedDate` | string         | yes      | ISO 8601 timestamp (e.g. `"2026-06-05T04:50:40Z"`) of when the producer wrote this file. Shown as a relative time (`"3 min ago"`) at the bottom of the card; updates automatically. |
