@@ -74,6 +74,26 @@ struct CustomRunnerEditorTests {
     }
 
     @MainActor @Test
+    func send_filesDropped_forwards_error_when_image_is_wider_than_100px_by_default() async {
+        let recorder = errorRecorder()
+        let sut = CustomRunnerEditor(.testDependencies(), id: .init(), action: recorder.action)
+        await sut.send(.filesDropped([URL.fixture(name: "solid_red_200x36")]))
+        #expect(recorder.lock.withLock(\.self) == .customRunner(.invalidFrameImage))
+        #expect(sut.frameImages.isEmpty)
+    }
+
+    @MainActor @Test
+    func send_filesDropped_appends_wide_image_when_wide_frames_are_allowed() async {
+        let recorder = errorRecorder()
+        let sut = CustomRunnerEditor(.testDependencies(), id: .init(), action: recorder.action)
+        await sut.send(.allowWideFramesToggleSwitched(true))
+        #expect(sut.allowsWideFrames)
+        await sut.send(.filesDropped([URL.fixture(name: "solid_red_200x36")]))
+        #expect(sut.frameImages.count == 1)
+        #expect(recorder.lock.withLock(\.self) == nil)
+    }
+
+    @MainActor @Test
     func send_filesDropped_forwards_error_when_frame_limit_is_reached() async {
         let recorder = errorRecorder()
         let frameImages = (0 ..< 30).map { _ in FrameImage.dummy() }
