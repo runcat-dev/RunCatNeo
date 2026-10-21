@@ -43,6 +43,15 @@ struct CustomRunnerEditorView: View {
                     } label: {
                         Text("renderingMode", bundle: .module)
                     }
+                    Toggle(isOn: Binding<Bool>(
+                        get: { store.allowsWideFrames },
+                        asyncSet: { await store.send(.allowWideFramesToggleSwitched($0)) }
+                    )) {
+                        Text("allowWideFrames", bundle: .module)
+                        if store.allowsWideFrames {
+                            Text("wideFramesWarning", bundle: .module)
+                        }
+                    }
                     LabeledContent {
                         FrameImagesCollectionView(store: store)
                     } label: {

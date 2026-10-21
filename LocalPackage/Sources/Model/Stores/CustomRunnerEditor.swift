@@ -35,6 +35,7 @@ public final class CustomRunnerEditor: Composable, Identifiable {
     public let id: UUID
     public var runnerName: String
     public var isTemplate: Bool
+    public var allowsWideFrames: Bool
     public var frameImages: [FrameImage]
     public var selectingFrameImage: FrameImage?
     public var previewingFrameImage: FrameImage?
@@ -53,6 +54,7 @@ public final class CustomRunnerEditor: Composable, Identifiable {
         id: UUID,
         runnerName: String = "",
         isTemplate: Bool = true,
+        allowsWideFrames: Bool = false,
         frameImages: [FrameImage] = [],
         selectingFrameImage: FrameImage? = nil,
         previewingFrameImage: FrameImage? = nil,
@@ -69,6 +71,7 @@ public final class CustomRunnerEditor: Composable, Identifiable {
         self.id = id
         self.runnerName = runnerName
         self.isTemplate = isTemplate
+        self.allowsWideFrames = allowsWideFrames
         self.frameImages = frameImages
         self.selectingFrameImage = selectingFrameImage
         self.previewingFrameImage = previewingFrameImage
@@ -97,6 +100,9 @@ public final class CustomRunnerEditor: Composable, Identifiable {
 
         case let .renderingModePickerSelected(renderingMode):
             isTemplate = renderingMode.isTemplate
+
+        case let .allowWideFramesToggleSwitched(allowsWideFrames):
+            self.allowsWideFrames = allowsWideFrames
 
         case let .frameImageCellTapped(frameImage):
             selectingFrameImage = frameImage
@@ -200,11 +206,15 @@ public final class CustomRunnerEditor: Composable, Identifiable {
         }
     }
 
+    private var maxFrameWidth: Int {
+        allowsWideFrames ? 300 : 100
+    }
+
     private func appendFrameImage(from url: URL) throws {
         guard let nsImage = NSImage(contentsOf: url),
               let cgImage = nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil),
               cgImage.height == 36,
-              (10 ... 100).contains(cgImage.width) else {
+              (10 ... maxFrameWidth).contains(cgImage.width) else {
             throw RCNError.customRunner(.invalidFrameImage)
         }
         guard frameImages.count < 30 else {
@@ -217,6 +227,7 @@ public final class CustomRunnerEditor: Composable, Identifiable {
         case viewAppeared
         case viewDisappeared
         case renderingModePickerSelected(RenderingMode)
+        case allowWideFramesToggleSwitched(Bool)
         case frameImageCellTapped(FrameImage)
         case collectionBackgroundTapped
         case filesDropped([URL])
