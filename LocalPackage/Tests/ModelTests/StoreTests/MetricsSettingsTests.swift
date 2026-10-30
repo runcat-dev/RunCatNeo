@@ -107,8 +107,10 @@ struct MetricsSettingsTests {
 
     @MainActor @Test
     func send_showButtonTapped_enables_metrics_bar_and_persists_flag() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let setCallStack = AllocatedUnfairLock<[String]>(initialState: [])
         let sut = MetricsSettings(.testDependencies(
+            appStateClient: .testDependency(appState),
             userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
                 $0.set = { value, key in
                     let entry = "set: \(key) = \(value ?? "nil")"
@@ -120,6 +122,7 @@ struct MetricsSettingsTests {
         #expect(!sut.showingMetricsBarNotesSheet)
         #expect(sut.showsMetricsBar)
         #expect(setCallStack.withLock(\.self) == ["set: SHOWS_METRICS_BAR = true"])
+        #expect(appState.withLock(\.systemMetricsConfigurationChanges.latestValue) != nil)
     }
 
     @MainActor @Test

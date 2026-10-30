@@ -93,12 +93,18 @@ public final class MetricsBar: Composable {
     }
 
     private func updateMetrics(from metrics: Metrics) {
+        guard userDefaultsRepository.showsMetricsBar else {
+            return
+        }
         systemInfoBundle = metrics.systemInfoBundle
         customMetricsBundles = metrics.customMetricsBundles
     }
 
     private func updateMetricsBarConfiguration() {
         metricsBarConfiguration = userDefaultsRepository.metricsBarConfiguration
+        if let metrics = appStateClient.withLock(\.metrics.latestValue) {
+            updateMetrics(from: metrics)
+        }
     }
 
     public enum Action: Sendable {

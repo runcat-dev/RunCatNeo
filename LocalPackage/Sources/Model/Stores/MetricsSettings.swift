@@ -91,6 +91,7 @@ public final class MetricsSettings: Composable {
             showingMetricsBarNotesSheet = false
             showsMetricsBar = true
             userDefaultsRepository.showsMetricsBar = true
+            systemMetricsService.emitConfigurationChange()
 
         case let .monitorsSystemMetricsToggleSwitched(type, isOn):
             func overwrite(isOn: Bool, shows: inout Bool) {
