@@ -22,7 +22,12 @@ struct MetricsBarTests {
     func send_viewAppeared_loads_latest_metrics_and_observes_stream() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         appState.withLock { $0.metrics.send(Metrics.dummy(cpuRawValue: 0.1)) }
-        let sut = MetricsBar(.testDependencies(appStateClient: .testDependency(appState)))
+        let sut = MetricsBar(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
+                $0.bool = { $0 == .showsMetricsBar }
+            }
+        ))
         await sut.send(.viewAppeared("MetricsBarTests"))
         #expect(sut.systemInfoBundle.cpuInfo?.percentage.value == 10.0)
         appState.withLock { $0.metrics.send(Metrics.dummy(cpuRawValue: 0.2)) }
@@ -83,9 +88,46 @@ struct MetricsBarTests {
     }
 
     @MainActor @Test
+    func send_viewAppeared_ignores_metrics_while_metrics_bar_is_hidden() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        appState.withLock { $0.metrics.send(Metrics.dummy(cpuRawValue: 0.1)) }
+        let sut = MetricsBar(.testDependencies(appStateClient: .testDependency(appState)))
+        await sut.send(.viewAppeared("MetricsBarTests"))
+        appState.withLock { $0.metrics.send(Metrics.dummy(cpuRawValue: 0.2)) }
+        try? await Task.sleep(for: .milliseconds(50))
+        #expect(sut.systemInfoBundle.cpuInfo == nil)
+        await sut.send(.viewDisappeared)
+    }
+
+    @MainActor @Test
+    func send_viewAppeared_applies_latest_metrics_once_metrics_bar_is_shown() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let showsMetricsBar = AllocatedUnfairLock(initialState: false)
+        let sut = MetricsBar(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
+                $0.bool = { $0 == .showsMetricsBar && showsMetricsBar.withLock(\.self) }
+            }
+        ))
+        await sut.send(.viewAppeared("MetricsBarTests"))
+        appState.withLock { $0.metrics.send(Metrics.dummy(cpuRawValue: 0.3)) }
+        try? await Task.sleep(for: .milliseconds(50))
+        showsMetricsBar.withLock { $0 = true }
+        appState.withLock { $0.systemMetricsConfigurationChanges.send() }
+        await waitUntil { sut.systemInfoBundle.cpuInfo?.percentage.value == 30.0 }
+        #expect(sut.systemInfoBundle.cpuInfo?.percentage.value == 30.0)
+        await sut.send(.viewDisappeared)
+    }
+
+    @MainActor @Test
     func send_viewDisappeared_stops_observing_streams() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
-        let sut = MetricsBar(.testDependencies(appStateClient: .testDependency(appState)))
+        let sut = MetricsBar(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
+                $0.bool = { $0 == .showsMetricsBar }
+            }
+        ))
         await sut.send(.viewAppeared("MetricsBarTests"))
         await sut.send(.viewDisappeared)
         appState.withLock { $0.metrics.send(Metrics.dummy(cpuRawValue: 0.3)) }
