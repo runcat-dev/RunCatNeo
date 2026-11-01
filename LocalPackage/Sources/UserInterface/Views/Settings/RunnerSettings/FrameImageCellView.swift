@@ -36,9 +36,12 @@ struct FrameImageCellView: View {
                 .frame(width: 40, height: 40)
             Text(verbatim: "\(index)")
                 .font(.caption)
+                .accessibilityHidden(true)
         }
         .border(isSelected ? Color.accentColor : Color.clear)
         .padding(4)
         .contentShape(.rect)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
