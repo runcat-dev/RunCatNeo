@@ -21,16 +21,60 @@
 import DataSource
 import SwiftUI
 
+@MainActor private let thumbnailCache = NSCache<NSString, NSImage>()
+
 extension RunnerBundle {
-    var thumbnail: Image {
-        if case let .thumbnail(frame) = displayFormat, let nsImage = frame.nsImage {
-            nsImage.normalize()
-            nsImage.resize(width: 50, alignment: .trailing)
-            nsImage.isTemplate = runner.isTemplate
-            return Image(nsImage: nsImage)
+    @MainActor var thumbnail: Image {
+        if let nsImage = thumbnailImage {
+            Image(nsImage: nsImage)
         } else {
-            return Image(systemName: "questionmark.square")
+            Image(systemName: "questionmark.square")
         }
+    }
+
+    @MainActor private var thumbnailImage: NSImage? {
+        let key = runner.id as NSString
+        if let cachedImage = thumbnailCache.object(forKey: key) {
+            return cachedImage
+        }
+        guard case let .thumbnail(frame) = displayFormat,
+              let thumbnailImage = frame.nsImage?.trailingAlignedBitmap(width: 50, height: 18) else {
+            return nil
+        }
+        thumbnailImage.isTemplate = runner.isTemplate
+        thumbnailCache.setObject(thumbnailImage, forKey: key)
+        return thumbnailImage
+    }
+}
+
+private extension NSImage {
+    func trailingAlignedBitmap(width: CGFloat, height: CGFloat) -> NSImage? {
+        guard size.height > 0,
+              let pixelsHigh = representations.first?.pixelsHigh,
+              pixelsHigh > 0,
+              let bitmapImageRep = NSBitmapImageRep(
+                  bitmapDataPlanes: nil,
+                  pixelsWide: Int(width * CGFloat(pixelsHigh) / height),
+                  pixelsHigh: pixelsHigh,
+                  bitsPerSample: 8,
+                  samplesPerPixel: 4,
+                  hasAlpha: true,
+                  isPlanar: false,
+                  colorSpaceName: .deviceRGB,
+                  bytesPerRow: .zero,
+                  bitsPerPixel: .zero
+              ) else {
+            return nil
+        }
+        bitmapImageRep.size = NSSize(width: width, height: height)
+        let drawingWidth = size.width * height / size.height
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmapImageRep)
+        draw(in: NSRect(x: width - drawingWidth, y: .zero, width: drawingWidth, height: height))
+        NSGraphicsContext.restoreGraphicsState()
+        let image = NSImage(size: bitmapImageRep.size)
+        image.addRepresentation(bitmapImageRep)
+        return image
     }
 }
 

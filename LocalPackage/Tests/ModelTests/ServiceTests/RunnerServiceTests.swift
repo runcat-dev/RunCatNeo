@@ -485,4 +485,16 @@ struct RunnerServiceTests {
             try sut.move(fromOffsets: IndexSet(integer: 1), toOffset: 0)
         }
     }
+
+    @Test
+    func runner_of_returns_preset_runner_for_builtIn_id() {
+        let sut = RunnerService(.testDependencies())
+        #expect(sut.runner(of: "dog") == Runner(kind: .dog))
+    }
+
+    @Test
+    func runner_of_returns_nil_for_unknown_id() {
+        let sut = RunnerService(.testDependencies())
+        #expect(sut.runner(of: "unknown-runner") == nil)
+    }
 }
