@@ -43,6 +43,7 @@ struct RunnerSettingsView: View {
                 Text("appearance", bundle: .module)
             }
             CustomRunnerSettingsSectionView(store: store.customRunnerSettings)
+            RunnerRotationSettingsSectionView(store: store.runnerRotationSettings)
         }
         .formStyle(.grouped)
         .task {

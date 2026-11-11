@@ -24,6 +24,7 @@ extension String {
     static let isFlippedHorizontally = "IS_FLIPPED_HORIZONTALLY"
     static let metricsBarConfiguration = "METRICS_BAR_CONFIGURATION"
     static let runnerID = "RUNNER_ID"
+    static let runnerRotationConfiguration = "RUNNER_ROTATION_CONFIGURATION"
     static let speedDecreasesUnderLoad = "SPEED_DECREASES_UNDER_LOAD"
     static let systemMetricsConfiguration = "SYSTEM_METRICS_CONFIGURATION"
     static let updateInterval = "UPDATE_INTERVAL"

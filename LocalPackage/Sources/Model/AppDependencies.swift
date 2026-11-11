@@ -23,6 +23,7 @@ import SwiftUI
 
 public struct AppDependencies: Sendable {
     public var appStateClient = AppStateClient.liveValue
+    public var clockClient = ClockClient.liveValue
     public var dataClient = DataClient.liveValue
     public var dateClient = DateClient.liveValue
     public var fileManagerClient = FileManagerClient.liveValue
@@ -30,6 +31,7 @@ public struct AppDependencies: Sendable {
     public var loggingSystemClient = LoggingSystemClient.liveValue
     public var nsAppClient = NSAppClient.liveValue
     public var nsWorkspaceClient = NSWorkspaceClient.liveValue
+    public var randomClient = RandomClient.liveValue
     public var smAppServiceClient = SMAppServiceClient.liveValue
     public var systemInfoObserverClient = SystemInfoObserverClient.liveValue
     public var urlClient = URLClient.liveValue
@@ -46,6 +48,7 @@ extension EnvironmentValues {
 extension AppDependencies {
     public static func testDependencies(
         appStateClient: AppStateClient = .testValue,
+        clockClient: ClockClient = .testValue,
         dataClient: DataClient = .testValue,
         dateClient: DateClient = .testValue,
         fileManagerClient: FileManagerClient = .testValue,
@@ -53,6 +56,7 @@ extension AppDependencies {
         loggingSystemClient: LoggingSystemClient = .testValue,
         nsAppClient: NSAppClient = .testValue,
         nsWorkspaceClient: NSWorkspaceClient = .testValue,
+        randomClient: RandomClient = .testValue,
         smAppServiceClient: SMAppServiceClient = .testValue,
         systemInfoObserverClient: SystemInfoObserverClient = .testValue,
         urlClient: URLClient = .testValue,
@@ -61,6 +65,7 @@ extension AppDependencies {
     ) -> AppDependencies {
         AppDependencies(
             appStateClient: appStateClient,
+            clockClient: clockClient,
             dataClient: dataClient,
             dateClient: dateClient,
             fileManagerClient: fileManagerClient,
@@ -68,6 +73,7 @@ extension AppDependencies {
             loggingSystemClient: loggingSystemClient,
             nsAppClient: nsAppClient,
             nsWorkspaceClient: nsWorkspaceClient,
+            randomClient: randomClient,
             smAppServiceClient: smAppServiceClient,
             systemInfoObserverClient: systemInfoObserverClient,
             urlClient: urlClient,

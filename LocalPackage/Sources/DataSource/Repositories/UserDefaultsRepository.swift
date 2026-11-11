@@ -38,6 +38,23 @@ public struct UserDefaultsRepository: Sendable {
         nonmutating set { userDefaultsClient.set(newValue, .isFlippedHorizontally) }
     }
 
+    public var runnerRotationConfiguration: RunnerRotationConfiguration {
+        get {
+            guard let data = userDefaultsClient.data(.runnerRotationConfiguration),
+                  let value = try? JSONDecoder().decode(RunnerRotationConfiguration.self, from: data) else {
+                return .default
+            }
+            return value
+        }
+        nonmutating set {
+            if let data = try? JSONEncoder().encode(newValue) {
+                userDefaultsClient.set(data, .runnerRotationConfiguration)
+            } else {
+                userDefaultsClient.removeObject(.runnerRotationConfiguration)
+            }
+        }
+    }
+
     public var updateInterval: UpdateInterval {
         get { UpdateInterval(rawValue: userDefaultsClient.integer(.updateInterval)) ?? .default }
         nonmutating set { userDefaultsClient.set(newValue.rawValue, .updateInterval) }

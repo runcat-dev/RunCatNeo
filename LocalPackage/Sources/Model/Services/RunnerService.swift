@@ -69,15 +69,16 @@ struct RunnerService {
         appStateClient.send(\.runnerBundleLists, runnerBundles)
     }
 
-    func setup() throws {
-        let runnerID = userDefaultsRepository.runnerID
-        let runner = if let kind = RunnerKind(rawValue: runnerID) {
+    func runner(of runnerID: Runner.ID) -> Runner? {
+        if let kind = RunnerKind(rawValue: runnerID) {
             Runner(kind: kind)
-        } else if let runner = applicationSupportRepository.loadCustomRunner(of: runnerID) {
-            runner
         } else {
-            Runner.default
+            applicationSupportRepository.loadCustomRunner(of: runnerID)
         }
+    }
+
+    func setup() throws {
+        let runner = self.runner(of: userDefaultsRepository.runnerID) ?? .default
         do {
             try update(runner: runner)
         } catch {

@@ -31,6 +31,7 @@ public final class RunnerSettings: Composable {
     public var speedDecreasesUnderLoad: Bool
     public var isFlippedHorizontally: Bool
     public let customRunnerSettings: CustomRunnerSettings
+    public let runnerRotationSettings: RunnerRotationSettings
     public let action: (Action) async -> Void
 
     public init(
@@ -38,6 +39,7 @@ public final class RunnerSettings: Composable {
         speedDecreasesUnderLoad: Bool? = nil,
         isFlippedHorizontally: Bool? = nil,
         customRunnerSettings: CustomRunnerSettings? = nil,
+        runnerRotationSettings: RunnerRotationSettings? = nil,
         action: @escaping (Action) async -> Void = { _ in }
     ) {
         self.userDefaultsRepository = .init(appDependencies.userDefaultsClient)
@@ -49,6 +51,8 @@ public final class RunnerSettings: Composable {
         weak var weakSelf: RunnerSettings? = nil
         self.customRunnerSettings = customRunnerSettings ??
             .init(appDependencies, action: { await weakSelf?.send(.customRunnerSettings($0)) })
+        self.runnerRotationSettings = runnerRotationSettings ??
+            .init(appDependencies, action: { await weakSelf?.send(.runnerRotationSettings($0)) })
         self.action = action
         weakSelf = self
     }
@@ -71,6 +75,9 @@ public final class RunnerSettings: Composable {
 
         case .customRunnerSettings:
             return
+
+        case .runnerRotationSettings:
+            return
         }
     }
 
@@ -79,5 +86,6 @@ public final class RunnerSettings: Composable {
         case slowDownUnderLoadToggleSwitched(Bool)
         case flipHorizontallyToggleSwitched(Bool)
         case customRunnerSettings(CustomRunnerSettings.Action)
+        case runnerRotationSettings(RunnerRotationSettings.Action)
     }
 }

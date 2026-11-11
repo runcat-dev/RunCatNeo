@@ -38,6 +38,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
         let customMetricsService = CustomMetricsService(appDependencies)
         let systemMetricsService = SystemMetricsService(appDependencies)
         let runnerService = RunnerService(appDependencies)
+        let runnerRotationService = RunnerRotationService(appDependencies)
         Task {
             await withTaskGroup { group in
                 group.addTask {
@@ -71,6 +72,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
         } catch {
             logService.critical(.setupFailed(error))
         }
+        runnerRotationService.startRotation()
     }
 
     public func applicationWillTerminate(_ notification: Notification) {
