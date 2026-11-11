@@ -57,19 +57,33 @@ struct RunnerRotationSettingsSectionView: View {
                 Text("rotationInterval", bundle: .module)
             }
             .disabled(!store.isEnabled)
-            ForEach(store.runnerBundleList) { runnerBundle in
-                Toggle(isOn: Binding<Bool>(
-                    get: { store.runnerIDs.contains(runnerBundle.runner.id) },
-                    asyncSet: { await store.send(.runnerToggleSwitched(runnerBundle.runner, $0)) }
-                )) {
-                    Label {
-                        Text(runnerBundle.runner.formatted)
-                    } icon: {
-                        runnerBundle.thumbnail
+            ScrollView {
+                LazyVStack(spacing: .zero) {
+                    ForEach(store.runnerBundleList) { runnerBundle in
+                        HStack {
+                            Label {
+                                Text(runnerBundle.runner.formatted)
+                            } icon: {
+                                runnerBundle.thumbnail
+                            }
+                            Spacer()
+                            Toggle(isOn: Binding<Bool>(
+                                get: { store.runnerIDs.contains(runnerBundle.runner.id) },
+                                asyncSet: { await store.send(.runnerToggleSwitched(runnerBundle.runner, $0)) }
+                            )) {
+                                Text(runnerBundle.runner.formatted)
+                            }
+                            .toggleStyle(.switch)
+                            .labelsHidden()
+                        }
+                        .padding(.vertical, 6)
+                        .padding(.trailing, 12)
+                        Divider()
                     }
                 }
+                .disabled(!store.isEnabled)
             }
-            .disabled(!store.isEnabled)
+            .frame(height: 240)
         } header: {
             Text("runnerRotation", bundle: .module)
         } footer: {
