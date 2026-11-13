@@ -130,7 +130,8 @@ jobs:
             --key "$API_KEY_PATH" \
             --key-id "$API_KEY_ID" \
             --issuer "$API_ISSUER_ID" \
-            --wait
+            --wait \
+            --timeout 30m
           xcrun stapler staple "$BUILD_DIR/RunCatNeo_$TAG.dmg"
           spctl --assess --type open --context context:primary-signature --verbose "$BUILD_DIR/RunCatNeo_$TAG.dmg"
 
