@@ -24,6 +24,7 @@ public struct AppState: Sendable {
     public var name: String
     public var version: String
     public var subscriptionGroupID: String
+    public var distributionChannel: DistributionChannel
     public var hasAlreadyBootstrap: Bool
     public var metrics = AsyncStreamBundle<Metrics>()
     public var systemMetricsConfigurationChanges = AsyncStreamBundle<Void>()
@@ -38,11 +39,13 @@ public struct AppState: Sendable {
         name: String = "",
         version: String = "",
         subscriptionGroupID: String = "",
+        distributionChannel: DistributionChannel = .appStore,
         hasAlreadyBootstrap: Bool = false
     ) {
         self.name = name
         self.version = version
         self.subscriptionGroupID = subscriptionGroupID
+        self.distributionChannel = distributionChannel
         self.hasAlreadyBootstrap = hasAlreadyBootstrap
     }
 }

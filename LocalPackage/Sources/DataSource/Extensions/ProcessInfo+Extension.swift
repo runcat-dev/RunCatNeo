@@ -37,6 +37,14 @@ extension ProcessInfo {
 #endif
     }
 
+    public static var needsDirectDistribution: Bool {
+#if DEBUG
+        Self.processInfo.arguments.contains("DirectDistribution")
+#else
+        false
+#endif
+    }
+
     public static var isPreview: Bool {
 #if DEBUG
         Self.processInfo.arguments.contains("IsPreview")

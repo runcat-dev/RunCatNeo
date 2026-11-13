@@ -18,6 +18,7 @@
  limitations under the License.
  */
 
+import DataSource
 import Foundation
 
 extension Bundle {
@@ -31,4 +32,12 @@ extension Bundle {
     var bundleDisplayName: String { bundleString(key: "CFBundleDisplayName") }
     var bundleVersion: String { bundleString(key: "CFBundleVersion") }
     var subscriptionGroupID: String { bundleString(key: "SUBSCRIPTION_GROUP_ID") }
+
+    var distributionChannel: DistributionChannel {
+        let key = "DISTRIBUTION_CHANNEL"
+        guard let distributionChannel = DistributionChannel(rawValue: bundleString(key: key)) else {
+            fatalError("\(key) is invalid.")
+        }
+        return distributionChannel
+    }
 }

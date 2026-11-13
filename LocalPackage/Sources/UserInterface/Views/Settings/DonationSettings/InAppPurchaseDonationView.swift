@@ -1,8 +1,8 @@
 /*
- DonationSettingsView.swift
+ InAppPurchaseDonationView.swift
  UserInterface
 
- Created by Takuto Nakamura on 2026/06/08.
+ Created by Takuto Nakamura on 2026/11/13.
  Copyright 2026 Kyome22 (Takuto Nakamura)
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,20 +23,13 @@ import Model
 import StoreKit
 import SwiftUI
 
-struct DonationSettingsView: View {
-    @StateObject var store: DonationSettings
+struct InAppPurchaseDonationView: View {
+    @Bindable var store: DonationSettings
 
     var body: some View {
         Form {
             Section {
-                Label {
-                    Text("donationDescription", bundle: .module)
-                } icon: {
-                    Image(nsImage: NSImage.appIcon)
-                        .resizable()
-                        .scaledToFit()
-                }
-                .labelReservedIconWidth(32)
+                DonationDescriptionView()
             }
             Section {
                 ProductView(id: DonationProduct.oneTime.id, prefersPromotionalIcon: true) {
@@ -102,9 +95,6 @@ struct DonationSettingsView: View {
             actions: { _ in },
             message: { _ in }
         )
-        .task {
-            await store.send(.viewAppeared(String(describing: Self.self)))
-        }
         .storeProductsTask(for: DonationProduct.allCases.map(\.id)) { taskState in
             await store.send(.productTaskStateChanged(taskState))
         }
@@ -116,6 +106,4 @@ struct DonationSettingsView: View {
         }
     }
 }
-
-extension DonationSettings: ObservableObject {}
 
