@@ -69,6 +69,10 @@
             argument = "IsPreview"
             isEnabled = "NO">
          </CommandLineArgument>
+         <CommandLineArgument
+            argument = "DirectDistribution"
+            isEnabled = "NO">
+         </CommandLineArgument>
       </CommandLineArguments>
       <StoreKitConfigurationFileReference
          identifier = "../../RunCatNeo/RunCatNeo.storekit">

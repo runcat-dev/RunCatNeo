@@ -15,4 +15,10 @@ struct DonationSettingsTests {
         #expect(receivedActionCount.withLock(\.self) == 1)
     }
 
+    @MainActor @Test
+    func init_reads_distributionChannel_from_app_state() {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init(distributionChannel: .direct))
+        let sut = DonationSettings(.testDependencies(appStateClient: .testDependency(appState)))
+        #expect(sut.distributionChannel == .direct)
+    }
 }

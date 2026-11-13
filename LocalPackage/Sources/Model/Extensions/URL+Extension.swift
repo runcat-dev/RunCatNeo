@@ -45,6 +45,10 @@ extension URL {
         string: "https://runcat-dev.github.io/RunCatNeo/privacy_policy.html"
     )!
 
+    public static let githubSponsors = URL(
+        string: "https://github.com/sponsors/Kyome22"
+    )!
+
     public static let manageSubscriptions = URL(
         string: "itms-apps://apps.apple.com/account/subscriptions"
     )!

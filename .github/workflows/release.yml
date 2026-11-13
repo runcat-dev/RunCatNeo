@@ -1,0 +1,146 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to attach the DMG to"
+        required: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-direct-distribution-dmg:
+    name: Build Direct Distribution DMG
+    runs-on: macos-26
+    timeout-minutes: 45
+    env:
+      DEVELOPER_DIR: "/Applications/Xcode_26.5.0.app/Contents/Developer"
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      TEAM_ID: VJ5N2X84K8
+      SIGNING_IDENTITY: "Developer ID Application"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: Set Up Paths
+        run: |
+          echo "KEYCHAIN_PATH=$RUNNER_TEMP/signing.keychain-db" >> "$GITHUB_ENV"
+          echo "API_KEY_PATH=$RUNNER_TEMP/AuthKey.p8" >> "$GITHUB_ENV"
+          echo "BUILD_DIR=$RUNNER_TEMP/build" >> "$GITHUB_ENV"
+
+      - name: Show Xcode Version
+        run: xcodebuild -version
+
+      - name: Import Developer ID Certificate
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.DEVELOPER_ID_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+        run: |
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          CERTIFICATE_PATH="$RUNNER_TEMP/certificate.p12"
+          echo "$CERTIFICATE_BASE64" | base64 --decode > "$CERTIFICATE_PATH"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" -P "$CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '"')
+          rm "$CERTIFICATE_PATH"
+
+      - name: Write App Store Connect API Key
+        env:
+          API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+        run: echo "$API_KEY_BASE64" | base64 --decode > "$API_KEY_PATH"
+
+      - name: Archive
+        run: |
+          xcodebuild archive \
+            -project RunCatNeo.xcodeproj \
+            -scheme RunCatNeo \
+            -configuration Release \
+            -destination "generic/platform=macOS" \
+            -archivePath "$BUILD_DIR/RunCatNeo.xcarchive" \
+            -skipPackagePluginValidation \
+            DISTRIBUTION_CHANNEL=direct \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="$SIGNING_IDENTITY" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN_PATH" | \
+            xcbeautify
+
+      - name: Export
+        run: |
+          cat > "$BUILD_DIR/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>developer-id</string>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>signingCertificate</key>
+              <string>$SIGNING_IDENTITY</string>
+              <key>teamID</key>
+              <string>$TEAM_ID</string>
+          </dict>
+          </plist>
+          EOF
+          xcodebuild -exportArchive \
+            -archivePath "$BUILD_DIR/RunCatNeo.xcarchive" \
+            -exportPath "$BUILD_DIR/export" \
+            -exportOptionsPlist "$BUILD_DIR/ExportOptions.plist" | \
+            xcbeautify
+
+      - name: Verify Distribution Channel
+        run: |
+          DISTRIBUTION_CHANNEL="$(/usr/libexec/PlistBuddy -c "Print :DISTRIBUTION_CHANNEL" "$BUILD_DIR/export/RunCatNeo.app/Contents/Info.plist")"
+          test "$DISTRIBUTION_CHANNEL" = "direct"
+
+      - name: Create DMG
+        run: |
+          DMG_SOURCE_DIR="$BUILD_DIR/dmg"
+          mkdir -p "$DMG_SOURCE_DIR"
+          cp -R "$BUILD_DIR/export/RunCatNeo.app" "$DMG_SOURCE_DIR/"
+          ln -s /Applications "$DMG_SOURCE_DIR/Applications"
+          hdiutil create \
+            -volname "RunCat Neo" \
+            -srcfolder "$DMG_SOURCE_DIR" \
+            -format UDZO \
+            "$BUILD_DIR/RunCatNeo_$TAG.dmg"
+          codesign --sign "$SIGNING_IDENTITY" --keychain "$KEYCHAIN_PATH" --timestamp "$BUILD_DIR/RunCatNeo_$TAG.dmg"
+
+      - name: Notarize DMG
+        env:
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+        run: |
+          xcrun notarytool submit "$BUILD_DIR/RunCatNeo_$TAG.dmg" \
+            --key "$API_KEY_PATH" \
+            --key-id "$API_KEY_ID" \
+            --issuer "$API_ISSUER_ID" \
+            --wait
+          xcrun stapler staple "$BUILD_DIR/RunCatNeo_$TAG.dmg"
+          spctl --assess --type open --context context:primary-signature --verbose "$BUILD_DIR/RunCatNeo_$TAG.dmg"
+
+      - name: Upload DMG to Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" "$BUILD_DIR/RunCatNeo_$TAG.dmg" --clobber
+
+      - name: Clean Up Signing Assets
+        if: always()
+        run: |
+          security delete-keychain "$KEYCHAIN_PATH" || true
+          rm -f "$API_KEY_PATH"
