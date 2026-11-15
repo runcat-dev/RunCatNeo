@@ -1,5 +1,5 @@
 {
-  "originHash" : "483cecf825908184028d56efa20dfb07d1f97122679f31ca59d014b5558f2859",
+  "originHash" : "fb7d875d62503270f4e0b6b187492c3017a5e508d008bc8afef55848aa9eafb2",
   "pins" : [
     {
       "identity" : "allocatedunfairlock",
@@ -51,8 +51,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Kyome22/SystemInfoKit.git",
       "state" : {
-        "revision" : "56bfde260431e8c0270137f409f8e8c9de04bbec",
-        "version" : "7.2.2"
+        "revision" : "e667b2297c8d39042965fe7aaf9e8cafbe79ba85",
+        "version" : "8.0.0"
       }
     }
   ],
