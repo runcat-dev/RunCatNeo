@@ -31,13 +31,5 @@ extension Bundle {
     var bundleDisplayName: String { bundleString(key: "CFBundleDisplayName") }
     var bundleVersion: String { bundleString(key: "CFBundleVersion") }
     var subscriptionGroupID: String { bundleString(key: "SUBSCRIPTION_GROUP_ID") }
-
-    var isDirectDistribution: Bool {
-        let key = "DIRECT_DISTRIBUTION"
-        return switch bundleString(key: key) {
-        case "YES": true
-        case "NO": false
-        default: fatalError("\(key) is invalid.")
-        }
-    }
+    var isDirectDistribution: Bool { bundleString(key: "DIRECT_DISTRIBUTION") == "YES" }
 }
