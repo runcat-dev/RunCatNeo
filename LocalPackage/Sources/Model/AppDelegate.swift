@@ -30,6 +30,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
             $0.name = Bundle.main.bundleDisplayName
             $0.version = Bundle.main.bundleVersion
             $0.subscriptionGroupID = Bundle.main.subscriptionGroupID
+            $0.isDirectDistribution = ProcessInfo.needsDirectDistribution || Bundle.main.isDirectDistribution
         }
         let logService = LogService(appDependencies)
         logService.bootstrap()
