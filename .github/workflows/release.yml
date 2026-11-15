@@ -19,10 +19,10 @@ permissions:
 jobs:
   build-direct-distribution-dmg:
     name: Build Direct Distribution DMG
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 45
     env:
-      DEVELOPER_DIR: "/Applications/Xcode_26.5.0.app/Contents/Developer"
+      DEVELOPER_DIR: "/Applications/Xcode_27.2.0.app/Contents/Developer"
       TAG: ${{ github.event.release.tag_name || inputs.tag }}
       TEAM_ID: VJ5N2X84K8
       SIGNING_IDENTITY: "Developer ID Application"
