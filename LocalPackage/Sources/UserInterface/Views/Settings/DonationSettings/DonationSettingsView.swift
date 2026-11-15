@@ -26,11 +26,10 @@ struct DonationSettingsView: View {
 
     var body: some View {
         Group {
-            switch store.distributionChannel {
-            case .appStore:
-                InAppPurchaseDonationView(store: store)
-            case .direct:
+            if store.isDirectDistribution {
                 GitHubSponsorsDonationView()
+            } else {
+                InAppPurchaseDonationView(store: store)
             }
         }
         .task {

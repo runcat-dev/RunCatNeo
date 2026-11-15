@@ -16,9 +16,9 @@ struct DonationSettingsTests {
     }
 
     @MainActor @Test
-    func init_reads_distributionChannel_from_app_state() {
-        let appState = AllocatedUnfairLock<AppState>(initialState: .init(distributionChannel: .direct))
+    func init_reads_isDirectDistribution_from_app_state() {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init(isDirectDistribution: true))
         let sut = DonationSettings(.testDependencies(appStateClient: .testDependency(appState)))
-        #expect(sut.distributionChannel == .direct)
+        #expect(sut.isDirectDistribution)
     }
 }

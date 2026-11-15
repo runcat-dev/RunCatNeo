@@ -27,7 +27,7 @@ import SwiftUI
 public final class DonationSettings: Composable {
     private let logService: LogService
 
-    public let distributionChannel: DistributionChannel
+    public let isDirectDistribution: Bool
     public var subscriptionGroupID: String
     public var isPurchased: Bool
     public var isSubscribed: Bool
@@ -37,7 +37,7 @@ public final class DonationSettings: Composable {
 
     public init(
         _ appDependencies: AppDependencies,
-        distributionChannel: DistributionChannel? = nil,
+        isDirectDistribution: Bool? = nil,
         subscriptionGroupID: String? = nil,
         isPurchased: Bool = false,
         isSubscribed: Bool = false,
@@ -46,7 +46,7 @@ public final class DonationSettings: Composable {
         action: @escaping (Action) async -> Void = { _ in }
     ) {
         self.logService = .init(appDependencies)
-        self.distributionChannel = distributionChannel ?? appDependencies.appStateClient.withLock(\.distributionChannel)
+        self.isDirectDistribution = isDirectDistribution ?? appDependencies.appStateClient.withLock(\.isDirectDistribution)
         self.subscriptionGroupID = subscriptionGroupID ?? appDependencies.appStateClient.withLock(\.subscriptionGroupID)
         self.isPurchased = isPurchased
         self.isSubscribed = isSubscribed
