@@ -24,7 +24,6 @@ jobs:
     env:
       DEVELOPER_DIR: "/Applications/Xcode_27.2.0.app/Contents/Developer"
       TAG: ${{ github.event.release.tag_name || inputs.tag }}
-      TEAM_ID: VJ5N2X84K8
       SIGNING_IDENTITY: "Developer ID Application"
 
     steps:
@@ -75,32 +74,15 @@ jobs:
             DISTRIBUTION_CHANNEL=direct \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="$SIGNING_IDENTITY" \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
             OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN_PATH" | \
             xcbeautify
 
       - name: Export
         run: |
-          cat > "$BUILD_DIR/ExportOptions.plist" <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>method</key>
-              <string>developer-id</string>
-              <key>signingStyle</key>
-              <string>manual</string>
-              <key>signingCertificate</key>
-              <string>$SIGNING_IDENTITY</string>
-              <key>teamID</key>
-              <string>$TEAM_ID</string>
-          </dict>
-          </plist>
-          EOF
           xcodebuild -exportArchive \
             -archivePath "$BUILD_DIR/RunCatNeo.xcarchive" \
             -exportPath "$BUILD_DIR/export" \
-            -exportOptionsPlist "$BUILD_DIR/ExportOptions.plist" | \
+            -exportOptionsPlist .github/ExportOptions.plist | \
             xcbeautify
 
       - name: Verify Distribution Channel
