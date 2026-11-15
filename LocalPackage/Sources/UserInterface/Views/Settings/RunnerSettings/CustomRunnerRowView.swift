@@ -32,7 +32,12 @@ struct CustomRunnerRowView: View {
                     await deleteButtonTapped()
                 }
             } label: {
-                Image(systemName: "minus.circle")
+                Label {
+                    Text("remove\(runnerBundle.runner.formatted)", bundle: .module)
+                } icon: {
+                    Image(systemName: "minus.circle")
+                }
+                .labelStyle(.iconOnly)
             }
             .buttonStyle(.borderless)
             .tint(Color.red)

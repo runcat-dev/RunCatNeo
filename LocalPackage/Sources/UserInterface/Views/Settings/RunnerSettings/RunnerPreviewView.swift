@@ -40,7 +40,7 @@ struct RunnerPreviewView: View {
             .padding(4)
             .border(Color(.separatorColor))
             Slider(value: $store.previewSpeed, in: 0 ... 3, step: 1) {
-                EmptyView()
+                Text("previewSpeed", bundle: .module)
             } minimumValueLabel: {
                 Image(systemName: "tortoise.fill")
             } maximumValueLabel: {
