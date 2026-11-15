@@ -20,7 +20,10 @@ jobs:
   build-direct-distribution-dmg:
     name: Build Direct Distribution DMG
     runs-on: xcode-27
-    timeout-minutes: 45
+    timeout-minutes: 80
+    defaults:
+      run:
+        shell: bash
     env:
       DEVELOPER_DIR: "/Applications/Xcode_27.2.0.app/Contents/Developer"
       TAG: ${{ github.event.release.tag_name || inputs.tag }}
@@ -90,6 +93,21 @@ jobs:
           DIRECT_DISTRIBUTION="$(/usr/libexec/PlistBuddy -c "Print :DIRECT_DISTRIBUTION" "$BUILD_DIR/export/RunCatNeo.app/Contents/Info.plist")"
           test "$DIRECT_DISTRIBUTION" = "YES"
 
+      - name: Notarize App
+        env:
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+        run: |
+          ditto -c -k --keepParent "$BUILD_DIR/export/RunCatNeo.app" "$BUILD_DIR/RunCatNeo.zip"
+          xcrun notarytool submit "$BUILD_DIR/RunCatNeo.zip" \
+            --key "$API_KEY_PATH" \
+            --key-id "$API_KEY_ID" \
+            --issuer "$API_ISSUER_ID" \
+            --wait \
+            --timeout 30m
+          xcrun stapler staple "$BUILD_DIR/export/RunCatNeo.app"
+          spctl --assess --type execute --verbose "$BUILD_DIR/export/RunCatNeo.app"
+
       - name: Create DMG
         run: |
           DMG_SOURCE_DIR="$BUILD_DIR/dmg"
@@ -120,7 +138,7 @@ jobs:
       - name: Upload DMG to Release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "$TAG" "$BUILD_DIR/RunCatNeo_$TAG.dmg" --clobber
+        run: gh release upload "$TAG" "$BUILD_DIR/RunCatNeo_$TAG.dmg"
 
       - name: Clean Up Signing Assets
         if: always()
