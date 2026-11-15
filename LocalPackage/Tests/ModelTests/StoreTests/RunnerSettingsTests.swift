@@ -46,4 +46,20 @@ struct RunnerSettingsTests {
         #expect(recorder.lock.withLock(\.self) == ["set: IS_FLIPPED_HORIZONTALLY = true"])
         #expect(appState.withLock(\.runnerBundles.latestValue) == bundle)
     }
+
+    @MainActor @Test
+    func send_useAccentColorToggleSwitched_persists_and_resends_current_bundle() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let bundle = RunnerBundle(runner: .default, frame: .preset("cat-frame-0"))
+        appState.withLock { $0.runnerBundles.send(bundle) }
+        let recorder = makeSetRecorder()
+        let sut = RunnerSettings(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: recorder.client
+        ))
+        await sut.send(.useAccentColorToggleSwitched(true))
+        #expect(sut.usesAccentColor)
+        #expect(recorder.lock.withLock(\.self) == ["set: USES_ACCENT_COLOR = true"])
+        #expect(appState.withLock(\.runnerBundles.latestValue) == bundle)
+    }
 }

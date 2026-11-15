@@ -98,6 +98,46 @@ struct RunnerBarTests {
     }
 
     @MainActor @Test
+    func send_viewAppeared_renders_frames_in_accent_color_when_system_colors_change() async throws {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        appState.withLock {
+            $0.runnerBundles.send(RunnerBundle(
+                runner: .default,
+                frames: [.preset("cat-frame-0"), .preset("cat-frame-1")]
+            ))
+        }
+        let usesAccentColor = AllocatedUnfairLock(initialState: false)
+        let notificationCenter = NotificationCenter()
+        let observedNotificationName = AllocatedUnfairLock<Notification.Name?>(initialState: nil)
+        let callStack = AllocatedUnfairLock<[String]>(initialState: [])
+        let sut = RunnerBar(.testDependencies(
+            appStateClient: .testDependency(appState),
+            notificationCenterClient: testDependency(of: NotificationCenterClient.self) {
+                $0.publisher = { name in
+                    observedNotificationName.withLock { $0 = name }
+                    return notificationCenter.publisher(for: name).eraseToAnyPublisher()
+                }
+            },
+            userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
+                $0.bool = { key in
+                    key == "USES_ACCENT_COLOR" ? usesAccentColor.withLock(\.self) : false
+                }
+            }
+        ))
+        await sut.send(.viewAppeared("RunnerBarTests", makeEventBridge(recording: callStack)))
+        StatusBarAppearanceBridge.shared.send(try #require(NSAppearance(named: .aqua)))
+        StatusBarAppearanceBridge.shared.send(try #require(NSAppearance(named: .darkAqua)))
+        await waitUntil { callStack.withLock(\.last) == "setFrames: 2, true" }
+        usesAccentColor.withLock { $0 = true }
+        notificationCenter.post(name: NSColor.systemColorsDidChangeNotification, object: nil)
+        await waitUntil { callStack.withLock(\.last) == "setFrames: 2, false" }
+        #expect(observedNotificationName.withLock(\.self) == NSColor.systemColorsDidChangeNotification)
+        #expect(callStack.withLock(\.last) == "setFrames: 2, false")
+        #expect(!sut.isTemplate)
+        await sut.send(.viewDisappeared)
+    }
+
+    @MainActor @Test
     func send_viewDisappeared_stops_observing_streams() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let callStack = AllocatedUnfairLock<[String]>(initialState: [])

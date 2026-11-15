@@ -62,6 +62,27 @@ struct NSImageExtensionTests {
         image.resize(width: 20)
         #expect(image.size == .zero)
     }
+
+    @Test
+    func tint_fills_opaque_pixels_and_keeps_transparent_pixels() {
+        let image = loadFixture(name: "solid_red_10x18")
+        image.resize(width: 20, alignment: .center)
+        image.tint(with: CGColor(srgbRed: 0, green: 0, blue: 1, alpha: 1))
+        let leftPad = sampleColor(image: image, x: 0, y: 9)
+        let middle = sampleColor(image: image, x: 10, y: 9)
+        #expect(leftPad.alphaComponent < 0.1)
+        #expect(middle.blueComponent > 0.9)
+        #expect(middle.redComponent < 0.1)
+        #expect(middle.alphaComponent > 0.9)
+    }
+
+    @Test
+    func tint_with_nil_is_noop() {
+        let image = loadFixture(name: "solid_red_10x18")
+        image.tint(with: nil)
+        let middle = sampleColor(image: image, x: 5, y: 9)
+        #expect(middle.redComponent > 0.9)
+    }
 }
 
 @MainActor

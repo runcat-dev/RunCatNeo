@@ -28,6 +28,7 @@ public struct AppDependencies: Sendable {
     public var fileManagerClient = FileManagerClient.liveValue
     public var fileWatcherClient = FileWatcherClient.liveValue
     public var loggingSystemClient = LoggingSystemClient.liveValue
+    public var notificationCenterClient = NotificationCenterClient.liveValue
     public var nsAppClient = NSAppClient.liveValue
     public var nsWorkspaceClient = NSWorkspaceClient.liveValue
     public var smAppServiceClient = SMAppServiceClient.liveValue
@@ -51,6 +52,7 @@ extension AppDependencies {
         fileManagerClient: FileManagerClient = .testValue,
         fileWatcherClient: FileWatcherClient = .testValue,
         loggingSystemClient: LoggingSystemClient = .testValue,
+        notificationCenterClient: NotificationCenterClient = .testValue,
         nsAppClient: NSAppClient = .testValue,
         nsWorkspaceClient: NSWorkspaceClient = .testValue,
         smAppServiceClient: SMAppServiceClient = .testValue,
@@ -66,6 +68,7 @@ extension AppDependencies {
             fileManagerClient: fileManagerClient,
             fileWatcherClient: fileWatcherClient,
             loggingSystemClient: loggingSystemClient,
+            notificationCenterClient: notificationCenterClient,
             nsAppClient: nsAppClient,
             nsWorkspaceClient: nsWorkspaceClient,
             smAppServiceClient: smAppServiceClient,
