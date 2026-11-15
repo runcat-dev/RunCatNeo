@@ -25,11 +25,12 @@ import Observation
 @MainActor @Observable
 public final class RunnerBar: Composable {
     private let appStateClient: AppStateClient
+    private let notificationCenterClient: NotificationCenterClient
     private let userDefaultsRepository: UserDefaultsRepository
     private let logService: LogService
 
     @ObservationIgnored private var eventBridge: Action.EventBridge?
-    @ObservationIgnored private var tintColor = CGColor.black
+    @ObservationIgnored private var appearance: NSAppearance?
     @ObservationIgnored private var task: Task<Void, Never>?
 
     public var icon: NSImage?
@@ -49,6 +50,7 @@ public final class RunnerBar: Composable {
         action: @escaping (Action) async -> Void = { _ in }
     ) {
         self.appStateClient = appDependencies.appStateClient
+        self.notificationCenterClient = appDependencies.notificationCenterClient
         self.userDefaultsRepository = .init(appDependencies.userDefaultsClient)
         self.logService = .init(appDependencies)
         self.icon = icon
@@ -63,11 +65,17 @@ public final class RunnerBar: Composable {
             logService.notice(.screenView(name: screenName))
             self.eventBridge = eventBridge
             task?.cancel()
-            task = Task.immediate { [weak self, appStateClient] in
+            task = Task.immediate { [weak self, appStateClient, notificationCenterClient] in
                 await withTaskGroup { group in
                     group.addImmediateTask {
                         for await value in StatusBarAppearanceBridge.shared.stream {
                             self?.update(appearance: value)
+                        }
+                    }
+                    group.addImmediateTask {
+                        let publisher = notificationCenterClient.publisher(NSColor.systemColorsDidChangeNotification)
+                        for await _ in publisher.bufferedValues() {
+                            self?.updateColors()
                         }
                     }
                     group.addImmediateTask {
@@ -92,10 +100,29 @@ public final class RunnerBar: Composable {
     }
 
     private func update(appearance: NSAppearance) {
-        appearance.performAsCurrentDrawingAppearance {
-            tintColor = NSColor.textColor.cgColor
+        self.appearance = appearance
+        updateColors()
+    }
+
+    private func updateColors() {
+        guard let runnerBundle = appStateClient.withLock(\.runnerBundles.latestValue),
+              frameTintColor(for: runnerBundle.runner) != nil else {
+            updateTemplateColor()
+            return
         }
-        eventBridge?.setColor(tintColor, isTemplate)
+        update(runnerBundle: runnerBundle)
+    }
+
+    private func updateTemplateColor() {
+        guard let appearance else { return }
+        eventBridge?.setColor(NSColor.textColor.cgColor(in: appearance), isTemplate)
+    }
+
+    private func frameTintColor(for runner: Runner) -> CGColor? {
+        guard runner.isTemplate, userDefaultsRepository.usesAccentColor, let appearance else {
+            return nil
+        }
+        return NSColor.controlAccentColor.cgColor(in: appearance)
     }
 
     private func update(runnerBundle: RunnerBundle) {
@@ -113,16 +140,19 @@ public final class RunnerBar: Composable {
             }
         }
         let isFlippedHorizontally = userDefaultsRepository.isFlippedHorizontally
+        let frameTintColor = frameTintColor(for: runnerBundle.runner)
         icon = images.first?.plane
         icon?.flip(enabled: isFlippedHorizontally)
         icon?.normalize()
+        icon?.tint(with: frameTintColor)
         size = icon?.size ?? .zero
         eventBridge?.setSize(size)
-        isTemplate = runnerBundle.runner.isTemplate
-        eventBridge?.setColor(tintColor, isTemplate)
+        isTemplate = runnerBundle.runner.isTemplate && frameTintColor == nil
+        updateTemplateColor()
         let imageFrames = images.map { image in
             image.flip(enabled: isFlippedHorizontally)
             image.normalize()
+            image.tint(with: frameTintColor)
             image.isTemplate = isTemplate
             return image
         }

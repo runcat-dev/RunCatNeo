@@ -51,6 +51,17 @@ extension NSImage {
         addRepresentation(rep)
     }
 
+    func tint(with color: CGColor?) {
+        guard let color, let ciImage else { return }
+        let filter = CIFilter.sourceInCompositing()
+        filter.inputImage = CIImage(color: CIColor(cgColor: color)).cropped(to: ciImage.extent)
+        filter.backgroundImage = ciImage
+        guard let output = filter.outputImage else { return }
+        let rep = NSCIImageRep(ciImage: output)
+        representations.forEach { removeRepresentation($0) }
+        addRepresentation(rep)
+    }
+
     public func resize(width: CGFloat, alignment: HorizontalAlignment = .center) {
         guard let ciImage, size.height > 0, width > 0 else { return }
         let pixelHeight = ciImage.extent.height

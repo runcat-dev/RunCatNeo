@@ -27,6 +27,7 @@ extension String {
     static let speedDecreasesUnderLoad = "SPEED_DECREASES_UNDER_LOAD"
     static let systemMetricsConfiguration = "SYSTEM_METRICS_CONFIGURATION"
     static let updateInterval = "UPDATE_INTERVAL"
+    static let usesAccentColor = "USES_ACCENT_COLOR"
 
     public static let activityMonitor = "com.apple.ActivityMonitor"
     public static let finder = "com.apple.finder"

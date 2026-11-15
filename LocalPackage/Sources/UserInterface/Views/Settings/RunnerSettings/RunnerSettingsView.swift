@@ -39,6 +39,13 @@ struct RunnerSettingsView: View {
                 )) {
                     Text("flipHorizontally", bundle: .module)
                 }
+                Toggle(isOn: Binding<Bool>(
+                    get: { store.usesAccentColor },
+                    asyncSet: { await store.send(.useAccentColorToggleSwitched($0)) }
+                )) {
+                    Text("useAccentColor", bundle: .module)
+                    Text("useAccentColorDescription", bundle: .module)
+                }
             } header: {
                 Text("appearance", bundle: .module)
             }
