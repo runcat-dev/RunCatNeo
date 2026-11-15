@@ -10,11 +10,9 @@ Reads GPU statistics from the IOKit registry (no sudo, no network) and writes
       "symbol": "memorychip.fill",
       "metricsBarValue": "24%",
       "metrics": [
-        {"title": "Utilization",    "formattedValue": "24%",     "normalizedValue": 0.24},
-        {"title": "Renderer",       "formattedValue": "23%",     "normalizedValue": 0.23},
-        {"title": "Tiler",          "formattedValue": "24%",     "normalizedValue": 0.24},
-        {"title": "VRAM in use",    "formattedValue": "0.46 GB", "normalizedValue": 0.0285},
-        {"title": "VRAM allocated", "formattedValue": "2.25 GB"}
+        {"title": "Utilization",      "formattedValue": "24%", "normalizedValue": 0.24},
+        {"title": "Memory in use",    "formattedValue": "0.46 GB"},
+        {"title": "Memory allocated", "formattedValue": "2.25 GB"}
       ],
       "lastUpdatedDate": "2026-08-12T18:25:08Z"
     }
@@ -52,11 +50,10 @@ def gpu_statistics():
     raise RuntimeError("no AGXAccelerator PerformanceStatistics found")
 
 
-def total_memory():
-    output = subprocess.run(
-        ["sysctl", "-n", "hw.memsize"], capture_output=True, text=True, check=True
-    ).stdout
-    return int(output.strip())
+def statistic(statistics, key):
+    if key not in statistics:
+        raise RuntimeError(f"PerformanceStatistics has no {key!r} entry")
+    return int(statistics[key])
 
 
 def percent(title, value):
@@ -67,17 +64,13 @@ def percent(title, value):
     }
 
 
-def gigabytes(title, value, total=None):
-    metric = {"title": title, "formattedValue": f"{value / (1024 ** 3):.2f} GB"}
-    if total:
-        metric["normalizedValue"] = round(value / total, 4)
-    return metric
+def gigabytes(title, value):
+    return {"title": title, "formattedValue": f"{value / (1024 ** 3):.2f} GB"}
 
 
 def build_snapshot():
     statistics = gpu_statistics()
-    utilization = int(statistics.get("Device Utilization %", 0))
-    total = total_memory()
+    utilization = statistic(statistics, "Device Utilization %")
 
     return {
         "title": "GPU",
@@ -85,10 +78,8 @@ def build_snapshot():
         "metricsBarValue": f"{utilization:g}%",
         "metrics": [
             percent("Utilization", utilization),
-            percent("Renderer", int(statistics.get("Renderer Utilization %", 0))),
-            percent("Tiler", int(statistics.get("Tiler Utilization %", 0))),
-            gigabytes("VRAM in use", int(statistics.get("In use system memory", 0)), total),
-            gigabytes("VRAM allocated", int(statistics.get("Alloc system memory", 0))),
+            gigabytes("Memory in use", statistic(statistics, "In use system memory")),
+            gigabytes("Memory allocated", statistic(statistics, "Alloc system memory")),
         ],
         "lastUpdatedDate": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }

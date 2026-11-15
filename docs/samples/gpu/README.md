@@ -1,6 +1,6 @@
 # GPU Sample
 
-A Python script that shows Apple Silicon GPU utilization and VRAM usage on RunCat Neo's Custom Metrics card and in the Metrics Bar. It reads the `AGXAccelerator` node of the IOKit registry with `ioreg`, so it needs no `sudo`, no network access, and no third party tools. The snapshot is written to `~/.runcat/gpu.json`, and a `launchd` LaunchAgent keeps the script running so the card refreshes every 2 seconds.
+A Python script that shows Apple Silicon GPU utilization and memory usage on RunCat Neo's Custom Metrics card and in the Metrics Bar. It reads the `AGXAccelerator` node of the IOKit registry with `ioreg`, so it needs no `sudo`, no network access, and no third party tools. The snapshot is written to `~/.runcat/gpu.json`, and a `launchd` LaunchAgent keeps the script running so the card refreshes every 2 seconds.
 
 ```text
 ioreg (IOKit registry) -> runcat-gpu.py -> gpu.json -> RunCat Neo
@@ -44,21 +44,19 @@ launchctl bootout gui/$(id -u)/dev.runcat.gpu-sample
 
 ## What the rows mean
 
-`ioreg -r -d 1 -w 0 -c AGXAccelerator` reports a `PerformanceStatistics` dictionary. The sample surfaces five of its entries:
+`ioreg -r -d 1 -w 0 -c AGXAccelerator` reports a `PerformanceStatistics` dictionary. The sample surfaces three of its entries:
 
 | Row | Source key | Meaning |
 |-----|-----------|---------|
 | Utilization | `Device Utilization %` | Overall share of time the GPU was busy |
-| Renderer | `Renderer Utilization %` | Share spent in the render stage |
-| Tiler | `Tiler Utilization %` | Share spent in the tiling stage |
-| VRAM in use | `In use system memory` | Memory currently held by the GPU, normalized against `hw.memsize` |
-| VRAM allocated | `Alloc system memory` | Memory reserved for the GPU |
+| Memory in use | `In use system memory` | Memory currently held by the GPU |
+| Memory allocated | `Alloc system memory` | Memory reserved for the GPU |
 
-Apple Silicon uses unified memory, so the VRAM rows are drawn from the same pool the CPU uses. That is why "VRAM in use" is normalized against total system memory rather than a dedicated card's capacity.
+Apple Silicon uses unified memory, so the memory rows are drawn from the same pool the CPU uses rather than from dedicated video memory.
 
 ## Customizing the output
 
-The output JSON shape is documented in [`../../CustomMetricsSchema.md`](../../CustomMetricsSchema.md). `PerformanceStatistics` carries more entries than the five shown here, so adding a row is a one line edit in `build_snapshot`. Inspect what your machine reports with:
+The output JSON shape is documented in [`../../CustomMetricsSchema.md`](../../CustomMetricsSchema.md). `PerformanceStatistics` carries more entries than the three shown here, such as `Renderer Utilization %` and `Tiler Utilization %`, so adding a row is a one line edit in `build_snapshot`. Inspect what your machine reports with:
 
 ```bash
 ioreg -r -d 1 -w 0 -c AGXAccelerator | grep PerformanceStatistics
@@ -70,5 +68,6 @@ ioreg -r -d 1 -w 0 -c AGXAccelerator | grep PerformanceStatistics
 
 - File never appears → run the script by hand (step 2). Errors print to stderr.
 - `no AGXAccelerator PerformanceStatistics found` → the machine is not Apple Silicon, or the GPU driver exposes no statistics node.
+- `PerformanceStatistics has no '…' entry` → a macOS update renamed or removed that key. The script stops writing instead of reporting 0%, so the card keeps its last snapshot and its timestamp stops advancing. Inspect the keys with the `ioreg` command above and update `build_snapshot`.
 - File exists but stops updating → check the agent is loaded: `launchctl print gui/$(id -u)/dev.runcat.gpu-sample`.
 - Card footer shows **Last updated: Failed** in red → the file became unreadable or contains invalid JSON. Re-run the script by hand (step 2); the card recovers on the next successful read.
