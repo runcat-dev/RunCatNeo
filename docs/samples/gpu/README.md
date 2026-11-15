@@ -68,6 +68,6 @@ ioreg -r -d 1 -w 0 -c AGXAccelerator | grep PerformanceStatistics
 
 - File never appears → run the script by hand (step 2). Errors print to stderr.
 - `no AGXAccelerator PerformanceStatistics found` → the machine is not Apple Silicon, or the GPU driver exposes no statistics node.
-- `PerformanceStatistics has no '…' entry` → a macOS update renamed or removed that key. The script stops writing instead of reporting 0%, so the card keeps its last snapshot and its timestamp stops advancing. Inspect the keys with the `ioreg` command above and update `build_snapshot`.
-- File exists but stops updating → check the agent is loaded: `launchctl print gui/$(id -u)/dev.runcat.gpu-sample`.
+- `PerformanceStatistics has no '…' entry` → a macOS update renamed or removed that key. The script stops writing instead of reporting 0%, so the card keeps its last snapshot and its relative time keeps growing. Inspect the keys with the `ioreg` command above and update `build_snapshot`.
+- File exists but stops updating → check the agent is loaded: `launchctl print gui/$(id -u)/dev.runcat.gpu-sample`. If it is, run the script by hand (step 2) to see the error, since the LaunchAgent does not keep stderr.
 - Card footer shows **Last updated: Failed** in red → the file became unreadable or contains invalid JSON. Re-run the script by hand (step 2); the card recovers on the next successful read.
