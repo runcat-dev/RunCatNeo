@@ -34,7 +34,12 @@ struct CustomMetricsSourceRowView: View {
                     await removeButtonTapped()
                 }
             } label: {
-                Image(systemName: "minus.circle")
+                Label {
+                    Text("remove\(source.displayName)", bundle: .module)
+                } icon: {
+                    Image(systemName: "minus.circle")
+                }
+                .labelStyle(.iconOnly)
             }
             .buttonStyle(.borderless)
             .tint(Color.red)
