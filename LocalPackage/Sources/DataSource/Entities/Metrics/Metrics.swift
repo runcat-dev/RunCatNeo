@@ -22,17 +22,20 @@ import SystemInfoKit
 
 public struct Metrics: Sendable {
     public var systemInfoBundle: SystemInfoBundle
+    public var thermalState: SystemThermalState
     public var cpuRingBuffer: RingBuffer
     public var memoryRingBuffer: RingBuffer
     public var customMetricsBundles: [CustomMetricsBundle]
 
     public init(
         systemInfoBundle: SystemInfoBundle = .cpuZero(),
+        thermalState: SystemThermalState = .unknown,
         cpuRingBuffer: RingBuffer = .init(),
         memoryRingBuffer: RingBuffer = .init(),
         customMetricsBundles: [CustomMetricsBundle] = []
     ) {
         self.systemInfoBundle = systemInfoBundle
+        self.thermalState = thermalState
         self.cpuRingBuffer = cpuRingBuffer
         self.memoryRingBuffer = memoryRingBuffer
         self.customMetricsBundles = customMetricsBundles

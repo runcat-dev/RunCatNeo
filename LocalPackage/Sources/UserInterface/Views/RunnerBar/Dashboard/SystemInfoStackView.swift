@@ -25,6 +25,7 @@ import SystemInfoKit
 
 struct SystemInfoStackView: View {
     var systemInfoBundle: SystemInfoBundle
+    var thermalState: SystemThermalState
     var cpuRingBuffer: RingBuffer
     var memoryRingBuffer: RingBuffer
     var isPreview: Bool
@@ -33,6 +34,7 @@ struct SystemInfoStackView: View {
         VStack(alignment: .leading, spacing: 8) {
             if let cpuInfo = systemInfoBundle.cpuInfo {
                 SystemInfoView(systemInfo: cpuInfo) {
+                    SystemThermalStateView(thermalState: isPreview ? .nominal : thermalState)
                     LineGraphView(values: (isPreview ? RingBuffer.mock : cpuRingBuffer).values)
                 }
             }

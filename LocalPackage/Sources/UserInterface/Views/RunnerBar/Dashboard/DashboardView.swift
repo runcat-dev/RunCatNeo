@@ -35,6 +35,7 @@ struct DashboardView: View {
             }
             SystemInfoStackView(
                 systemInfoBundle: store.systemInfoBundle,
+                thermalState: store.thermalState,
                 cpuRingBuffer: store.cpuRingBuffer,
                 memoryRingBuffer: store.memoryRingBuffer,
                 isPreview: store.isPreview
