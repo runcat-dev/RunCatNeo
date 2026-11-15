@@ -35,6 +35,7 @@ struct DashboardView: View {
             }
             SystemInfoStackView(
                 systemInfoBundle: store.systemInfoBundle,
+                maximumBatteryCapacityPercent: store.maximumBatteryCapacityPercent,
                 cpuRingBuffer: store.cpuRingBuffer,
                 memoryRingBuffer: store.memoryRingBuffer,
                 isPreview: store.isPreview

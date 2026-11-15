@@ -25,6 +25,7 @@ import SystemInfoKit
 
 struct SystemInfoStackView: View {
     var systemInfoBundle: SystemInfoBundle
+    var maximumBatteryCapacityPercent: Double?
     var cpuRingBuffer: RingBuffer
     var memoryRingBuffer: RingBuffer
     var isPreview: Bool
@@ -50,7 +51,13 @@ struct SystemInfoStackView: View {
             }
             if let batteryInfo = systemInfoBundle.batteryInfo?.simulated(isPreview) {
                 Divider()
-                SystemInfoView(systemInfo: batteryInfo, isVisibleDetails: batteryInfo.isInstalled) {
+                SystemInfoView(
+                    systemInfo: BatteryStatusInfo(
+                        battery: batteryInfo,
+                        maximumCapacityPercent: isPreview ? batteryInfo.maxCapacity.value : maximumBatteryCapacityPercent
+                    ),
+                    isVisibleDetails: batteryInfo.isInstalled
+                ) {
                     EmptyView()
                 }
             }
