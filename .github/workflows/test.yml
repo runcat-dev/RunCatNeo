@@ -13,14 +13,14 @@ concurrency:
 jobs:
   run-unit-test:
     name: Unit Test
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 30
     env:
-      DEVELOPER_DIR: "/Applications/Xcode_26.5.0.app/Contents/Developer"
+      DEVELOPER_DIR: "/Applications/Xcode_27.2.0.app/Contents/Developer"
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Show Xcode Version
         run: xcodebuild -version
