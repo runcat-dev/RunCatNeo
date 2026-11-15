@@ -42,6 +42,11 @@ struct FrameImagesCollectionView: View {
                                 await store.send(.frameImageCellTapped(frameImage))
                             }
                         }
+                        .accessibilityAction {
+                            Task {
+                                await store.send(.frameImageCellTapped(frameImage))
+                            }
+                        }
                         .sortable(
                             index: index,
                             item: frameImage,
