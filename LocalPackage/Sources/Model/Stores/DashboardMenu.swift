@@ -87,7 +87,7 @@ public final class DashboardMenu: Composable {
             task?.cancel()
             task = nil
 
-        case let .runnerKindPickerSelected(runner):
+        case let .runnerPickerSelected(runner):
             guard let runner else { return }
             do {
                 try runnerService.update(runner: runner)
@@ -138,7 +138,7 @@ public final class DashboardMenu: Composable {
     public enum Action: Sendable {
         case viewAppeared
         case viewDisappeared
-        case runnerKindPickerSelected(Runner?)
+        case runnerPickerSelected(Runner?)
         case settingsButtonTapped
         case activityMonitorButtonTapped
         case aboutButtonTapped(AttributedString)

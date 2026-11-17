@@ -52,7 +52,7 @@ struct MetricsBarSettingsTests {
     }
 
     @MainActor @Test
-    func send_showsSystemMetricsToggleSwitched_persists_configurations_and_activates() async throws {
+    func send_showSystemMetricsToggleSwitched_persists_configurations_and_activates() async throws {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let activationRequests = AllocatedUnfairLock<[SystemInfoType: Bool]?>(initialState: nil)
         let initialBarConfiguration = MetricsBarConfiguration(
@@ -82,7 +82,7 @@ struct MetricsBarSettingsTests {
             },
             userDefaultsClient: storage.client
         ))
-        await sut.send(.showsSystemMetricsToggleSwitched(.memory, true))
+        await sut.send(.showSystemMetricsToggleSwitched(.memory, true))
         #expect(sut.metricsBarConfiguration.showsMemory)
         let storedBarConfiguration = try #require(storage.currentMetricsBarConfiguration())
         #expect(storedBarConfiguration.showsMemory)
@@ -96,7 +96,7 @@ struct MetricsBarSettingsTests {
     }
 
     @MainActor @Test
-    func send_showsSystemMetricsToggleSwitched_cpu_does_not_toggle_activation() async {
+    func send_showSystemMetricsToggleSwitched_cpu_does_not_toggle_activation() async {
         let activationCount = AllocatedUnfairLock<Int>(initialState: 0)
         let storage = UserDefaultsClient.storage()
         let sut = MetricsBarSettings(.testDependencies(
@@ -105,24 +105,24 @@ struct MetricsBarSettingsTests {
             },
             userDefaultsClient: storage.client
         ))
-        await sut.send(.showsSystemMetricsToggleSwitched(.cpu, true))
+        await sut.send(.showSystemMetricsToggleSwitched(.cpu, true))
         #expect(sut.metricsBarConfiguration.showsCPU)
         #expect(activationCount.withLock(\.self) == 0)
     }
 
     @MainActor @Test
-    func send_showsCustomMetricsToggleSwitched_persists_visibility_and_emits_change() async throws {
+    func send_showCustomMetricsToggleSwitched_persists_visibility_and_emits_change() async throws {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let storage = UserDefaultsClient.storage(initialSources: [makeSource(id: UUID(1))])
         let sut = MetricsBarSettings(.testDependencies(
             appStateClient: .testDependency(appState),
             userDefaultsClient: storage.client
         ))
-        await sut.send(.showsCustomMetricsToggleSwitched(UUID(1), true))
+        await sut.send(.showCustomMetricsToggleSwitched(UUID(1), true))
         #expect(sut.metricsBarConfiguration.visibleCustomMetricsSourceIDs == [UUID(1)])
         #expect(storage.currentMetricsBarConfiguration()?.visibleCustomMetricsSourceIDs == [UUID(1)])
         #expect(appState.withLock(\.systemMetricsConfigurationChanges.latestValue) != nil)
-        await sut.send(.showsCustomMetricsToggleSwitched(UUID(1), false))
+        await sut.send(.showCustomMetricsToggleSwitched(UUID(1), false))
         #expect(sut.metricsBarConfiguration.visibleCustomMetricsSourceIDs.isEmpty)
         let storedBarConfiguration = try #require(storage.currentMetricsBarConfiguration())
         #expect(storedBarConfiguration.visibleCustomMetricsSourceIDs.isEmpty)

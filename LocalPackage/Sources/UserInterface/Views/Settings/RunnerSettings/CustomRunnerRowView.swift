@@ -23,13 +23,13 @@ import SwiftUI
 
 struct CustomRunnerRowView: View {
     var runnerBundle: RunnerBundle
-    var deleteButtonTapped: () async -> Void
+    var removeButtonTapped: () async -> Void
 
     var body: some View {
         LabeledContent {
             Button(role: .destructive) {
                 Task {
-                    await deleteButtonTapped()
+                    await removeButtonTapped()
                 }
             } label: {
                 Label {

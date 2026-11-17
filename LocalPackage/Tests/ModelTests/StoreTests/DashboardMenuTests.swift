@@ -42,16 +42,16 @@ struct DashboardMenuTests {
     }
 
     @MainActor @Test
-    func send_runnerKindPickerSelected_updates_current_runner() async {
+    func send_runnerPickerSelected_updates_current_runner() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let sut = DashboardMenu(.testDependencies(appStateClient: .testDependency(appState)))
-        await sut.send(.runnerKindPickerSelected(Runner(kind: .dog)))
+        await sut.send(.runnerPickerSelected(Runner(kind: .dog)))
         #expect(sut.currentRunner == Runner(kind: .dog))
         #expect(appState.withLock(\.runnerBundles.latestValue)?.runner == Runner(kind: .dog))
     }
 
     @MainActor @Test
-    func send_runnerKindPickerSelected_keeps_current_runner_when_custom_runner_frames_are_missing() async {
+    func send_runnerPickerSelected_keeps_current_runner_when_custom_runner_frames_are_missing() async {
         let runner = Runner(id: "custom-runner", name: "Custom Runner", isTemplate: false, frameOrder: .custom([0]))
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let sut = DashboardMenu(
@@ -63,7 +63,7 @@ struct DashboardMenuTests {
             ),
             currentRunner: .default
         )
-        await sut.send(.runnerKindPickerSelected(runner))
+        await sut.send(.runnerPickerSelected(runner))
         #expect(sut.currentRunner == Runner.default)
         #expect(appState.withLock(\.runnerBundles.latestValue) == nil)
     }

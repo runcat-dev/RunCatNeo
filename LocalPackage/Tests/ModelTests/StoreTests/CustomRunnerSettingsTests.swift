@@ -26,7 +26,7 @@ struct CustomRunnerSettingsTests {
     }
 
     @MainActor @Test
-    func send_deleteButtonTapped_shows_alert_and_keeps_list_when_runner_is_in_use() async {
+    func send_removeCustomRunnerButtonTapped_shows_alert_and_keeps_list_when_runner_is_in_use() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let bundle = RunnerBundle(runner: customRunner, frame: .custom(Data()))
         appState.withLock { $0.runnerBundles.send(bundle) }
@@ -34,14 +34,14 @@ struct CustomRunnerSettingsTests {
             .testDependencies(appStateClient: .testDependency(appState)),
             customRunnerBundleList: [bundle]
         )
-        await sut.send(.deleteButtonTapped(customRunner))
+        await sut.send(.removeCustomRunnerButtonTapped(customRunner))
         #expect(sut.customRunnerBundleList == [bundle])
         #expect(sut.error == .customRunner(.runnerInUse))
         #expect(sut.showingAlert)
     }
 
     @MainActor @Test
-    func send_deleteButtonTapped_removes_selected_runner() async {
+    func send_removeCustomRunnerButtonTapped_removes_selected_runner() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         appState.withLock {
             $0.runnerBundles.send(RunnerBundle(runner: .default, frame: .preset("cat-frame-0")))
@@ -50,7 +50,7 @@ struct CustomRunnerSettingsTests {
             .testDependencies(appStateClient: .testDependency(appState)),
             customRunnerBundleList: [RunnerBundle(runner: customRunner, frame: .custom(Data()))]
         )
-        await sut.send(.deleteButtonTapped(customRunner))
+        await sut.send(.removeCustomRunnerButtonTapped(customRunner))
         #expect(sut.customRunnerBundleList.isEmpty)
         #expect(sut.error == nil)
         #expect(!sut.showingAlert)

@@ -30,31 +30,31 @@ struct MetricsBarSettingsView: View {
             Section {
                 Toggle(isOn: Binding<Bool>(
                     get: { store.metricsBarConfiguration.showsCPU },
-                    asyncSet: { await store.send(.showsSystemMetricsToggleSwitched(.cpu, $0)) }
+                    asyncSet: { await store.send(.showSystemMetricsToggleSwitched(.cpu, $0)) }
                 )) {
                     Text("showCPUUsage", bundle: .module)
                 }
                 Toggle(isOn: Binding<Bool>(
                     get: { store.metricsBarConfiguration.showsMemory },
-                    asyncSet: { await store.send(.showsSystemMetricsToggleSwitched(.memory, $0)) }
+                    asyncSet: { await store.send(.showSystemMetricsToggleSwitched(.memory, $0)) }
                 )) {
                     Text("showMemoryUsage", bundle: .module)
                 }
                 Toggle(isOn: Binding<Bool>(
                     get: { store.metricsBarConfiguration.showsStorage },
-                    asyncSet: { await store.send(.showsSystemMetricsToggleSwitched(.storage, $0)) }
+                    asyncSet: { await store.send(.showSystemMetricsToggleSwitched(.storage, $0)) }
                 )) {
                     Text("showStorageCapacity", bundle: .module)
                 }
                 Toggle(isOn: Binding<Bool>(
                     get: { store.metricsBarConfiguration.showsBattery },
-                    asyncSet: { await store.send(.showsSystemMetricsToggleSwitched(.battery, $0)) }
+                    asyncSet: { await store.send(.showSystemMetricsToggleSwitched(.battery, $0)) }
                 )) {
                     Text("showBatteryStatus", bundle: .module)
                 }
                 Toggle(isOn: Binding<Bool>(
                     get: { store.metricsBarConfiguration.showsNetwork },
-                    asyncSet: { await store.send(.showsSystemMetricsToggleSwitched(.network, $0)) }
+                    asyncSet: { await store.send(.showSystemMetricsToggleSwitched(.network, $0)) }
                 )) {
                     Text("showNetworkConnectivity", bundle: .module)
                 }
@@ -66,7 +66,7 @@ struct MetricsBarSettingsView: View {
                     ForEach(store.customMetricsSources) { source in
                         Toggle(isOn: Binding<Bool>(
                             get: { store.metricsBarConfiguration.showsCustomMetrics(of: source.id) },
-                            asyncSet: { await store.send(.showsCustomMetricsToggleSwitched(source.id, $0)) }
+                            asyncSet: { await store.send(.showCustomMetricsToggleSwitched(source.id, $0)) }
                         )) {
                             Text("show\(source.displayName)Metrics", bundle: .module)
                         }
