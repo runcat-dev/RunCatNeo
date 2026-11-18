@@ -33,7 +33,7 @@ public struct MetricsBarScene: Scene {
         MenuBarExtra(isInserted: $isInserted) {
             MetricsBarSettingsView(store: .init(appDependencies))
         } label: {
-            MetricsBarView(store: .init(appDependencies))
+            MetricsBarView(store: .init(appDependencies), isInserted: isInserted)
         }
         .menuBarExtraStyle(.window)
     }

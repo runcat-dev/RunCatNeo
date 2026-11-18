@@ -26,6 +26,11 @@ import SystemInfoKit
 struct MetricsBarView: View {
     @StateObject var store: MetricsBar
 
+    // An exception to passing views nothing but their store. MenuBarExtra(isInserted:) keeps this
+    // label alive while the Metrics Bar is hidden, and onDisappear never fires, so isInserted is
+    // the only reliable signal for the store to stop observing metrics.
+    var isInserted: Bool
+
     private var size: CGSize {
         var widthArray = [CGFloat]()
         let iconWidth = IndicatorKind.categoryIcon.size.width
@@ -91,6 +96,16 @@ struct MetricsBarView: View {
         .renderingMode(.template)
         .task {
             await store.send(.viewAppeared(String(describing: Self.self)))
+        }
+        .task(id: isInserted) {
+            await store.send(.isInsertedChanged(isInserted))
+        }
+        // This will not be called within the MenuBarExtra lifecycle,
+        // but I am including it here for the sake of formality.
+        .onDisappear {
+            Task {
+                await store.send(.viewDisappeared)
+            }
         }
     }
 

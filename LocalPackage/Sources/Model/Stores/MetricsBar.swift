@@ -59,37 +59,52 @@ public final class MetricsBar: Composable {
         switch action {
         case let .viewAppeared(screenName):
             logService.notice(.screenView(name: screenName))
-            if let metrics = appStateClient.withLock(\.metrics.latestValue) {
-                updateMetrics(from: metrics)
-            }
-            task?.cancel()
-            task = Task.immediate { [weak self, appStateClient] in
-                await withTaskGroup { group in
-                    group.addImmediateTask {
-                        let stream = appStateClient.withLock(\.metrics.stream)
-                        for await value in stream {
-                            self?.updateMetrics(from: value)
-                        }
-                    }
-                    group.addImmediateTask {
-                        let stream = appStateClient.withLock(\.systemMetricsConfigurationChanges.stream)
-                        for await _ in stream {
-                            self?.updateMetricsBarConfiguration()
-                        }
-                    }
-                    group.addImmediateTask {
-                        let stream = appStateClient.withLock(\.customMetricsConfigurationChanges.stream)
-                        for await _ in stream {
-                            self?.updateMetricsBarConfiguration()
-                        }
-                    }
-                }
+
+        case let .isInsertedChanged(isInserted):
+            if isInserted {
+                startObserving()
+            } else {
+                stopObserving()
             }
 
         case .viewDisappeared:
-            task?.cancel()
-            task = nil
+            stopObserving()
         }
+    }
+
+    private func startObserving() {
+        updateMetricsBarConfiguration()
+        if let metrics = appStateClient.withLock(\.metrics.latestValue) {
+            updateMetrics(from: metrics)
+        }
+        task?.cancel()
+        task = Task.immediate { [weak self, appStateClient] in
+            await withTaskGroup { group in
+                group.addImmediateTask {
+                    let stream = appStateClient.withLock(\.metrics.stream)
+                    for await value in stream {
+                        self?.updateMetrics(from: value)
+                    }
+                }
+                group.addImmediateTask {
+                    let stream = appStateClient.withLock(\.systemMetricsConfigurationChanges.stream)
+                    for await _ in stream {
+                        self?.updateMetricsBarConfiguration()
+                    }
+                }
+                group.addImmediateTask {
+                    let stream = appStateClient.withLock(\.customMetricsConfigurationChanges.stream)
+                    for await _ in stream {
+                        self?.updateMetricsBarConfiguration()
+                    }
+                }
+            }
+        }
+    }
+
+    private func stopObserving() {
+        task?.cancel()
+        task = nil
     }
 
     private func updateMetrics(from metrics: Metrics) {
@@ -103,6 +118,7 @@ public final class MetricsBar: Composable {
 
     public enum Action: Sendable {
         case viewAppeared(String)
+        case isInsertedChanged(Bool)
         case viewDisappeared
     }
 }
