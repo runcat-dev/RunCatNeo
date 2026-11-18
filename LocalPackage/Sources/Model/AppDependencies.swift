@@ -31,6 +31,7 @@ public struct AppDependencies: Sendable {
     public var notificationCenterClient = NotificationCenterClient.liveValue
     public var nsAppClient = NSAppClient.liveValue
     public var nsWorkspaceClient = NSWorkspaceClient.liveValue
+    public var processInfoClient = ProcessInfoClient.liveValue
     public var smAppServiceClient = SMAppServiceClient.liveValue
     public var systemInfoObserverClient = SystemInfoObserverClient.liveValue
     public var urlClient = URLClient.liveValue
@@ -55,6 +56,7 @@ extension AppDependencies {
         notificationCenterClient: NotificationCenterClient = .testValue,
         nsAppClient: NSAppClient = .testValue,
         nsWorkspaceClient: NSWorkspaceClient = .testValue,
+        processInfoClient: ProcessInfoClient = .testValue,
         smAppServiceClient: SMAppServiceClient = .testValue,
         systemInfoObserverClient: SystemInfoObserverClient = .testValue,
         urlClient: URLClient = .testValue,
@@ -71,6 +73,7 @@ extension AppDependencies {
             notificationCenterClient: notificationCenterClient,
             nsAppClient: nsAppClient,
             nsWorkspaceClient: nsWorkspaceClient,
+            processInfoClient: processInfoClient,
             smAppServiceClient: smAppServiceClient,
             systemInfoObserverClient: systemInfoObserverClient,
             urlClient: urlClient,

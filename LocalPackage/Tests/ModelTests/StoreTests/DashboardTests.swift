@@ -7,6 +7,20 @@ import Testing
 
 struct DashboardTests {
     @MainActor @Test
+    func send_viewAppeared_displays_latest_thermal_state_and_updates() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        appState.withLock { $0.metrics.send(Metrics(thermalState: .serious)) }
+        let sut = Dashboard(.testDependencies(appStateClient: .testDependency(appState)))
+        #expect(sut.thermalState == .unknown)
+        await sut.send(.viewAppeared("DashboardTests"))
+        #expect(sut.thermalState == .serious)
+        appState.withLock { $0.metrics.send(Metrics(thermalState: .fair)) }
+        await waitUntil { sut.thermalState == .fair }
+        #expect(sut.thermalState == .fair)
+        await sut.send(.viewDisappeared)
+    }
+
+    @MainActor @Test
     func send_viewAppeared_loads_latest_metrics_and_observes_stream() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let initialMetrics = Metrics.dummy(customMetricsTitle: "Initial")

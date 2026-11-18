@@ -23,6 +23,7 @@ import SystemInfoKit
 
 struct SystemMetricsService {
     private let appStateClient: AppStateClient
+    private let processInfoClient: ProcessInfoClient
     private let systemInfoObserverClient: SystemInfoObserverClient
     private let userDefaultsRepository: UserDefaultsRepository
 
@@ -32,6 +33,7 @@ struct SystemMetricsService {
 
     init(_ appDependencies: AppDependencies) {
         self.appStateClient = appDependencies.appStateClient
+        self.processInfoClient = appDependencies.processInfoClient
         self.systemInfoObserverClient = appDependencies.systemInfoObserverClient
         self.userDefaultsRepository = .init(appDependencies.userDefaultsClient)
     }
@@ -57,8 +59,10 @@ struct SystemMetricsService {
     }
 
     func updateMetrics(from systemInfoBundle: SystemInfoBundle) {
+        let thermalState = SystemThermalState(processInfoClient.thermalState())
         appStateClient.send(\.metrics, default: .init()) { metrics in
             metrics.systemInfoBundle = systemInfoBundle
+            metrics.thermalState = thermalState
             if let value = systemInfoBundle.cpuInfo?.percentage.value {
                 metrics.cpuRingBuffer.append(value)
             }

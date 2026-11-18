@@ -7,6 +7,44 @@ import Testing
 @testable import Model
 
 struct SystemMetricsServiceTests {
+    @Test(arguments: [
+        (ProcessInfo.ThermalState.nominal, SystemThermalState.nominal),
+        (.fair, .fair),
+        (.serious, .serious),
+        (.critical, .critical),
+    ])
+    func updateMetrics_includes_system_thermal_state(
+        reportedState: ProcessInfo.ThermalState,
+        expectedState: SystemThermalState
+    ) {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let sut = SystemMetricsService(.testDependencies(
+            appStateClient: .testDependency(appState),
+            processInfoClient: testDependency(of: ProcessInfoClient.self) {
+                $0.thermalState = { reportedState }
+            }
+        ))
+        sut.updateMetrics(from: .cpuZero())
+        #expect(appState.withLock(\.metrics.latestValue)?.thermalState == expectedState)
+    }
+
+    @Test
+    func updateMetrics_refreshes_thermal_state_on_each_sample() {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let reportedState = AllocatedUnfairLock<ProcessInfo.ThermalState>(initialState: .critical)
+        let sut = SystemMetricsService(.testDependencies(
+            appStateClient: .testDependency(appState),
+            processInfoClient: testDependency(of: ProcessInfoClient.self) {
+                $0.thermalState = { reportedState.withLock(\.self) }
+            }
+        ))
+        sut.updateMetrics(from: .cpuZero())
+        #expect(appState.withLock(\.metrics.latestValue)?.thermalState == .critical)
+        reportedState.withLock { $0 = .nominal }
+        sut.updateMetrics(from: .cpuZero())
+        #expect(appState.withLock(\.metrics.latestValue)?.thermalState == .nominal)
+    }
+
     @Test
     func currentSystemInfoBundle_returns_value_from_observer() {
         let sut = SystemMetricsService(.testDependencies(

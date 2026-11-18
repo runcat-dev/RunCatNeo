@@ -33,6 +33,7 @@ public final class Dashboard: Composable {
 
     public var appName: String
     public var systemInfoBundle: SystemInfoBundle
+    public var thermalState: SystemThermalState
     public var cpuRingBuffer: RingBuffer
     public var memoryRingBuffer: RingBuffer
     public var customMetricsBundles: [CustomMetricsBundle]
@@ -45,6 +46,7 @@ public final class Dashboard: Composable {
         _ appDependencies: AppDependencies,
         appName: String? = nil,
         systemInfoBundle: SystemInfoBundle = .cpuZero(),
+        thermalState: SystemThermalState = .unknown,
         cpuRingBuffer: RingBuffer = .init(),
         memoryRingBuffer: RingBuffer = .init(),
         customMetricsBundles: [CustomMetricsBundle] = [],
@@ -58,6 +60,7 @@ public final class Dashboard: Composable {
         self.logService = .init(appDependencies)
         self.appName = appName ?? appStateClient.withLock(\.name)
         self.systemInfoBundle = systemInfoBundle
+        self.thermalState = thermalState
         self.cpuRingBuffer = cpuRingBuffer
         self.memoryRingBuffer = memoryRingBuffer
         self.customMetricsBundles = customMetricsBundles
@@ -97,6 +100,7 @@ public final class Dashboard: Composable {
 
     private func updateMetrics(_ metrics: Metrics) {
         systemInfoBundle = metrics.systemInfoBundle
+        thermalState = metrics.thermalState
         cpuRingBuffer = metrics.cpuRingBuffer
         memoryRingBuffer = metrics.memoryRingBuffer
         customMetricsBundles = metrics.customMetricsBundles
