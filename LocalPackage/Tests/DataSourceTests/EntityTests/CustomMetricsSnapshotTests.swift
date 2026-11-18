@@ -73,6 +73,38 @@ struct CustomMetricsSnapshotTests {
     }
 
     @Test
+    func decode_snapshot_with_metric_detail_and_state() throws {
+        let json = """
+            {
+              "title": "Sessions",
+              "metrics": [
+                {
+                  "title": "Build dashboard",
+                  "formattedValue": "Waiting",
+                  "detail": "/Users/example/project",
+                  "state": "waiting"
+                }
+              ],
+              "lastUpdatedDate": "2026-06-05T04:50:40Z"
+            }
+            """.data(using: .utf8)!
+        #expect(
+            try decoder.decode(CustomMetricsSnapshot.self, from: json) == CustomMetricsSnapshot(
+                title: "Sessions",
+                metrics: [
+                    CustomMetric(
+                        title: "Build dashboard",
+                        formattedValue: "Waiting",
+                        detail: "/Users/example/project",
+                        state: .waiting
+                    ),
+                ],
+                lastUpdatedDate: try #require(ISO8601DateFormatter().date(from: "2026-06-05T04:50:40Z"))
+            )
+        )
+    }
+
+    @Test
     func decode_throws_when_title_missing() {
         let json = """
             {
