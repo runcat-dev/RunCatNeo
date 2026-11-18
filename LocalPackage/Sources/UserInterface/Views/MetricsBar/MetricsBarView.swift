@@ -100,6 +100,13 @@ struct MetricsBarView: View {
         .task(id: isInserted) {
             await store.send(.isInsertedChanged(isInserted))
         }
+        // This will not be called within the MenuBarExtra lifecycle,
+        // but I am including it here for the sake of formality.
+        .onDisappear {
+            Task {
+                await store.send(.viewDisappeared)
+            }
+        }
     }
 
     private func drawSystemInfo(
