@@ -92,7 +92,7 @@ public final class MetricsSettings: Composable {
             showsMetricsBar = true
             userDefaultsRepository.showsMetricsBar = true
 
-        case let .monitorsSystemMetricsToggleSwitched(type, isOn):
+        case let .monitorSystemMetricsToggleSwitched(type, isOn):
             func overwrite(isOn: Bool, shows: inout Bool) {
                 shows = shows && isOn
             }
@@ -133,7 +133,7 @@ public final class MetricsSettings: Composable {
         case showMetricsBarToggleSwitched(Bool)
         case changedMyMindButtonTapped
         case showButtonTapped
-        case monitorsSystemMetricsToggleSwitched(SystemInfoType, Bool)
+        case monitorSystemMetricsToggleSwitched(SystemInfoType, Bool)
         case customMetricsSettings(CustomMetricsSettings.Action)
     }
 }

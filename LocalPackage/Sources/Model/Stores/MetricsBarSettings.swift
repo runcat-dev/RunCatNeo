@@ -69,7 +69,7 @@ public final class MetricsBarSettings: Composable {
             task?.cancel()
             task = nil
 
-        case let .showsSystemMetricsToggleSwitched(type, isOn):
+        case let .showSystemMetricsToggleSwitched(type, isOn):
             func overwrite(isOn: Bool, monitors: inout Bool) -> Bool {
                 if isOn, !monitors {
                     monitors = true
@@ -103,7 +103,7 @@ public final class MetricsBarSettings: Composable {
                 systemMetricsService.toggleSystemMetricsActivation(type: type, isOn: isOn)
             }
 
-        case let .showsCustomMetricsToggleSwitched(id, isOn):
+        case let .showCustomMetricsToggleSwitched(id, isOn):
             if isOn {
                 metricsBarConfiguration.visibleCustomMetricsSourceIDs.insert(id)
             } else {
@@ -122,7 +122,7 @@ public final class MetricsBarSettings: Composable {
     public enum Action: Sendable {
         case viewAppeared(String)
         case viewDisappeared
-        case showsSystemMetricsToggleSwitched(SystemInfoType, Bool)
-        case showsCustomMetricsToggleSwitched(UUID, Bool)
+        case showSystemMetricsToggleSwitched(SystemInfoType, Bool)
+        case showCustomMetricsToggleSwitched(UUID, Bool)
     }
 }

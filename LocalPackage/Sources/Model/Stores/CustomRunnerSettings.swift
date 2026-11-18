@@ -65,7 +65,7 @@ public final class CustomRunnerSettings: Composable {
             customRunnerBundleList = appStateClient.withLock(\.runnerBundleLists.latestValue)?
                 .filter(\.runner.isCustom) ?? []
 
-        case let .deleteButtonTapped(runner):
+        case let .removeCustomRunnerButtonTapped(runner):
             guard let currentRunner = appStateClient.withLock(\.runnerBundles.latestValue)?.runner else {
                 return
             }
@@ -119,7 +119,7 @@ public final class CustomRunnerSettings: Composable {
 
     public enum Action: Sendable {
         case viewAppeared
-        case deleteButtonTapped(Runner)
+        case removeCustomRunnerButtonTapped(Runner)
         case customRunnerRowMoved(IndexSet, Int)
         case addCustomRunnerButtonTapped
         case guidanceButtonTapped

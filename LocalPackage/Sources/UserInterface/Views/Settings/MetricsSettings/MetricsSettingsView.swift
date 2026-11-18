@@ -42,25 +42,25 @@ struct MetricsSettingsView: View {
             Section {
                 Toggle(isOn: Binding<Bool>(
                     get: { store.systemMetricsConfiguration.monitorsMemory },
-                    asyncSet: { await store.send(.monitorsSystemMetricsToggleSwitched(.memory, $0)) }
+                    asyncSet: { await store.send(.monitorSystemMetricsToggleSwitched(.memory, $0)) }
                 )) {
                     Text("enableMemoryUsageMonitoring", bundle: .module)
                 }
                 Toggle(isOn: Binding<Bool>(
                     get: { store.systemMetricsConfiguration.monitorsStorage },
-                    asyncSet: { await store.send(.monitorsSystemMetricsToggleSwitched(.storage, $0)) }
+                    asyncSet: { await store.send(.monitorSystemMetricsToggleSwitched(.storage, $0)) }
                 )) {
                     Text("enableStorageCapacityMonitoring", bundle: .module)
                 }
                 Toggle(isOn: Binding<Bool>(
                     get: { store.systemMetricsConfiguration.monitorsBattery },
-                    asyncSet: { await store.send(.monitorsSystemMetricsToggleSwitched(.battery, $0)) }
+                    asyncSet: { await store.send(.monitorSystemMetricsToggleSwitched(.battery, $0)) }
                 )) {
                     Text("enableBatteryStatusMonitoring", bundle: .module)
                 }
                 Toggle(isOn: Binding<Bool>(
                     get: { store.systemMetricsConfiguration.monitorsNetwork },
-                    asyncSet: { await store.send(.monitorsSystemMetricsToggleSwitched(.network, $0)) }
+                    asyncSet: { await store.send(.monitorSystemMetricsToggleSwitched(.network, $0)) }
                 )) {
                     Text("enableNetworkConnectivityMonitoring", bundle: .module)
                 }

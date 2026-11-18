@@ -46,7 +46,7 @@ struct MenuView: View {
         Menu {
             Picker(selection: Binding<Runner?>(
                 get: { store.currentRunner },
-                asyncSet: { await store.send(.runnerKindPickerSelected($0)) }
+                asyncSet: { await store.send(.runnerPickerSelected($0)) }
             )) {
                 ForEach(store.runnerBundleList, id: \.runner) { runnerBundle in
                     Label {
