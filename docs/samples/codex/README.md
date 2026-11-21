@@ -48,7 +48,7 @@ hooks = true
 - **Context** — the latest context token count divided by the model's context-window size.
 - **5h**, **7d**, or another duration — each rate-limit window included in the latest token-count event.
 
-If a snapshot already exists, sessions without a recognized token-count event or account rate limits leave the last valid snapshot untouched. This prevents concurrent API-key, local-model, or incomplete sessions from replacing account usage with a Model-only card. The script always exits successfully so a parsing failure does not interrupt Codex.
+If a snapshot already exists, sessions without a recognized token-count event or account rate limits leave the last valid snapshot untouched. This prevents concurrent API-key, local-model, or incomplete sessions from replacing account usage with a Model-only card. The snapshot is also left untouched when the latest token-count event is not newer than the snapshot's `lastUpdatedDate`. This avoids refreshing an unchanged reading and reduces stale overwrites between sessions. The script always exits successfully so a parsing failure does not interrupt Codex.
 
 ## Customizing the output
 
