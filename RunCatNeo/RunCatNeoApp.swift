@@ -33,5 +33,6 @@ struct RunCatNeoApp: App {
         MetricsBarScene(isInserted: $showsMetricsBar)
         SettingsWindowScene()
         OpenSourceLicenseWindowScene()
+        OnboardingWindowScene()
     }
 }

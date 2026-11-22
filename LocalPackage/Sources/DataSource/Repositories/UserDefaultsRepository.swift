@@ -65,6 +65,11 @@ public struct UserDefaultsRepository: Sendable {
         }
     }
 
+    public var hasShownOnboarding: Bool {
+        get { userDefaultsClient.bool(.hasShownOnboarding) }
+        nonmutating set { userDefaultsClient.set(newValue, .hasShownOnboarding) }
+    }
+
     public var showsMetricsBar: Bool {
         get { userDefaultsClient.bool(.showsMetricsBar) }
         nonmutating set { userDefaultsClient.set(newValue, .showsMetricsBar) }

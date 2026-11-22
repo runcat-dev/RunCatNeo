@@ -33,6 +33,10 @@ extension URL {
         Self.github.appending(path: "blob/main/docs/CustomMetricsSchema.md")
     }
 
+    public static let menuBarHelp = URL(
+        string: "https://support.apple.com/guide/mac-help/mchlp1446/mac"
+    )!
+
     public static let runnerGallery = URL(
         string: "https://runcat-dev.github.io/RunnerGallery/"
     )!

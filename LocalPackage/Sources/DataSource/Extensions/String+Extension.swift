@@ -21,6 +21,7 @@
 extension String {
     static let customMetricsConfiguration = "CUSTOM_METRICS_CONFIGURATION"
     static let customRunners = "CUSTOM_RUNNERS"
+    static let hasShownOnboarding = "HAS_SHOWN_ONBOARDING"
     static let isFlippedHorizontally = "IS_FLIPPED_HORIZONTALLY"
     static let metricsBarConfiguration = "METRICS_BAR_CONFIGURATION"
     static let runnerID = "RUNNER_ID"
@@ -31,6 +32,7 @@ extension String {
 
     public static let activityMonitor = "com.apple.ActivityMonitor"
     public static let finder = "com.apple.finder"
+    public static let onboarding = "ONBOARDING"
     public static let openSourceLicense = "OPEN_SOURCE_LICENSE"
     public static let showsMetricsBar = "SHOWS_METRICS_BAR"
 }
