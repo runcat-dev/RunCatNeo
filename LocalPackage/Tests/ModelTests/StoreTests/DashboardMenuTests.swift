@@ -131,13 +131,13 @@ struct DashboardMenuTests {
                 }
             }
         ))
-        let openWindow = OpenWindowActionWrapper { id, value in
-            callStack.withLock { $0.append("openWindow: \(id), \(value)") }
+        let openWindow = OpenWindowActionWrapper { id in
+            callStack.withLock { $0.append("openWindow: \(id)") }
         }
         await sut.send(.openSourceLicenseButtonTapped(openWindow))
         #expect(callStack.withLock(\.self) == [
             "activate: true",
-            "openWindow: OPEN_SOURCE_LICENSE, 0",
+            "openWindow: OPEN_SOURCE_LICENSE",
         ])
     }
 

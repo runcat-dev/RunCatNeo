@@ -100,7 +100,7 @@ struct MenuView: View {
             Button {
                 Task {
                     await store.send(.openSourceLicenseButtonTapped(.init(action: {
-                        openWindow(id: $0, value: $1)
+                        openWindow(id: $0)
                     })))
                 }
             } label: {

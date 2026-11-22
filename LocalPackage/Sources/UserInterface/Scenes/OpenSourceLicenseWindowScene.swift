@@ -25,10 +25,8 @@ public struct OpenSourceLicenseWindowScene: Scene {
     public init() {}
 
     public var body: some Scene {
-        WindowGroup(id: .openSourceLicense, for: Int.self) { _ in
+        Window(Text("openSourceLicense", bundle: .module), id: .openSourceLicense) {
             OpenSourceLicenseView()
-        } defaultValue: {
-            .zero
         }
         .windowResizability(.contentSize)
         .defaultLaunchBehavior(.suppressed)

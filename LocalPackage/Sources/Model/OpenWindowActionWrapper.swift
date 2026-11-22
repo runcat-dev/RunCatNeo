@@ -19,13 +19,13 @@
  */
 
 public struct OpenWindowActionWrapper: Sendable {
-    var action: (@MainActor @Sendable (String, Int) -> Void)?
+    var action: (@MainActor @Sendable (String) -> Void)?
 
-    public init(action: @escaping @MainActor @Sendable (String, Int) -> Void) {
+    public init(action: @escaping @MainActor @Sendable (String) -> Void) {
         self.action = action
     }
 
-    @MainActor func callAsFunction(id: String, value: Int) {
-        action?(id, value)
+    @MainActor func callAsFunction(id: String) {
+        action?(id)
     }
 }
