@@ -111,7 +111,7 @@ public final class DashboardMenu: Composable {
 
         case let .openSourceLicenseButtonTapped(openWindow):
             nsAppClient.activate(true)
-            openWindow(id: .openSourceLicense, value: Int.zero)
+            openWindow(id: .openSourceLicense)
 
         case .reportIssueButtonTapped:
             _ = nsWorkspaceClient.open(URL.githubIssues)
