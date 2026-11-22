@@ -1,5 +1,5 @@
 {
-  "originHash" : "fb7d875d62503270f4e0b6b187492c3017a5e508d008bc8afef55848aa9eafb2",
+  "originHash" : "14592da8fe5f8f1be2b017300b55967f6a07cd8115acfa266b236dc1c5833d93",
   "pins" : [
     {
       "identity" : "allocatedunfairlock",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "bf1fa2b1b6a449fd1f8adf2d846feb5fab7734ca",
         "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "devicemodel",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Kyome22/DeviceModel.git",
+      "state" : {
+        "revision" : "c4aceeb1056ac2280fd596ac8e7c86bd66a4d61c",
+        "version" : "2.0.2"
       }
     },
     {

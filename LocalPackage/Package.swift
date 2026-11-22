@@ -31,6 +31,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-log.git", exact: "1.17.0"),
         .package(url: "https://github.com/cybozu/LicenseList.git", exact: "2.5.0"),
         .package(url: "https://github.com/Kyome22/AllocatedUnfairLock.git", exact: "1.0.0"),
+        .package(url: "https://github.com/Kyome22/DeviceModel.git", exact: "2.0.2"),
         .package(url: "https://github.com/Kyome22/SystemInfoKit.git", exact: "8.0.0"),
     ],
     targets: [
@@ -39,6 +40,7 @@ let package = Package(
             dependencies: [
                 .product(name: "AllocatedUnfairLock", package: "AllocatedUnfairLock"),
                 .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
+                .product(name: "DeviceModel", package: "DeviceModel"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "SystemInfoKit", package: "SystemInfoKit"),
             ],
