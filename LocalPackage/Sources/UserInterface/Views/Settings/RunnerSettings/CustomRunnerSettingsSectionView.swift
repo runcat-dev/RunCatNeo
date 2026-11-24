@@ -40,6 +40,7 @@ struct CustomRunnerSettingsSectionView: View {
                         await store.send(.customRunnerRowMoved(indexSet, offset))
                     }
                 }
+                .listRowInsets(.vertical, 8)
             }
             .alert(
                 isPresented: $store.showingAlert,
