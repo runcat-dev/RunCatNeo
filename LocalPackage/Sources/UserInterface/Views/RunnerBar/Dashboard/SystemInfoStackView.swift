@@ -63,6 +63,6 @@ struct SystemInfoStackView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(8)
-        .materialCellStyle()
+        .background(.fill.quaternary, in: .rect(cornerRadius: 12))
     }
 }
