@@ -42,4 +42,46 @@ extension GraphicsContext {
         )
         draw(image, at: point, anchor: .center)
     }
+
+    mutating func drawCircularGauge(origin: CGPoint, size: CGSize, ratio: Double) {
+        let radius = 0.5 * min(size.width, size.height)
+        let innerRadius = 0.6 * radius
+        let center = CGPoint(x: origin.x + 0.5 * size.width, y: origin.y + 0.5 * size.height)
+        let trackPath = Path { path in
+            path.addEllipse(in: CGRect(
+                x: center.x - radius,
+                y: center.y - radius,
+                width: 2.0 * radius,
+                height: 2.0 * radius
+            ))
+            path.addEllipse(in: CGRect(
+                x: center.x - innerRadius,
+                y: center.y - innerRadius,
+                width: 2.0 * innerRadius,
+                height: 2.0 * innerRadius
+            ))
+        }
+        fill(trackPath, with: .color(.black.opacity(0.3)), style: FillStyle(eoFill: true))
+        let startAngle = Angle.degrees(-90)
+        let endAngle = Angle.degrees(-90 + 360 * ratio)
+        let surfacePath = Path { path in
+            path.addArc(center: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: false)
+            path.addArc(center: center, radius: innerRadius, startAngle: endAngle, endAngle: startAngle, clockwise: true)
+            path.closeSubpath()
+        }
+        fill(surfacePath, with: .color(.black))
+    }
+
+    mutating func drawLinearGauge(origin: CGPoint, size: CGSize, ratio: Double) {
+        let trackRect = CGRect(origin: origin, size: size)
+        fill(Path(roundedRect: trackRect, cornerRadius: 2.0), with: .color(.black.opacity(0.3)))
+        let surfaceHeight = size.height * ratio
+        let surfaceRect = CGRect(
+            x: origin.x,
+            y: origin.y + size.height - surfaceHeight,
+            width: size.width,
+            height: surfaceHeight
+        )
+        fill(Path(roundedRect: surfaceRect, cornerRadius: 2.0), with: .color(.black))
+    }
 }
