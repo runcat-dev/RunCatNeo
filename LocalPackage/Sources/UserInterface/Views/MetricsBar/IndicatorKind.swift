@@ -26,6 +26,8 @@ enum IndicatorKind {
     case spacer
     case usageFullLabel
     case usageHalfLabel
+    case circularGauge
+    case linearGauge
 
     var size: CGSize {
         switch self {
@@ -39,15 +41,26 @@ enum IndicatorKind {
             CGSize(width: 40.0, height: 16.0)
         case .usageHalfLabel:
             CGSize(width: 46.0, height: 8.0)
+        case .circularGauge:
+            CGSize(width: 16.0, height: 16.0)
+        case .linearGauge:
+            CGSize(width: 8.0, height: 16.0)
         }
     }
 
     static let customValueLabelMaxWidth = 80.0
 
+    static func capacityLabelSize(for text: String) -> CGSize {
+        CGSize(width: measuredLabelWidth(of: text), height: 16.0)
+    }
+
     static func customValueLabelSize(for text: String) -> CGSize {
+        CGSize(width: min(measuredLabelWidth(of: text), customValueLabelMaxWidth), height: 16.0)
+    }
+
+    private static func measuredLabelWidth(of text: String) -> CGFloat {
         let font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
         let measuredWidth = NSAttributedString(string: text, attributes: [.font: font]).size().width
-        let width = min(ceil(measuredWidth) + 4.0, customValueLabelMaxWidth)
-        return CGSize(width: width, height: 16.0)
+        return ceil(measuredWidth) + 4.0
     }
 }

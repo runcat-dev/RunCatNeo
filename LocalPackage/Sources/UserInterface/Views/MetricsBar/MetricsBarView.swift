@@ -31,17 +31,26 @@ struct MetricsBarView: View {
     // the only reliable signal for the store to stop observing metrics.
     var isInserted: Bool
 
+    private var usageIndicators: [(icon: String, indicator: UsageIndicator)] {
+        var usageIndicators = [(icon: String, indicator: UsageIndicator)]()
+        let configuration = store.metricsBarConfiguration
+        if configuration.showsCPU, let cpuInfo = store.systemInfoBundle.cpuInfo {
+            usageIndicators.append((cpuInfo.icon, UsageIndicator(percentage: cpuInfo.percentage, style: configuration.cpuStyle)))
+        }
+        if configuration.showsMemory, let memoryInfo = store.systemInfoBundle.memoryInfo {
+            usageIndicators.append((memoryInfo.icon, UsageIndicator(percentage: memoryInfo.percentage, style: configuration.memoryStyle)))
+        }
+        if configuration.showsStorage, let storageInfo = store.systemInfoBundle.storageInfo {
+            usageIndicators.append((storageInfo.icon, UsageIndicator(storageInfo: storageInfo, style: configuration.storageStyle)))
+        }
+        return usageIndicators
+    }
+
     private var size: CGSize {
         var widthArray = [CGFloat]()
         let iconWidth = IndicatorKind.categoryIcon.size.width
-        if store.metricsBarConfiguration.showsCPU, store.systemInfoBundle.cpuInfo != nil {
-            widthArray.append(iconWidth + IndicatorKind.usageFullLabel.size.width)
-        }
-        if store.metricsBarConfiguration.showsMemory, store.systemInfoBundle.memoryInfo != nil {
-            widthArray.append(iconWidth + IndicatorKind.usageFullLabel.size.width)
-        }
-        if store.metricsBarConfiguration.showsStorage, store.systemInfoBundle.storageInfo != nil {
-            widthArray.append(iconWidth + IndicatorKind.usageFullLabel.size.width)
+        for usageIndicator in usageIndicators {
+            widthArray.append(iconWidth + usageIndicator.indicator.size.width)
         }
         if store.metricsBarConfiguration.showsBattery,
            let batteryInfo = store.systemInfoBundle.batteryInfo?.simulated(store.isPreview) {
@@ -73,14 +82,8 @@ struct MetricsBarView: View {
                 }
             } else {
                 var point = CGPoint(x: 0, y: 1)
-                if store.metricsBarConfiguration.showsCPU, let cpuInfo = store.systemInfoBundle.cpuInfo {
-                    drawSystemInfo(context: &context, point: &point, systemInfo: cpuInfo)
-                }
-                if store.metricsBarConfiguration.showsMemory, let memoryInfo = store.systemInfoBundle.memoryInfo {
-                    drawSystemInfo(context: &context, point: &point, systemInfo: memoryInfo)
-                }
-                if store.metricsBarConfiguration.showsStorage, let storageInfo = store.systemInfoBundle.storageInfo {
-                    drawSystemInfo(context: &context, point: &point, systemInfo: storageInfo)
+                for usageIndicator in usageIndicators {
+                    drawUsage(context: &context, point: &point, icon: usageIndicator.icon, indicator: usageIndicator.indicator)
                 }
                 if store.metricsBarConfiguration.showsBattery, let batteryInfo = store.systemInfoBundle.batteryInfo?.simulated(store.isPreview) {
                     drawSystemInfo(context: &context, point: &point, systemInfo: batteryInfo)
@@ -109,6 +112,34 @@ struct MetricsBarView: View {
         }
     }
 
+    private func drawUsage(
+        context: inout GraphicsContext,
+        point: inout CGPoint,
+        icon: String,
+        indicator: UsageIndicator
+    ) {
+        let iconSize = IndicatorKind.categoryIcon.size
+        context.drawIcon(systemName: icon, point: point, size: iconSize)
+        point.x += iconSize.width
+        let indicatorSize = indicator.size
+        switch indicator {
+        case let .percentage(percentage):
+            context.drawBlackText(origin: point, size: indicatorSize) {
+                Text(verbatim: percentage.menuBarDescription)
+            }
+        case let .circularGauge(percentage):
+            context.drawCircularGauge(origin: point, size: indicatorSize, ratio: percentage.ratio)
+        case let .linearGauge(percentage):
+            context.drawLinearGauge(origin: point, size: indicatorSize, ratio: percentage.ratio)
+        case let .capacity(byteData):
+            context.drawBlackText(origin: point, size: indicatorSize) {
+                Text(verbatim: byteData.menuBarDescription(type: .storage))
+                    .monospacedDigit()
+            }
+        }
+        point.x += indicatorSize.width + IndicatorKind.spacer.size.width
+    }
+
     private func drawSystemInfo(
         context: inout GraphicsContext,
         point: inout CGPoint,
@@ -119,12 +150,6 @@ struct MetricsBarView: View {
         point.x += iconSize.width
 
         switch systemInfo {
-        case is CPUInfo, is MemoryInfo, is StorageInfo:
-            context.drawBlackText(origin: point, size: IndicatorKind.usageFullLabel.size) {
-                Text(verbatim: systemInfo.percentage.menuBarDescription)
-            }
-            point.x += IndicatorKind.usageFullLabel.size.width + IndicatorKind.spacer.size.width
-
         case let batteryInfo as BatteryInfo:
             if batteryInfo.isInstalled {
                 context.drawBlackText(origin: point, size: IndicatorKind.usageFullLabel.size) {

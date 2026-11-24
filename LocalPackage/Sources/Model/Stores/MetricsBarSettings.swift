@@ -69,39 +69,30 @@ public final class MetricsBarSettings: Composable {
             task?.cancel()
             task = nil
 
-        case let .showSystemMetricsToggleSwitched(type, isOn):
-            func overwrite(isOn: Bool, monitors: inout Bool) -> Bool {
-                if isOn, !monitors {
-                    monitors = true
-                    return true
-                } else {
-                    return false
-                }
+
+        case let .cpuStylePickerSelected(style):
+            if let style {
+                metricsBarConfiguration.cpuStyle = style
             }
-            var configuration = userDefaultsRepository.systemMetricsConfiguration
-            var needsToggleActivation = false
-            switch type {
-            case .cpu:
-                metricsBarConfiguration.showsCPU = isOn
-            case .memory:
-                metricsBarConfiguration.showsMemory = isOn
-                needsToggleActivation = overwrite(isOn: isOn, monitors: &configuration.monitorsMemory)
-            case .storage:
-                metricsBarConfiguration.showsStorage = isOn
-                needsToggleActivation = overwrite(isOn: isOn, monitors: &configuration.monitorsStorage)
-            case .battery:
-                metricsBarConfiguration.showsBattery = isOn
-                needsToggleActivation = overwrite(isOn: isOn, monitors: &configuration.monitorsBattery)
-            case .network:
-                metricsBarConfiguration.showsNetwork = isOn
-                needsToggleActivation = overwrite(isOn: isOn, monitors: &configuration.monitorsNetwork)
+            switchSystemMetrics(type: .cpu, isOn: style != nil)
+
+        case let .memoryStylePickerSelected(style):
+            if let style {
+                metricsBarConfiguration.memoryStyle = style
             }
-            userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
-            userDefaultsRepository.systemMetricsConfiguration = configuration
-            systemMetricsService.emitConfigurationChange()
-            if needsToggleActivation {
-                systemMetricsService.toggleSystemMetricsActivation(type: type, isOn: isOn)
+            switchSystemMetrics(type: .memory, isOn: style != nil)
+
+        case let .storageStylePickerSelected(style):
+            if let style {
+                metricsBarConfiguration.storageStyle = style
             }
+            switchSystemMetrics(type: .storage, isOn: style != nil)
+
+        case let .showBatteryToggleSwitched(isOn):
+            switchSystemMetrics(type: .battery, isOn: isOn)
+
+        case let .showNetworkToggleSwitched(isOn):
+            switchSystemMetrics(type: .network, isOn: isOn)
 
         case let .showCustomMetricsToggleSwitched(id, isOn):
             if isOn {
@@ -109,9 +100,48 @@ public final class MetricsBarSettings: Composable {
             } else {
                 metricsBarConfiguration.visibleCustomMetricsSourceIDs.remove(id)
             }
-            userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
-            systemMetricsService.emitConfigurationChange()
+            saveMetricsBarConfiguration()
         }
+    }
+
+    private func switchSystemMetrics(type: SystemInfoType, isOn: Bool) {
+        func overwrite(isOn: Bool, monitors: inout Bool) -> Bool {
+            if isOn, !monitors {
+                monitors = true
+                return true
+            } else {
+                return false
+            }
+        }
+        var configuration = userDefaultsRepository.systemMetricsConfiguration
+        var needsToggleActivation = false
+        switch type {
+        case .cpu:
+            metricsBarConfiguration.showsCPU = isOn
+        case .memory:
+            metricsBarConfiguration.showsMemory = isOn
+            needsToggleActivation = overwrite(isOn: isOn, monitors: &configuration.monitorsMemory)
+        case .storage:
+            metricsBarConfiguration.showsStorage = isOn
+            needsToggleActivation = overwrite(isOn: isOn, monitors: &configuration.monitorsStorage)
+        case .battery:
+            metricsBarConfiguration.showsBattery = isOn
+            needsToggleActivation = overwrite(isOn: isOn, monitors: &configuration.monitorsBattery)
+        case .network:
+            metricsBarConfiguration.showsNetwork = isOn
+            needsToggleActivation = overwrite(isOn: isOn, monitors: &configuration.monitorsNetwork)
+        }
+        userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
+        userDefaultsRepository.systemMetricsConfiguration = configuration
+        systemMetricsService.emitConfigurationChange()
+        if needsToggleActivation {
+            systemMetricsService.toggleSystemMetricsActivation(type: type, isOn: isOn)
+        }
+    }
+
+    private func saveMetricsBarConfiguration() {
+        userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
+        systemMetricsService.emitConfigurationChange()
     }
 
     private func updateCustomMetricsConfiguration() {
@@ -122,7 +152,11 @@ public final class MetricsBarSettings: Composable {
     public enum Action: Sendable {
         case viewAppeared(String)
         case viewDisappeared
-        case showSystemMetricsToggleSwitched(SystemInfoType, Bool)
+        case cpuStylePickerSelected(MetricsBarUsageStyle?)
+        case memoryStylePickerSelected(MetricsBarUsageStyle?)
+        case storageStylePickerSelected(MetricsBarStorageStyle?)
+        case showBatteryToggleSwitched(Bool)
+        case showNetworkToggleSwitched(Bool)
         case showCustomMetricsToggleSwitched(UUID, Bool)
     }
 }

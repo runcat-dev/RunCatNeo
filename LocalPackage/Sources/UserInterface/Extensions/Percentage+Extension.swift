@@ -28,4 +28,8 @@ extension Percentage {
             value
         )
     }
+
+    var ratio: Double {
+        max(0, min(1, value / 100))
+    }
 }
