@@ -28,33 +28,51 @@ struct MetricsBarSettingsView: View {
     var body: some View {
         Form {
             Section {
-                Toggle(isOn: Binding<Bool>(
-                    get: { store.metricsBarConfiguration.showsCPU },
-                    asyncSet: { await store.send(.showSystemMetricsToggleSwitched(.cpu, $0)) }
+                Picker(selection: Binding<MetricsBarUsageStyle?>(
+                    get: { store.metricsBarConfiguration.showsCPU ? store.metricsBarConfiguration.cpuStyle : nil },
+                    asyncSet: { await store.send(.cpuStylePickerSelected($0)) }
                 )) {
-                    Text("showCPUUsage", bundle: .module)
+                    Text("hidden", bundle: .module).tag(MetricsBarUsageStyle?.none)
+                    Divider()
+                    ForEach(MetricsBarUsageStyle.allCases) { style in
+                        Text(style.label).tag(MetricsBarUsageStyle?.some(style))
+                    }
+                } label: {
+                    Text("cpuUsage", bundle: .module)
                 }
-                Toggle(isOn: Binding<Bool>(
-                    get: { store.metricsBarConfiguration.showsMemory },
-                    asyncSet: { await store.send(.showSystemMetricsToggleSwitched(.memory, $0)) }
+                Picker(selection: Binding<MetricsBarUsageStyle?>(
+                    get: { store.metricsBarConfiguration.showsMemory ? store.metricsBarConfiguration.memoryStyle : nil },
+                    asyncSet: { await store.send(.memoryStylePickerSelected($0)) }
                 )) {
-                    Text("showMemoryUsage", bundle: .module)
+                    Text("hidden", bundle: .module).tag(MetricsBarUsageStyle?.none)
+                    Divider()
+                    ForEach(MetricsBarUsageStyle.allCases) { style in
+                        Text(style.label).tag(MetricsBarUsageStyle?.some(style))
+                    }
+                } label: {
+                    Text("memoryUsage", bundle: .module)
                 }
-                Toggle(isOn: Binding<Bool>(
-                    get: { store.metricsBarConfiguration.showsStorage },
-                    asyncSet: { await store.send(.showSystemMetricsToggleSwitched(.storage, $0)) }
+                Picker(selection: Binding<MetricsBarStorageStyle?>(
+                    get: { store.metricsBarConfiguration.showsStorage ? store.metricsBarConfiguration.storageStyle : nil },
+                    asyncSet: { await store.send(.storageStylePickerSelected($0)) }
                 )) {
-                    Text("showStorageCapacity", bundle: .module)
+                    Text("hidden", bundle: .module).tag(MetricsBarStorageStyle?.none)
+                    Divider()
+                    ForEach(MetricsBarStorageStyle.allCases) { style in
+                        Text(style.label).tag(MetricsBarStorageStyle?.some(style))
+                    }
+                } label: {
+                    Text("storageCapacity", bundle: .module)
                 }
                 Toggle(isOn: Binding<Bool>(
                     get: { store.metricsBarConfiguration.showsBattery },
-                    asyncSet: { await store.send(.showSystemMetricsToggleSwitched(.battery, $0)) }
+                    asyncSet: { await store.send(.showBatteryToggleSwitched($0)) }
                 )) {
                     Text("showBatteryStatus", bundle: .module)
                 }
                 Toggle(isOn: Binding<Bool>(
                     get: { store.metricsBarConfiguration.showsNetwork },
-                    asyncSet: { await store.send(.showSystemMetricsToggleSwitched(.network, $0)) }
+                    asyncSet: { await store.send(.showNetworkToggleSwitched($0)) }
                 )) {
                     Text("showNetworkConnectivity", bundle: .module)
                 }
