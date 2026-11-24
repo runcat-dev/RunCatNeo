@@ -65,6 +65,7 @@ struct SettingsView: View {
                 }
                 .tag(SettingsTab.donation)
         }
+        .frame(maxHeight: 600)
         .fixedSize()
         .accessibilityIdentifier("settings")
     }
