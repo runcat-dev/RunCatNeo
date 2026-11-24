@@ -96,8 +96,9 @@ public final class DashboardMenu: Composable {
                 logService.error(.switchingRunnerFailed(error))
             }
 
-        case .settingsButtonTapped:
+        case let .settingsButtonTapped(openSettings):
             nsAppClient.activate(true)
+            openSettings()
 
         case .activityMonitorButtonTapped:
             guard let url = nsWorkspaceClient.urlForApplication(.activityMonitor) else { return }
@@ -139,7 +140,7 @@ public final class DashboardMenu: Composable {
         case viewAppeared
         case viewDisappeared
         case runnerPickerSelected(Runner?)
-        case settingsButtonTapped
+        case settingsButtonTapped(OpenSettingsActionWrapper)
         case activityMonitorButtonTapped
         case aboutButtonTapped(AttributedString)
         case openSourceLicenseButtonTapped(OpenWindowActionWrapper)

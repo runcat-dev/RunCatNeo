@@ -78,8 +78,14 @@ struct DashboardMenuTests {
                 }
             }
         ))
-        await sut.send(.settingsButtonTapped)
-        #expect(callStack.withLock(\.self) == ["activate: true"])
+        let openSettings = OpenSettingsActionWrapper {
+            callStack.withLock { $0.append("openSettings") }
+        }
+        await sut.send(.settingsButtonTapped(openSettings))
+        #expect(callStack.withLock(\.self) == [
+            "activate: true",
+            "openSettings",
+        ])
     }
 
     @MainActor @Test
