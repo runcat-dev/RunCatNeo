@@ -44,6 +44,7 @@ struct CustomMetricsSettingsSectionView: View {
                         await store.send(.customMetricsSourceRowMoved(indexSet, offset))
                     }
                 }
+                .listRowInsets(.vertical, 8)
             }
             .confirmationDialog(
                 Text("removeCustomMetrics", bundle: .module),
