@@ -1,0 +1,13 @@
+{
+  "title": "Weather",
+  "symbol": "cloud.sun.fill",
+  "metricsBarValue": "18°C",
+  "metrics": [
+    { "title": "Condition", "formattedValue": "Cloudy, then sunny" },
+    { "title": "Temperature", "formattedValue": "18°C" },
+    { "title": "High / Low", "formattedValue": "21°C / 12°C" },
+    { "title": "Chance of rain", "formattedValue": "20%", "normalizedValue": 0.2 },
+    { "title": "Humidity", "formattedValue": "55%", "normalizedValue": 0.55 }
+  ],
+  "lastUpdatedDate": "2026-11-26T00:00:00Z"
+}
