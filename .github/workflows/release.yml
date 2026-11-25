@@ -75,6 +75,7 @@ jobs:
             -archivePath "$BUILD_DIR/RunCatNeo.xcarchive" \
             -skipPackagePluginValidation \
             DIRECT_DISTRIBUTION=YES \
+            DEVELOPMENT_TEAM=VJ5N2X84K8 \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="$SIGNING_IDENTITY" \
             OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN_PATH" | \
