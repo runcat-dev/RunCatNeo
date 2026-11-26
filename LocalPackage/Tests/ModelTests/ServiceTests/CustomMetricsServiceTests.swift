@@ -201,7 +201,7 @@ struct CustomMetricsServiceTests {
         ))
         try sut.add(source: makeSource(id: UUID(1)), symbolImageData: imageData)
         #expect(writtenFiles.withLock(\.self) == [
-            "/Users/user/Library/Application Support/RunCatNeo/\(UUID(1).uuidString)/symbol.png": imageData,
+            "/Users/user/Library/Application Support/RunCatNeo/CustomMetrics/\(UUID(1).uuidString)/symbol.png": imageData,
         ])
         #expect(storage.currentConfiguration() == CustomMetricsConfiguration(sources: [makeSource(id: UUID(1))]))
     }
@@ -244,7 +244,7 @@ struct CustomMetricsServiceTests {
         ))
         sut.removeSource(of: UUID(1))
         #expect(removedURLs.withLock(\.self).map { $0.path(percentEncoded: false) } == [
-            "/Users/user/Library/Application Support/RunCatNeo/\(UUID(1).uuidString)",
+            "/Users/user/Library/Application Support/RunCatNeo/CustomMetrics/\(UUID(1).uuidString)",
         ])
     }
 
@@ -394,7 +394,9 @@ struct CustomMetricsServiceTests {
             appStateClient: .testDependency(appState),
             dataClient: testDependency(of: DataClient.self) {
                 $0.read = { url in
-                    url.hasPathSuffix("symbol.png") ? imageData : Data(snapshotJSON.utf8)
+                    url.path(percentEncoded: false) == "/Users/user/Library/Application Support/RunCatNeo/CustomMetrics/\(UUID(1).uuidString)/symbol.png"
+                        ? imageData
+                        : Data(snapshotJSON.utf8)
                 }
             },
             fileManagerClient: testDependency(of: FileManagerClient.self) {

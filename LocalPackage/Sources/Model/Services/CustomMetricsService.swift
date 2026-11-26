@@ -36,6 +36,10 @@ struct CustomMetricsService {
     private static let symbolImageFileName = "symbol"
     private static let symbolImagePixelSize = 48
 
+    private static func symbolImageDirectory(of id: UUID) -> String {
+        "CustomMetrics/\(id.uuidString)"
+    }
+
     private var snapshotDecoder: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -98,7 +102,7 @@ struct CustomMetricsService {
         if let symbolImageData {
             do {
                 try applicationSupportRepository.saveData(
-                    directory: source.id.uuidString,
+                    directory: Self.symbolImageDirectory(of: source.id),
                     fileName: Self.symbolImageFileName,
                     fileType: .png,
                     data: symbolImageData
@@ -116,7 +120,7 @@ struct CustomMetricsService {
         var configuration = userDefaultsRepository.customMetricsConfiguration
         configuration.sources.removeAll { $0.id == id }
         userDefaultsRepository.customMetricsConfiguration = configuration
-        applicationSupportRepository.delete(directory: id.uuidString)
+        applicationSupportRepository.delete(directory: Self.symbolImageDirectory(of: id))
         var metricsBarConfiguration = userDefaultsRepository.metricsBarConfiguration
         metricsBarConfiguration.visibleCustomMetricsSourceIDs.remove(id)
         userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
@@ -248,7 +252,7 @@ struct CustomMetricsService {
 
     private func makeObserver(for source: CustomMetricsSource) -> Task<Void, Never> {
         let symbolImageData = applicationSupportRepository.loadData(
-            directory: source.id.uuidString,
+            directory: Self.symbolImageDirectory(of: source.id),
             fileName: Self.symbolImageFileName,
             fileType: .png
         )
