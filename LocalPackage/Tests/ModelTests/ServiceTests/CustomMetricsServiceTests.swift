@@ -308,6 +308,23 @@ struct CustomMetricsServiceTests {
     }
 
     @Test
+    func perform_does_not_overwrite_bookmark_replaced_by_edit() throws {
+        var replacedSource = makeSource()
+        replacedSource.bookmark = Data("replaced".utf8)
+        let storage = UserDefaultsClient.storage(initialSources: [replacedSource])
+        let sut = CustomMetricsService(.testDependencies(
+            urlClient: testDependency(of: URLClient.self) {
+                $0.create = { _, _ in (true, URL(filePath: "/tmp/resolved.json")) }
+                $0.bookmarkData = { _, _ in Data("refreshed".utf8) }
+                $0.startAccessingSecurityScopedResource = { _ in true }
+            },
+            userDefaultsClient: storage.client
+        ))
+        try sut.perform(action: { _ in }, for: makeSource())
+        #expect(storage.currentConfiguration()?.sources.first?.bookmark == Data("replaced".utf8))
+    }
+
+    @Test
     func perform_throws_when_security_scoped_access_is_denied() {
         let sut = CustomMetricsService(.testDependencies(
             urlClient: testDependency(of: URLClient.self) {

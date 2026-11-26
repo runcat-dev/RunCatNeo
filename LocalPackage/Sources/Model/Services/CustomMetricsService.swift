@@ -175,7 +175,7 @@ struct CustomMetricsService {
     func perform(action: (_ securityScopedURL: URL) -> Void, for source: CustomMetricsSource) throws {
         let (isStale, url) = try urlClient.create(source.bookmark, .withSecurityScope)
         if isStale, let refreshed = try? urlClient.bookmarkData(url, .withSecurityScope) {
-            persistRefreshedBookmark(refreshed, for: source.id)
+            persistRefreshedBookmark(refreshed, replacing: source.bookmark, for: source.id)
         }
         guard urlClient.startAccessingSecurityScopedResource(url) else {
             throw RCNError.customMetrics(.fileUnreadable)
@@ -298,8 +298,8 @@ struct CustomMetricsService {
                 do {
                     let (isStale, url) = try urlClient.create(currentBookmark, .withSecurityScope)
                     if isStale, let refreshed = try? urlClient.bookmarkData(url, .withSecurityScope) {
+                        persistRefreshedBookmark(refreshed, replacing: currentBookmark, for: source.id)
                         currentBookmark = refreshed
-                        persistRefreshedBookmark(refreshed, for: source.id)
                     }
                     guard urlClient.startAccessingSecurityScopedResource(url) else {
                         emitFailure(for: source, symbolImageData: symbolImageData)
@@ -348,9 +348,10 @@ struct CustomMetricsService {
         return pixelWidth == symbolImagePixelSize && pixelHeight == symbolImagePixelSize && hasAlpha
     }
 
-    private func persistRefreshedBookmark(_ bookmark: Data, for sourceID: UUID) {
+    private func persistRefreshedBookmark(_ bookmark: Data, replacing staleBookmark: Data, for sourceID: UUID) {
         var configuration = userDefaultsRepository.customMetricsConfiguration
-        guard let index = configuration.sources.firstIndex(where: { $0.id == sourceID }) else {
+        guard let index = configuration.sources.firstIndex(where: { $0.id == sourceID }),
+              configuration.sources[index].bookmark == staleBookmark else {
             return
         }
         configuration.sources[index].bookmark = bookmark

@@ -28,7 +28,7 @@ public struct DataClient: DependencyClient {
 
     public static let liveValue = Self(
         read: { try Data(contentsOf: $0) },
-        write: { try $0.write(to: $1) },
+        write: { try $0.write(to: $1, options: .atomic) },
         convert: {
             let data = NSMutableData()
             guard let destination = CGImageDestinationCreateWithData(data, $1.identifier as CFString, 1, nil) else {
