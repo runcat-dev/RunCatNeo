@@ -271,4 +271,103 @@ struct CustomRunnerEditorTests {
         #expect(sut.showingAlert)
         #expect(sut.error == .customRunner(.invalidFrameImage))
     }
+
+    @MainActor @Test
+    func send_saveButtonTapped_updates_runner_and_forwards_bundle() async {
+        let json = """
+            [
+              {
+                "id": "custom-runner",
+                "name": "Custom Runner",
+                "isTemplate": false,
+                "frameOrder": [0]
+              }
+            ]
+            """
+        let updatedRunnerBundle = AllocatedUnfairLock<RunnerBundle?>(initialState: nil)
+        let editingRunner = Runner(id: "custom-runner", name: "Custom Runner", isTemplate: false, frameOrder: .custom([0]))
+        let sut = CustomRunnerEditor(
+            .testDependencies(
+                dataClient: testDependency(of: DataClient.self) {
+                    $0.read = { _ in Data(json.utf8) }
+                    $0.convert = { _, _ in Data("png".utf8) }
+                },
+                fileManagerClient: testDependency(of: FileManagerClient.self) {
+                    $0.fileExists = { _ in true }
+                }
+            ),
+            id: .init(),
+            editingRunner: editingRunner,
+            runnerName: "Custom Runner",
+            isTemplate: true,
+            frameImages: [FrameImage.dummy()],
+            action: { action in
+                if case let .customRunnerUpdated(runnerBundle) = action {
+                    updatedRunnerBundle.withLock { $0 = runnerBundle }
+                }
+            }
+        )
+        await sut.send(.saveButtonTapped)
+        let runnerBundle = updatedRunnerBundle.withLock(\.self)
+        #expect(runnerBundle?.runner.id == "custom-runner")
+        #expect(runnerBundle?.runner.isTemplate == true)
+        #expect(runnerBundle?.displayFormat == .thumbnail(.custom(Data("png".utf8))))
+    }
+
+    @MainActor @Test
+    func send_saveButtonTapped_forwards_error_when_name_is_used_by_another_runner() async {
+        let json = """
+            [
+              {
+                "id": "custom-runner",
+                "name": "Custom Runner",
+                "isTemplate": false,
+                "frameOrder": [0]
+              },
+              {
+                "id": "other-runner",
+                "name": "Other Runner",
+                "isTemplate": false,
+                "frameOrder": [0]
+              }
+            ]
+            """
+        let recorder = errorRecorder()
+        let sut = CustomRunnerEditor(
+            .testDependencies(
+                dataClient: testDependency(of: DataClient.self) {
+                    $0.read = { _ in Data(json.utf8) }
+                },
+                fileManagerClient: testDependency(of: FileManagerClient.self) {
+                    $0.fileExists = { _ in true }
+                }
+            ),
+            id: .init(),
+            editingRunner: Runner(id: "custom-runner", name: "Custom Runner", isTemplate: false, frameOrder: .custom([0])),
+            runnerName: "Other Runner",
+            frameImages: [FrameImage.dummy()],
+            action: recorder.action
+        )
+        await sut.send(.saveButtonTapped)
+        #expect(recorder.lock.withLock(\.self) == .customRunner(.nameAlreadyExists))
+    }
+
+    @MainActor @Test
+    func send_saveButtonTapped_without_editingRunner_is_noop() async {
+        let written = AllocatedUnfairLock<[URL]>(initialState: [])
+        let sut = CustomRunnerEditor(
+            .testDependencies(
+                dataClient: testDependency(of: DataClient.self) {
+                    $0.write = { _, url in
+                        written.withLock { $0.append(url) }
+                    }
+                }
+            ),
+            id: .init(),
+            runnerName: "New Runner",
+            frameImages: [FrameImage.dummy()]
+        )
+        await sut.send(.saveButtonTapped)
+        #expect(written.withLock(\.self).isEmpty)
+    }
 }

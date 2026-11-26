@@ -31,6 +31,9 @@ struct CustomMetricsSettingsSectionView: View {
                     CustomMetricsSourceRowView(
                         source: source,
                         isErrorDetected: store.failedCustomMetricsSourceIDs.contains(source.id),
+                        editButtonTapped: {
+                            await store.send(.editCustomMetricsSourceButtonTapped(source))
+                        },
                         removeButtonTapped: {
                             await store.send(.removeCustomMetricsSourceButtonTapped(source.id))
                         },

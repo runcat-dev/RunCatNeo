@@ -20,6 +20,7 @@ struct CustomMetricsSourceEditorTests {
 
     private enum RecordedAction: Equatable {
         case customMetricsSourceAdded
+        case customMetricsSourceUpdated
         case errorOccurred(RCNError)
     }
 
@@ -32,6 +33,8 @@ struct CustomMetricsSourceEditorTests {
             switch action {
             case .customMetricsSourceAdded:
                 lock.withLock { $0.append(.customMetricsSourceAdded) }
+            case .customMetricsSourceUpdated:
+                lock.withLock { $0.append(.customMetricsSourceUpdated) }
             case let .errorOccurred(error):
                 lock.withLock { $0.append(.errorOccurred(error)) }
             default:
@@ -42,11 +45,11 @@ struct CustomMetricsSourceEditorTests {
     }
 
     @MainActor @Test
-    func canAdd_is_false_until_source_is_chosen() {
+    func canConfirm_is_false_until_source_is_chosen() {
         let sut = CustomMetricsSourceEditor(.testDependencies(), id: UUID(0))
-        #expect(!sut.canAdd)
+        #expect(!sut.canConfirm)
         let chosen = CustomMetricsSourceEditor(.testDependencies(), id: UUID(0), source: makeSource())
-        #expect(chosen.canAdd)
+        #expect(chosen.canConfirm)
     }
 
     @MainActor @Test
@@ -233,5 +236,68 @@ struct CustomMetricsSourceEditorTests {
         await sut.send(.errorOccurred(.customMetrics(.invalidSymbolImage)))
         #expect(sut.error == .customMetrics(.invalidSymbolImage))
         #expect(sut.showingAlert)
+    }
+
+    @MainActor @Test
+    func send_sourceFileImporterResponse_keeps_id_and_createdAt_of_editing_source() async {
+        let editingSource = CustomMetricsSource(
+            id: UUID(5),
+            displayName: "Original",
+            fileURL: URL(filePath: "/tmp/original.json"),
+            bookmark: Data([0x01]),
+            createdAt: Date(timeIntervalSince1970: 100)
+        )
+        let sut = CustomMetricsSourceEditor(
+            .testDependencies(
+                dataClient: testDependency(of: DataClient.self) {
+                    $0.read = { _ in Data(snapshotJSON.utf8) }
+                },
+                urlClient: testDependency(of: URLClient.self) {
+                    $0.startAccessingSecurityScopedResource = { _ in true }
+                    $0.bookmarkData = { _, _ in Data([0xAB]) }
+                }
+            ),
+            id: UUID(0),
+            editingSource: editingSource,
+            source: editingSource
+        )
+        await sut.send(.sourceFileImporterResponse(.success([URL(filePath: "/tmp/metrics.json")])))
+        #expect(sut.source?.id == UUID(5))
+        #expect(sut.source?.createdAt == Date(timeIntervalSince1970: 100))
+        #expect(sut.source?.displayName == "Imported")
+        #expect(sut.source?.bookmark == Data([0xAB]))
+    }
+
+    @MainActor @Test
+    func send_saveButtonTapped_updates_source_and_reports_customMetricsSourceUpdated() async {
+        let recorder = actionRecorder()
+        var updated = makeSource()
+        updated.displayName = "Updated"
+        let storage = UserDefaultsClient.storage(initialSources: [makeSource()])
+        let sut = CustomMetricsSourceEditor(
+            .testDependencies(userDefaultsClient: storage.client),
+            id: UUID(0),
+            editingSource: makeSource(),
+            source: updated,
+            action: recorder.action
+        )
+        await sut.send(.saveButtonTapped)
+        #expect(storage.currentConfiguration() == CustomMetricsConfiguration(sources: [updated]))
+        #expect(recorder.lock.withLock(\.self) == [.customMetricsSourceUpdated])
+    }
+
+    @MainActor @Test
+    func send_saveButtonTapped_without_editingSource_is_noop() async {
+        let recorder = actionRecorder()
+        let storage = UserDefaultsClient.storage()
+        let sut = CustomMetricsSourceEditor(
+            .testDependencies(userDefaultsClient: storage.client),
+            id: UUID(0),
+            source: makeSource(),
+            action: recorder.action
+        )
+        await sut.send(.saveButtonTapped)
+        #expect(storage.currentConfiguration() == nil)
+        #expect(recorder.lock.withLock(\.self).isEmpty)
     }
 }

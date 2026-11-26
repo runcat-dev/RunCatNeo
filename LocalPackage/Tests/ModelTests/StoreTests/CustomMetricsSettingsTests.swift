@@ -323,4 +323,62 @@ struct CustomMetricsSettingsTests {
         #expect(sut.error == .customMetrics(.fileUnreadable))
         #expect(sut.showingAlert)
     }
+
+    @MainActor @Test
+    func send_editCustomMetricsSourceButtonTapped_presents_editor_filled_with_source() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let source = CustomMetricsSource(
+            id: UUID(11),
+            displayName: "Edited",
+            fileURL: URL(filePath: "/tmp/edited.json"),
+            bookmark: Data(),
+            createdAt: Date(timeIntervalSince1970: 0)
+        )
+        let snapshot = CustomMetricsSnapshot(title: "Edited", lastUpdatedDate: Date(timeIntervalSince1970: 0))
+        appState.withLock {
+            $0.metrics.send(Metrics(customMetricsBundles: [CustomMetricsBundle(id: UUID(11), snapshot: snapshot)]))
+        }
+        let imageData = Data.image(width: 48, height: 48)
+        let sut = CustomMetricsSettings(.testDependencies(
+            appStateClient: .testDependency(appState),
+            dataClient: testDependency(of: DataClient.self) {
+                $0.read = { _ in imageData }
+            },
+            fileManagerClient: testDependency(of: FileManagerClient.self) {
+                $0.fileExists = { _ in true }
+            }
+        ))
+        await sut.send(.editCustomMetricsSourceButtonTapped(source))
+        let editor = sut.customMetricsSourceEditor
+        #expect(editor?.editingSource == source)
+        #expect(editor?.isEditing == true)
+        #expect(editor?.source == source)
+        #expect(editor?.snapshot == snapshot)
+        #expect(editor?.symbolImageData == imageData)
+    }
+
+    @MainActor @Test
+    func send_customMetricsSourceEditor_customMetricsSourceUpdated_reloads_sources_emits_change_and_dismisses_editor() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let updatedSource = CustomMetricsSource(
+            id: UUID(11),
+            displayName: "Updated",
+            fileURL: URL(filePath: "/tmp/updated.json"),
+            bookmark: Data(),
+            createdAt: Date(timeIntervalSince1970: 0)
+        )
+        let storage = UserDefaultsClient.storage(initialSources: [updatedSource])
+        let sut = CustomMetricsSettings(
+            .testDependencies(
+                appStateClient: .testDependency(appState),
+                userDefaultsClient: storage.client
+            ),
+            customMetricsSources: []
+        )
+        await sut.send(.addCustomMetricsSourceButtonTapped)
+        await sut.send(.customMetricsSourceEditor(.customMetricsSourceUpdated))
+        #expect(sut.customMetricsSources == [updatedSource])
+        #expect(appState.withLock(\.customMetricsConfigurationChanges.latestValue) != nil)
+        #expect(sut.customMetricsSourceEditor == nil)
+    }
 }

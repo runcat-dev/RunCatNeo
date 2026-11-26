@@ -33,6 +33,7 @@ public final class CustomRunnerEditor: Composable, Identifiable {
     @ObservationIgnored private var index = Int.zero
 
     public let id: UUID
+    public let editingRunner: Runner?
     public var runnerName: String
     public var isTemplate: Bool
     public var frameImages: [FrameImage]
@@ -44,13 +45,18 @@ public final class CustomRunnerEditor: Composable, Identifiable {
     public var error: RCNError?
     public let action: (Action) async -> Void
 
-    public var canAdd: Bool {
+    public var isEditing: Bool {
+        editingRunner != nil
+    }
+
+    public var canConfirm: Bool {
         !runnerName.isEmpty && !frameImages.isEmpty
     }
 
     public init(
         _ appDependencies: AppDependencies,
         id: UUID,
+        editingRunner: Runner? = nil,
         runnerName: String = "",
         isTemplate: Bool = true,
         frameImages: [FrameImage] = [],
@@ -67,6 +73,7 @@ public final class CustomRunnerEditor: Composable, Identifiable {
         self.logService = .init(appDependencies)
         self.runnerService = .init(appDependencies)
         self.id = id
+        self.editingRunner = editingRunner
         self.runnerName = runnerName
         self.isTemplate = isTemplate
         self.frameImages = frameImages
@@ -179,7 +186,35 @@ public final class CustomRunnerEditor: Composable, Identifiable {
                 logService.critical(.unknown(error))
             }
 
+        case .saveButtonTapped:
+            guard let editingRunner, let frameImage = frameImages.first else { return }
+            do {
+                guard runnerService.validate(customRunnerName: runnerName, excluding: editingRunner) else {
+                    throw RCNError.customRunner(.nameAlreadyExists)
+                }
+                let runner = Runner(
+                    id: editingRunner.id,
+                    name: runnerName,
+                    isTemplate: isTemplate,
+                    frameOrder: .custom(frameImages.indices.map(\.self))
+                )
+                do {
+                    let frame = try runnerService.convertToCustomFrame(from: frameImage)
+                    try runnerService.update(customRunner: runner, with: frameImages)
+                    await send(.customRunnerUpdated(.init(runner: runner, frame: frame)))
+                } catch {
+                    throw RCNError.customRunner(.savingFailed)
+                }
+            } catch let error as RCNError {
+                await send(.errorOccurred(error))
+            } catch {
+                logService.critical(.unknown(error))
+            }
+
         case .customRunnerAdded:
+            return
+
+        case .customRunnerUpdated:
             return
 
         case .cancelButtonTapped:
@@ -225,7 +260,9 @@ public final class CustomRunnerEditor: Composable, Identifiable {
         case deleteFrameButtonTapped
         case cancelButtonTapped
         case addButtonTapped
+        case saveButtonTapped
         case customRunnerAdded(RunnerBundle)
+        case customRunnerUpdated(RunnerBundle)
         case errorOccurred(RCNError)
     }
 }

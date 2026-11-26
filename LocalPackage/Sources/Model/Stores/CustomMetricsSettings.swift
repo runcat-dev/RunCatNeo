@@ -93,6 +93,21 @@ public final class CustomMetricsSettings: Composable {
             pendingRemovalSourceID = id
             showingConfirmationDialog = true
 
+        case let .editCustomMetricsSourceButtonTapped(source):
+            customMetricsSourceEditor = .init(
+                appDependencies,
+                id: uuidClient.create(),
+                editingSource: source,
+                source: source,
+                snapshot: appStateClient.withLock(\.metrics.latestValue)?.customMetricsBundles
+                    .first { $0.id == source.id }?
+                    .snapshot,
+                symbolImageData: customMetricsService.savedSymbolImageData(of: source.id),
+                action: { [weak self] in
+                    await self?.send(.customMetricsSourceEditor($0))
+                }
+            )
+
         case let .customMetricsSourceLinkTapped(source):
             do {
                 try customMetricsService.perform(
@@ -133,7 +148,8 @@ public final class CustomMetricsSettings: Composable {
         case .customMetricsSourceEditor(.cancelButtonTapped):
             customMetricsSourceEditor = nil
 
-        case .customMetricsSourceEditor(.customMetricsSourceAdded):
+        case .customMetricsSourceEditor(.customMetricsSourceAdded),
+             .customMetricsSourceEditor(.customMetricsSourceUpdated):
             customMetricsSources = userDefaultsRepository.customMetricsConfiguration.sources
             customMetricsService.emitConfigurationChange()
             customMetricsSourceEditor = nil
@@ -162,6 +178,7 @@ public final class CustomMetricsSettings: Composable {
         case viewAppeared
         case viewDisappeared
         case removeCustomMetricsSourceButtonTapped(UUID)
+        case editCustomMetricsSourceButtonTapped(CustomMetricsSource)
         case customMetricsSourceLinkTapped(CustomMetricsSource)
         case customMetricsSourceRowMoved(IndexSet, Int)
         case addCustomMetricsSourceButtonTapped

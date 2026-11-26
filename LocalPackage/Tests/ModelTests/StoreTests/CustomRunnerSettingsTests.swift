@@ -149,4 +149,50 @@ struct CustomRunnerSettingsTests {
         #expect(sut.error == .customRunner(.runnerInUse))
         #expect(sut.showingAlert)
     }
+
+    @MainActor @Test
+    func send_editCustomRunnerButtonTapped_creates_editor_filled_with_runner() async {
+        let sut = CustomRunnerSettings(.testDependencies(
+            dataClient: testDependency(of: DataClient.self) {
+                $0.read = { _ in Data.image(width: 20, height: 36) }
+            },
+            fileManagerClient: testDependency(of: FileManagerClient.self) {
+                $0.fileExists = { _ in true }
+            }
+        ))
+        await sut.send(.editCustomRunnerButtonTapped(customRunner))
+        let editor = sut.customRunnerEditor
+        #expect(editor?.editingRunner == customRunner)
+        #expect(editor?.isEditing == true)
+        #expect(editor?.runnerName == "Custom Runner")
+        #expect(editor?.isTemplate == false)
+        #expect(editor?.frameImages.count == 1)
+    }
+
+    @MainActor @Test
+    func send_editCustomRunnerButtonTapped_shows_alert_when_frames_cannot_be_loaded() async {
+        let sut = CustomRunnerSettings(.testDependencies())
+        await sut.send(.editCustomRunnerButtonTapped(customRunner))
+        #expect(sut.customRunnerEditor == nil)
+        #expect(sut.error == .customRunner(.loadingFailed))
+        #expect(sut.showingAlert)
+    }
+
+    @MainActor @Test
+    func send_customRunnerEditor_customRunnerUpdated_replaces_bundle_and_closes_editor() async {
+        let otherBundle = RunnerBundle(
+            runner: Runner(id: "other-runner", name: "Other Runner", isTemplate: false, frameOrder: .custom([0])),
+            frame: .custom(Data())
+        )
+        let sut = CustomRunnerSettings(
+            .testDependencies(),
+            customRunnerBundleList: [RunnerBundle(runner: customRunner, frame: .custom(Data())), otherBundle],
+            customRunnerEditor: CustomRunnerEditor(.testDependencies(), id: .init())
+        )
+        let updatedRunner = Runner(id: "custom-runner", name: "Renamed Runner", isTemplate: true, frameOrder: .custom([0]))
+        let updatedBundle = RunnerBundle(runner: updatedRunner, frame: .custom(Data("png".utf8)))
+        await sut.send(.customRunnerEditor(.customRunnerUpdated(updatedBundle)))
+        #expect(sut.customRunnerBundleList == [updatedBundle, otherBundle])
+        #expect(sut.customRunnerEditor == nil)
+    }
 }

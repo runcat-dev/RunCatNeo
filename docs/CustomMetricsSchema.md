@@ -14,7 +14,7 @@ Instead of an SF Symbol, a source can show your own image as its symbol. Choose 
 
 - The image must be a 48 × 48 px PNG with transparency. Other sizes and formats are rejected.
 - It is drawn as a template (silhouette) image, like SF Symbols: only the alpha channel matters, and the color follows the system appearance.
-- RunCat copies the image into its own storage, so moving or deleting the original file has no effect. To change the image, remove the source and add it again.
+- RunCat copies the image into its own storage, so moving or deleting the original file has no effect. To change the image or the JSON file later, click the edit button on the source row.
 - When a symbol image is set, it is used on the dashboard card and in the Metrics Bar in place of `symbol`.
 
 ## Schema

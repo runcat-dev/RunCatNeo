@@ -81,6 +81,27 @@ public final class CustomRunnerSettings: Composable {
                 logService.critical(.deletingCustomRunnerFailed(error))
             }
 
+        case let .editCustomRunnerButtonTapped(runner):
+            guard case let .custom(name) = runner.source else { return }
+            do {
+                let frameImages = try runnerService.loadFrameImages(of: runner)
+                customRunnerEditor = .init(
+                    appDependencies,
+                    id: uuidClient.create(),
+                    editingRunner: runner,
+                    runnerName: name,
+                    isTemplate: runner.isTemplate,
+                    frameImages: frameImages,
+                    action: { [weak self] in
+                        await self?.send(.customRunnerEditor($0))
+                    }
+                )
+            } catch let error as RCNError {
+                await send(.errorOccurred(error))
+            } catch {
+                logService.critical(.unknown(error))
+            }
+
         case let .customRunnerRowMoved(indexSet, offset):
             customRunnerBundleList.move(fromOffsets: indexSet, toOffset: offset)
             do {
@@ -108,6 +129,12 @@ public final class CustomRunnerSettings: Composable {
             customRunnerBundleList.append(runnerBundle)
             customRunnerEditor = nil
 
+        case let .customRunnerEditor(.customRunnerUpdated(runnerBundle)):
+            if let index = customRunnerBundleList.firstIndex(where: { $0.id == runnerBundle.id }) {
+                customRunnerBundleList[index] = runnerBundle
+            }
+            customRunnerEditor = nil
+
         case .customRunnerEditor:
             return
 
@@ -120,6 +147,7 @@ public final class CustomRunnerSettings: Composable {
     public enum Action: Sendable {
         case viewAppeared
         case removeCustomRunnerButtonTapped(Runner)
+        case editCustomRunnerButtonTapped(Runner)
         case customRunnerRowMoved(IndexSet, Int)
         case addCustomRunnerButtonTapped
         case guidanceButtonTapped

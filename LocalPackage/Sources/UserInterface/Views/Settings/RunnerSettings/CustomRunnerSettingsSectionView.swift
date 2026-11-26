@@ -30,6 +30,9 @@ struct CustomRunnerSettingsSectionView: View {
                 ForEach(store.customRunnerBundleList) { runnerBundle in
                     CustomRunnerRowView(
                         runnerBundle: runnerBundle,
+                        editButtonTapped: {
+                            await store.send(.editCustomRunnerButtonTapped(runnerBundle.runner))
+                        },
                         removeButtonTapped: {
                             await store.send(.removeCustomRunnerButtonTapped(runnerBundle.runner))
                         }

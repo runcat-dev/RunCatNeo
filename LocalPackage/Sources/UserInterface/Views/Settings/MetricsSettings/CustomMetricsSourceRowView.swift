@@ -24,25 +24,41 @@ import SwiftUI
 struct CustomMetricsSourceRowView: View {
     var source: CustomMetricsSource
     var isErrorDetected: Bool
+    var editButtonTapped: () async -> Void
     var removeButtonTapped: () async -> Void
     var sourceLinkTapped: () async -> Void
 
     var body: some View {
         LabeledContent {
-            Button(role: .destructive) {
-                Task {
-                    await removeButtonTapped()
+            HStack(spacing: 8) {
+                Button {
+                    Task {
+                        await editButtonTapped()
+                    }
+                } label: {
+                    Label {
+                        Text("edit\(source.displayName)", bundle: .module)
+                    } icon: {
+                        Image(systemName: "square.and.pencil")
+                    }
+                    .labelStyle(.iconOnly)
                 }
-            } label: {
-                Label {
-                    Text("remove\(source.displayName)", bundle: .module)
-                } icon: {
-                    Image(systemName: "minus.circle")
+                .buttonStyle(.borderless)
+                Button(role: .destructive) {
+                    Task {
+                        await removeButtonTapped()
+                    }
+                } label: {
+                    Label {
+                        Text("remove\(source.displayName)", bundle: .module)
+                    } icon: {
+                        Image(systemName: "minus.circle")
+                    }
+                    .labelStyle(.iconOnly)
                 }
-                .labelStyle(.iconOnly)
+                .buttonStyle(.borderless)
+                .tint(Color.red)
             }
-            .buttonStyle(.borderless)
-            .tint(Color.red)
         } label: {
             Text(source.displayName)
                 .truncationMode(.middle)

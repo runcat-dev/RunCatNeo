@@ -28,6 +28,7 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
     private let customMetricsService: CustomMetricsService
 
     public let id: UUID
+    public let editingSource: CustomMetricsSource?
     public var source: CustomMetricsSource?
     public var snapshot: CustomMetricsSnapshot?
     public var symbolImageData: Data?
@@ -38,7 +39,11 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
     public var error: RCNError?
     public let action: (Action) async -> Void
 
-    public var canAdd: Bool {
+    public var isEditing: Bool {
+        editingSource != nil
+    }
+
+    public var canConfirm: Bool {
         source != nil
     }
 
@@ -50,6 +55,7 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
     public init(
         _ appDependencies: AppDependencies,
         id: UUID,
+        editingSource: CustomMetricsSource? = nil,
         source: CustomMetricsSource? = nil,
         snapshot: CustomMetricsSnapshot? = nil,
         symbolImageData: Data? = nil,
@@ -63,6 +69,7 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
         self.logService = .init(appDependencies)
         self.customMetricsService = .init(appDependencies)
         self.id = id
+        self.editingSource = editingSource
         self.source = source
         self.snapshot = snapshot
         self.symbolImageData = symbolImageData
@@ -82,7 +89,13 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
         case let .sourceFileImporterResponse(.success(urls)):
             guard let url = urls.first else { return }
             do {
-                (source, snapshot) = try customMetricsService.makeSource(of: url)
+                var (source, snapshot) = try customMetricsService.makeSource(of: url)
+                if let editingSource {
+                    source.id = editingSource.id
+                    source.createdAt = editingSource.createdAt
+                }
+                self.source = source
+                self.snapshot = snapshot
             } catch let error as RCNError {
                 await send(.errorOccurred(error))
             } catch {
@@ -125,7 +138,21 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
                 logService.critical(.unknown(error))
             }
 
+        case .saveButtonTapped:
+            guard isEditing, let source else { return }
+            do {
+                try customMetricsService.update(source: source, symbolImageData: symbolImageData)
+                await send(.customMetricsSourceUpdated)
+            } catch let error as RCNError {
+                await send(.errorOccurred(error))
+            } catch {
+                logService.critical(.unknown(error))
+            }
+
         case .customMetricsSourceAdded:
+            return
+
+        case .customMetricsSourceUpdated:
             return
 
         case .cancelButtonTapped:
@@ -145,7 +172,9 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
         case removeSymbolImageButtonTapped
         case symbolImageGuidanceButtonTapped
         case addButtonTapped
+        case saveButtonTapped
         case customMetricsSourceAdded
+        case customMetricsSourceUpdated
         case cancelButtonTapped
         case errorOccurred(RCNError)
     }
