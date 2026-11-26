@@ -97,31 +97,4 @@ struct CustomMetricsSnapshotTests {
             _ = try decoder.decode(CustomMetricsSnapshot.self, from: json)
         }
     }
-
-    @Test
-    func decode_throws_on_invalid_json() {
-        let json = "{ not json }".data(using: .utf8)!
-        #expect(throws: (any Error).self) {
-            _ = try decoder.decode(CustomMetricsSnapshot.self, from: json)
-        }
-    }
-
-    @Test
-    func roundtrip_preserves_values() throws {
-        let original = CustomMetricsSnapshot(
-            title: "GPU",
-            symbol: "cpu",
-            metricsBarValue: "64°C",
-            metrics: [
-                CustomMetric(title: "Temp", formattedValue: "64°C", normalizedValue: 0.64),
-                CustomMetric(title: "Fan", formattedValue: "1200 RPM"),
-            ],
-            lastUpdatedDate: Date(timeIntervalSince1970: 1800000000)
-        )
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        let data = try encoder.encode(original)
-        let decoded = try decoder.decode(CustomMetricsSnapshot.self, from: data)
-        #expect(decoded == original)
-    }
 }

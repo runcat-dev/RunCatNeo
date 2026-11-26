@@ -6,7 +6,7 @@ import Testing
 
 struct LaunchAtLoginRepositoryTests {
     @Test
-    func switchStatus_success_register() async {
+    func switchStatus_true_succeeds_when_register_succeeds() async {
         let status = AllocatedUnfairLock(initialState: false)
         let smAppServiceClient = testDependency(of: SMAppServiceClient.self) {
             $0.status = {
@@ -23,7 +23,7 @@ struct LaunchAtLoginRepositoryTests {
     }
 
     @Test
-    func switchStatus_success_unregister() async {
+    func switchStatus_false_succeeds_when_unregister_succeeds() async {
         let status = AllocatedUnfairLock(initialState: true)
         let smAppServiceClient = testDependency(of: SMAppServiceClient.self) {
             $0.status = {
@@ -40,7 +40,7 @@ struct LaunchAtLoginRepositoryTests {
     }
 
     @Test
-    func switchStatus_failure_register() async {
+    func switchStatus_true_fails_with_current_status_when_register_throws() async {
         let status = AllocatedUnfairLock(initialState: false)
         let smAppServiceClient = testDependency(of: SMAppServiceClient.self) {
             $0.status = {
@@ -60,7 +60,7 @@ struct LaunchAtLoginRepositoryTests {
     }
 
     @Test
-    func switchStatus_failure_unregister() async {
+    func switchStatus_false_fails_with_current_status_when_unregister_throws() async {
         let status = AllocatedUnfairLock(initialState: true)
         let smAppServiceClient = testDependency(of: SMAppServiceClient.self) {
             $0.status = {

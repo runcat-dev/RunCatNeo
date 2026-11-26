@@ -7,7 +7,7 @@ import UniformTypeIdentifiers
 
 struct ApplicationSupportRepositoryTests {
     @Test
-    func init_if_ApplicationSupport_directory_does_not_exist_it_will_be_created() {
+    func init_creates_app_directory_when_it_does_not_exist() {
         let createDirectoryCount = AllocatedUnfairLock<Int>(initialState: 0)
         let fileManagerClient = testDependency(of: FileManagerClient.self) {
             $0.fileExists = { _ in false }
@@ -20,7 +20,7 @@ struct ApplicationSupportRepositoryTests {
     }
 
     @Test
-    func init_if_ApplicationSupport_directory_exists_nothing_happens() {
+    func init_does_not_create_app_directory_when_it_exists() {
         let createDirectoryCount = AllocatedUnfairLock<Int>(initialState: 0)
         let fileManagerClient = testDependency(of: FileManagerClient.self) {
             $0.fileExists = { _ in true }

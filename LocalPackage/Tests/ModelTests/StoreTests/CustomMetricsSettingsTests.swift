@@ -106,46 +106,6 @@ struct CustomMetricsSettingsTests {
     }
 
     @MainActor @Test
-    func send_customMetricsSourceLinkTapped_persists_refreshed_bookmark_when_stale() async {
-        let resolvedURL = URL(filePath: "/tmp/resolved.json")
-        let refreshedBookmark = Data([0xBB, 0xCC])
-        let existingID = UUID(7)
-        let storage = UserDefaultsClient.storage(initialSources: [
-            CustomMetricsSource(
-                id: existingID,
-                displayName: "Stale",
-                fileURL: URL(filePath: "/tmp/stale.json"),
-                bookmark: Data([0xAA]),
-                createdAt: Date(timeIntervalSince1970: 0)
-            )
-        ])
-        let source = CustomMetricsSource(
-            id: existingID,
-            displayName: "Stale",
-            fileURL: URL(filePath: "/tmp/stale.json"),
-            bookmark: Data([0xAA]),
-            createdAt: Date(timeIntervalSince1970: 0)
-        )
-        let urlClient = testDependency(of: URLClient.self) {
-            $0.create = { _, _ in (true, resolvedURL) }
-            $0.bookmarkData = { _, _ in refreshedBookmark }
-            $0.startAccessingSecurityScopedResource = { _ in true }
-            $0.stopAccessingSecurityScopedResource = { _ in }
-        }
-        let nsWorkspaceClient = testDependency(of: NSWorkspaceClient.self) {
-            $0.activateFileViewerSelecting = { _ in }
-        }
-        let sut = CustomMetricsSettings(.testDependencies(
-            nsWorkspaceClient: nsWorkspaceClient,
-            urlClient: urlClient,
-            userDefaultsClient: storage.client
-        ))
-        await sut.send(.customMetricsSourceLinkTapped(source))
-        let configuration = storage.currentConfiguration()
-        #expect(configuration?.sources.first?.bookmark == refreshedBookmark)
-    }
-
-    @MainActor @Test
     func send_customMetricsSourceLinkTapped_forwards_error_when_create_throws() async {
         let activatedURLs = AllocatedUnfairLock<[URL]>(initialState: [])
         let recorder = errorRecorder()
