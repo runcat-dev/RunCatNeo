@@ -92,10 +92,6 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
         case let .sourceFileImporterResponse(.failure(error)):
             logService.error(.importingCustomMetricsSourceFailed(error))
 
-        case .removeSourceButtonTapped:
-            source = nil
-            snapshot = nil
-
         case .chooseSymbolImageButtonTapped:
             showingSymbolImageFileImporter = true
 
@@ -144,7 +140,6 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
     public enum Action: Sendable {
         case chooseSourceButtonTapped
         case sourceFileImporterResponse(Result<[URL], any Error>)
-        case removeSourceButtonTapped
         case chooseSymbolImageButtonTapped
         case symbolImageFileImporterResponse(Result<[URL], any Error>)
         case removeSymbolImageButtonTapped

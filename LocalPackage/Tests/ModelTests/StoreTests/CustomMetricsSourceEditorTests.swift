@@ -118,20 +118,6 @@ struct CustomMetricsSourceEditorTests {
     }
 
     @MainActor @Test
-    func send_removeSourceButtonTapped_clears_source_and_snapshot() async {
-        let sut = CustomMetricsSourceEditor(
-            .testDependencies(),
-            id: UUID(0),
-            source: makeSource(),
-            snapshot: CustomMetricsSnapshot(title: "Imported", lastUpdatedDate: Date(timeIntervalSince1970: 0))
-        )
-        await sut.send(.removeSourceButtonTapped)
-        #expect(sut.source == nil)
-        #expect(sut.snapshot == nil)
-        #expect(!sut.canAdd)
-    }
-
-    @MainActor @Test
     func send_symbolImageGuidanceButtonTapped_shows_symbol_image_guidance_popover() async {
         let sut = CustomMetricsSourceEditor(.testDependencies(), id: UUID(0))
         await sut.send(.symbolImageGuidanceButtonTapped)

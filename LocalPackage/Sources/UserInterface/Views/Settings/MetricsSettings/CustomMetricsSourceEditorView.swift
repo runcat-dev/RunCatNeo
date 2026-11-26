@@ -30,30 +30,24 @@ struct CustomMetricsSourceEditorView: View {
             Form {
                 Section {
                     LabeledContent {
-                        if store.source == nil {
-                            Button {
-                                Task {
-                                    await store.send(.chooseSourceButtonTapped)
-                                }
-                            } label: {
-                                Text("choose", bundle: .module)
+                        Button {
+                            Task {
+                                await store.send(.chooseSourceButtonTapped)
                             }
-                            .fileImporter(
-                                isPresented: $store.showingSourceFileImporter,
-                                allowedContentTypes: [.json],
-                                allowsMultipleSelection: false,
-                                onCompletion: { result in
-                                    Task {
-                                        await store.send(.sourceFileImporterResponse(result))
-                                    }
-                                }
-                            )
-                            .fileDialogMessage(Text("chooseJsonFile", bundle: .module))
-                        } else {
-                            RemoveButton(label: "removeSourceFile") {
-                                await store.send(.removeSourceButtonTapped)
-                            }
+                        } label: {
+                            Text("choose", bundle: .module)
                         }
+                        .fileImporter(
+                            isPresented: $store.showingSourceFileImporter,
+                            allowedContentTypes: [.json],
+                            allowsMultipleSelection: false,
+                            onCompletion: { result in
+                                Task {
+                                    await store.send(.sourceFileImporterResponse(result))
+                                }
+                            }
+                        )
+                        .fileDialogMessage(Text("chooseJsonFile", bundle: .module))
                     } label: {
                         Text("sourceFile", bundle: .module)
                         if let source = store.source {
@@ -82,8 +76,12 @@ struct CustomMetricsSourceEditorView: View {
                             )
                             .fileDialogMessage(Text("chooseSymbolImage", bundle: .module))
                         } else {
-                            RemoveButton(label: "removeSymbolImage") {
-                                await store.send(.removeSymbolImageButtonTapped)
+                            Button {
+                                Task {
+                                    await store.send(.removeSymbolImageButtonTapped)
+                                }
+                            } label: {
+                                Text("remove", bundle: .module)
                             }
                         }
                     } label: {
@@ -157,27 +155,5 @@ struct CustomMetricsSourceEditorView: View {
                 message: { _ in }
             )
         }
-    }
-}
-
-private struct RemoveButton: View {
-    var label: LocalizedStringKey
-    var action: () async -> Void
-
-    var body: some View {
-        Button(role: .destructive) {
-            Task {
-                await action()
-            }
-        } label: {
-            Label {
-                Text(label, bundle: .module)
-            } icon: {
-                Image(systemName: "minus.circle")
-            }
-            .labelStyle(.iconOnly)
-        }
-        .buttonStyle(.borderless)
-        .tint(Color.red)
     }
 }
