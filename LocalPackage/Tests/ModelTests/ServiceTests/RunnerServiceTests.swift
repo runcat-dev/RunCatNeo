@@ -545,7 +545,7 @@ struct RunnerServiceTests {
     }
 
     @Test
-    func update_customRunner_rewrites_frames_and_replaces_runner_in_place() throws {
+    func update_customRunner_overwrites_frames_then_removes_stale_frames_after_saving_runners() throws {
         let json = """
             [
               {
@@ -563,8 +563,8 @@ struct RunnerServiceTests {
             ]
             """
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
-        let written = AllocatedUnfairLock<[(data: Data, url: URL)]>(initialState: [])
-        let removedURL = AllocatedUnfairLock<URL?>(initialState: nil)
+        let writtenJSON = AllocatedUnfairLock<String?>(initialState: nil)
+        let fileOperations = AllocatedUnfairLock<[String]>(initialState: [])
         let sut = RunnerService(.testDependencies(
             appStateClient: .testDependency(appState),
             dataClient: testDependency(of: DataClient.self) {
@@ -572,26 +572,67 @@ struct RunnerServiceTests {
                     url.hasPathSuffix("CUSTOM_RUNNERS.json") ? Data(json.utf8) : Data("frame".utf8)
                 }
                 $0.write = { data, url in
-                    written.withLock { $0.append((data, url)) }
+                    fileOperations.withLock { $0.append("write: \(url.lastPathComponent)") }
+                    if url.hasPathSuffix("CUSTOM_RUNNERS.json") {
+                        writtenJSON.withLock { $0 = String(decoding: data, as: UTF8.self) }
+                    }
                 }
                 $0.convert = { _, _ in Data("png".utf8) }
             },
             fileManagerClient: testDependency(of: FileManagerClient.self) {
                 $0.fileExists = { _ in true }
                 $0.removeItem = { url in
-                    removedURL.withLock { $0 = url }
+                    fileOperations.withLock { $0.append("remove: \(url.lastPathComponent)") }
                 }
             }
         ))
         let runner = Runner(id: "custom-runner", name: "Renamed Runner", isTemplate: true, frameOrder: .custom([0]))
         try sut.update(customRunner: runner, with: [FrameImage.dummy()])
-        let writtenFiles = written.withLock(\.self)
-        #expect(writtenFiles.map(\.url.lastPathComponent) == ["frame-0.png", "CUSTOM_RUNNERS.json"])
+        #expect(fileOperations.withLock(\.self) == [
+            "write: frame-0.png",
+            "write: CUSTOM_RUNNERS.json",
+            "remove: frame-1.png",
+        ])
         let expectedJSON = #"[{"frameOrder":[0],"id":"custom-runner","isTemplate":true,"name":"Renamed Runner"},{"frameOrder":[0],"id":"other-runner","isTemplate":false,"name":"Other Runner"}]"#
-        #expect(writtenFiles.last.map { String(decoding: $0.data, as: UTF8.self) } == expectedJSON)
-        let removedDirectoryURL = try #require(removedURL.withLock { $0 })
-        #expect(removedDirectoryURL.hasPathSuffix("RunCatNeo/custom-runner"))
+        #expect(writtenJSON.withLock(\.self) == expectedJSON)
         #expect(appState.withLock(\.runnerBundleLists.latestValue) != nil)
+    }
+
+    @Test
+    func update_customRunner_keeps_stale_frames_when_saving_runners_fails() {
+        let json = """
+            [
+              {
+                "id": "custom-runner",
+                "name": "Custom Runner",
+                "isTemplate": false,
+                "frameOrder": [0, 1]
+              }
+            ]
+            """
+        let removedURLs = AllocatedUnfairLock<[URL]>(initialState: [])
+        let sut = RunnerService(.testDependencies(
+            dataClient: testDependency(of: DataClient.self) {
+                $0.read = { _ in Data(json.utf8) }
+                $0.write = { _, url in
+                    if url.hasPathSuffix("CUSTOM_RUNNERS.json") {
+                        throw URLError(.unknown)
+                    }
+                }
+                $0.convert = { _, _ in Data("png".utf8) }
+            },
+            fileManagerClient: testDependency(of: FileManagerClient.self) {
+                $0.fileExists = { _ in true }
+                $0.removeItem = { url in
+                    removedURLs.withLock { $0.append(url) }
+                }
+            }
+        ))
+        let runner = Runner(id: "custom-runner", name: "Custom Runner", isTemplate: false, frameOrder: .custom([0]))
+        #expect(throws: URLError.self) {
+            try sut.update(customRunner: runner, with: [FrameImage.dummy()])
+        }
+        #expect(removedURLs.withLock(\.self).isEmpty)
     }
 
     @Test

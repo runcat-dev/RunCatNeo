@@ -88,7 +88,7 @@ public final class CustomRunnerSettings: Composable {
                 customRunnerEditor = .init(
                     appDependencies,
                     id: uuidClient.create(),
-                    editingRunner: runner,
+                    mode: .edit(runner),
                     runnerName: name,
                     isTemplate: runner.isTemplate,
                     frameImages: frameImages,
@@ -125,13 +125,11 @@ public final class CustomRunnerSettings: Composable {
         case .customRunnerEditor(.cancelButtonTapped):
             customRunnerEditor = nil
 
-        case let .customRunnerEditor(.customRunnerAdded(runnerBundle)):
-            customRunnerBundleList.append(runnerBundle)
-            customRunnerEditor = nil
-
-        case let .customRunnerEditor(.customRunnerUpdated(runnerBundle)):
+        case let .customRunnerEditor(.customRunnerSaved(runnerBundle)):
             if let index = customRunnerBundleList.firstIndex(where: { $0.id == runnerBundle.id }) {
                 customRunnerBundleList[index] = runnerBundle
+            } else {
+                customRunnerBundleList.append(runnerBundle)
             }
             customRunnerEditor = nil
 

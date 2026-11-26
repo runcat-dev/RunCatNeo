@@ -97,7 +97,7 @@ public final class CustomMetricsSettings: Composable {
             customMetricsSourceEditor = .init(
                 appDependencies,
                 id: uuidClient.create(),
-                editingSource: source,
+                mode: .edit(source),
                 source: source,
                 snapshot: appStateClient.withLock(\.metrics.latestValue)?.customMetricsBundles
                     .first { $0.id == source.id }?
@@ -148,8 +148,7 @@ public final class CustomMetricsSettings: Composable {
         case .customMetricsSourceEditor(.cancelButtonTapped):
             customMetricsSourceEditor = nil
 
-        case .customMetricsSourceEditor(.customMetricsSourceAdded),
-             .customMetricsSourceEditor(.customMetricsSourceUpdated):
+        case .customMetricsSourceEditor(.customMetricsSourceSaved):
             customMetricsSources = userDefaultsRepository.customMetricsConfiguration.sources
             customMetricsService.emitConfigurationChange()
             customMetricsSourceEditor = nil

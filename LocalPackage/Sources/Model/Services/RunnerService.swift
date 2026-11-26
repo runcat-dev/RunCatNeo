@@ -150,10 +150,14 @@ struct RunnerService {
         let imageDataList = try frameImages.map {
             try dataClient.convert($0.cgImage, .png)
         }
-        applicationSupportRepository.delete(directory: runner.id)
         try saveFrameImageDataList(imageDataList, of: runner)
+        let resourceNames = runner.resourceNames()
+        let staleResourceNames = runners[index].resourceNames().filter { !resourceNames.contains($0) }
         runners[index] = runner
         try applicationSupportRepository.saveCustomRunners(runners)
+        staleResourceNames.forEach {
+            applicationSupportRepository.delete(directory: runner.id, fileName: $0, fileType: .png)
+        }
         if appStateClient.withLock(\.runnerBundles.latestValue)?.runner == runner {
             try update(runner: runner)
         }

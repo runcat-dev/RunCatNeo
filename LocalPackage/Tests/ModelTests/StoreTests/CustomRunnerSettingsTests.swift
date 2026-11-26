@@ -124,13 +124,13 @@ struct CustomRunnerSettingsTests {
     }
 
     @MainActor @Test
-    func send_customRunnerEditor_customRunnerAdded_appends_bundle_and_closes_editor() async {
+    func send_customRunnerEditor_customRunnerSaved_appends_new_bundle_and_closes_editor() async {
         let bundle = RunnerBundle(runner: customRunner, frame: .custom(Data()))
         let sut = CustomRunnerSettings(
             .testDependencies(),
             customRunnerEditor: CustomRunnerEditor(.testDependencies(), id: .init())
         )
-        await sut.send(.customRunnerEditor(.customRunnerAdded(bundle)))
+        await sut.send(.customRunnerEditor(.customRunnerSaved(bundle)))
         #expect(sut.customRunnerBundleList == [bundle])
         #expect(sut.customRunnerEditor == nil)
     }
@@ -162,8 +162,7 @@ struct CustomRunnerSettingsTests {
         ))
         await sut.send(.editCustomRunnerButtonTapped(customRunner))
         let editor = try #require(sut.customRunnerEditor)
-        #expect(editor.editingRunner == customRunner)
-        #expect(editor.isEditing)
+        #expect(editor.mode == .edit(customRunner))
         #expect(editor.runnerName == "Custom Runner")
         #expect(!editor.isTemplate)
         #expect(editor.frameImages.count == 1)
@@ -179,7 +178,7 @@ struct CustomRunnerSettingsTests {
     }
 
     @MainActor @Test
-    func send_customRunnerEditor_customRunnerUpdated_replaces_bundle_and_closes_editor() async {
+    func send_customRunnerEditor_customRunnerSaved_replaces_existing_bundle_and_closes_editor() async {
         let otherBundle = RunnerBundle(
             runner: Runner(id: "other-runner", name: "Other Runner", isTemplate: false, frameOrder: .custom([0])),
             frame: .custom(Data())
@@ -191,7 +190,7 @@ struct CustomRunnerSettingsTests {
         )
         let updatedRunner = Runner(id: "custom-runner", name: "Renamed Runner", isTemplate: true, frameOrder: .custom([0]))
         let updatedBundle = RunnerBundle(runner: updatedRunner, frame: .custom(Data("png".utf8)))
-        await sut.send(.customRunnerEditor(.customRunnerUpdated(updatedBundle)))
+        await sut.send(.customRunnerEditor(.customRunnerSaved(updatedBundle)))
         #expect(sut.customRunnerBundleList == [updatedBundle, otherBundle])
         #expect(sut.customRunnerEditor == nil)
     }

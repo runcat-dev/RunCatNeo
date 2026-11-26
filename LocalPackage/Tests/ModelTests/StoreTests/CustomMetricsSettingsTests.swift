@@ -228,7 +228,7 @@ struct CustomMetricsSettingsTests {
     }
 
     @MainActor @Test
-    func send_customMetricsSourceEditor_customMetricsSourceAdded_reloads_sources_emits_change_and_dismisses_editor() async {
+    func send_customMetricsSourceEditor_customMetricsSourceSaved_reloads_sources_emits_change_and_dismisses_editor() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let addedSource = CustomMetricsSource(
             id: UUID(11),
@@ -246,7 +246,7 @@ struct CustomMetricsSettingsTests {
             customMetricsSources: []
         )
         await sut.send(.addCustomMetricsSourceButtonTapped)
-        await sut.send(.customMetricsSourceEditor(.customMetricsSourceAdded))
+        await sut.send(.customMetricsSourceEditor(.customMetricsSourceSaved))
         #expect(sut.customMetricsSources == [addedSource])
         #expect(appState.withLock(\.customMetricsConfigurationChanges.latestValue) != nil)
         #expect(sut.customMetricsSourceEditor == nil)
@@ -350,35 +350,9 @@ struct CustomMetricsSettingsTests {
         ))
         await sut.send(.editCustomMetricsSourceButtonTapped(source))
         let editor = try #require(sut.customMetricsSourceEditor)
-        #expect(editor.editingSource == source)
-        #expect(editor.isEditing)
+        #expect(editor.mode == .edit(source))
         #expect(editor.source == source)
         #expect(editor.snapshot == snapshot)
         #expect(editor.symbolImageData == imageData)
-    }
-
-    @MainActor @Test
-    func send_customMetricsSourceEditor_customMetricsSourceUpdated_reloads_sources_emits_change_and_dismisses_editor() async {
-        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
-        let updatedSource = CustomMetricsSource(
-            id: UUID(11),
-            displayName: "Updated",
-            fileURL: URL(filePath: "/tmp/updated.json"),
-            bookmark: Data(),
-            createdAt: Date(timeIntervalSince1970: 0)
-        )
-        let storage = UserDefaultsClient.storage(initialSources: [updatedSource])
-        let sut = CustomMetricsSettings(
-            .testDependencies(
-                appStateClient: .testDependency(appState),
-                userDefaultsClient: storage.client
-            ),
-            customMetricsSources: []
-        )
-        await sut.send(.addCustomMetricsSourceButtonTapped)
-        await sut.send(.customMetricsSourceEditor(.customMetricsSourceUpdated))
-        #expect(sut.customMetricsSources == [updatedSource])
-        #expect(appState.withLock(\.customMetricsConfigurationChanges.latestValue) != nil)
-        #expect(sut.customMetricsSourceEditor == nil)
     }
 }

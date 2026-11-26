@@ -33,4 +33,12 @@ public struct RunnerBundle: Sendable, Equatable, Identifiable {
         self.runner = runner
         self.displayFormat = .thumbnail(frame)
     }
+
+    public static func ==(lhs: RunnerBundle, rhs: RunnerBundle) -> Bool {
+        lhs.runner.id == rhs.runner.id
+            && lhs.runner.isTemplate == rhs.runner.isTemplate
+            && lhs.runner.frameOrder == rhs.runner.frameOrder
+            && lhs.runner.source == rhs.runner.source
+            && lhs.displayFormat == rhs.displayFormat
+    }
 }

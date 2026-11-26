@@ -28,7 +28,7 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
     private let customMetricsService: CustomMetricsService
 
     public let id: UUID
-    public let editingSource: CustomMetricsSource?
+    public let mode: EditorMode<CustomMetricsSource>
     public var source: CustomMetricsSource?
     public var snapshot: CustomMetricsSnapshot?
     public var symbolImageData: Data?
@@ -38,10 +38,6 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
     public var showingAlert: Bool
     public var error: RCNError?
     public let action: (Action) async -> Void
-
-    public var isEditing: Bool {
-        editingSource != nil
-    }
 
     public var canConfirm: Bool {
         source != nil
@@ -55,7 +51,7 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
     public init(
         _ appDependencies: AppDependencies,
         id: UUID,
-        editingSource: CustomMetricsSource? = nil,
+        mode: EditorMode<CustomMetricsSource> = .add,
         source: CustomMetricsSource? = nil,
         snapshot: CustomMetricsSnapshot? = nil,
         symbolImageData: Data? = nil,
@@ -69,7 +65,7 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
         self.logService = .init(appDependencies)
         self.customMetricsService = .init(appDependencies)
         self.id = id
-        self.editingSource = editingSource
+        self.mode = mode
         self.source = source
         self.snapshot = snapshot
         self.symbolImageData = symbolImageData
@@ -90,7 +86,7 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
             guard let url = urls.first else { return }
             do {
                 var (source, snapshot) = try customMetricsService.makeSource(of: url)
-                if let editingSource {
+                if let editingSource = mode.editingTarget {
                     source.id = editingSource.id
                     source.createdAt = editingSource.createdAt
                 }
@@ -127,32 +123,23 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
         case .symbolImageGuidanceButtonTapped:
             showingSymbolImageGuidancePopover = true
 
-        case .addButtonTapped:
+        case .confirmButtonTapped:
             guard let source else { return }
             do {
-                try customMetricsService.add(source: source, symbolImageData: symbolImageData)
-                await send(.customMetricsSourceAdded)
+                switch mode {
+                case .add:
+                    try customMetricsService.add(source: source, symbolImageData: symbolImageData)
+                case .edit:
+                    try customMetricsService.update(source: source, symbolImageData: symbolImageData)
+                }
+                await send(.customMetricsSourceSaved)
             } catch let error as RCNError {
                 await send(.errorOccurred(error))
             } catch {
                 logService.critical(.unknown(error))
             }
 
-        case .saveButtonTapped:
-            guard isEditing, let source else { return }
-            do {
-                try customMetricsService.update(source: source, symbolImageData: symbolImageData)
-                await send(.customMetricsSourceUpdated)
-            } catch let error as RCNError {
-                await send(.errorOccurred(error))
-            } catch {
-                logService.critical(.unknown(error))
-            }
-
-        case .customMetricsSourceAdded:
-            return
-
-        case .customMetricsSourceUpdated:
+        case .customMetricsSourceSaved:
             return
 
         case .cancelButtonTapped:
@@ -171,10 +158,8 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
         case symbolImageFileImporterResponse(Result<[URL], any Error>)
         case removeSymbolImageButtonTapped
         case symbolImageGuidanceButtonTapped
-        case addButtonTapped
-        case saveButtonTapped
-        case customMetricsSourceAdded
-        case customMetricsSourceUpdated
+        case confirmButtonTapped
+        case customMetricsSourceSaved
         case cancelButtonTapped
         case errorOccurred(RCNError)
     }
