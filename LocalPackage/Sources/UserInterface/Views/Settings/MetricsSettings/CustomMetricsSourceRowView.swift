@@ -52,7 +52,7 @@ struct CustomMetricsSourceRowView: View {
                     Label {
                         Text("remove\(source.displayName)", bundle: .module)
                     } icon: {
-                        Image(systemName: "minus.circle")
+                        Image(systemName: "trash")
                     }
                     .labelStyle(.iconOnly)
                 }

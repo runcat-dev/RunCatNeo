@@ -50,7 +50,7 @@ struct CustomRunnerRowView: View {
                     Label {
                         Text("remove\(runnerBundle.runner.formatted)", bundle: .module)
                     } icon: {
-                        Image(systemName: "minus.circle")
+                        Image(systemName: "trash")
                     }
                     .labelStyle(.iconOnly)
                 }
