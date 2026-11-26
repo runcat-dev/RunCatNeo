@@ -47,7 +47,7 @@ struct CustomMetricsSettingsSectionView: View {
                 .listRowInsets(.vertical, 8)
             }
             .confirmationDialog(
-                Text("removeCustomMetrics", bundle: .module),
+                Text("removeCustomMetricsSource", bundle: .module),
                 isPresented: $store.showingConfirmationDialog,
                 presenting: store.pendingRemovalSourceID,
                 actions: { sourceID in
