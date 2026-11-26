@@ -70,10 +70,10 @@ public final class CustomRunnerSettings: Composable {
                 return
             }
             do {
-                guard currentRunner != runner else {
+                guard currentRunner.id != runner.id else {
                     throw RCNError.customRunner(.runnerInUse)
                 }
-                customRunnerBundleList.removeAll { $0.runner == runner }
+                customRunnerBundleList.removeAll { $0.id == runner.id }
                 try runnerService.delete(customRunner: runner)
             } catch let error as RCNError {
                 await send(.errorOccurred(error))

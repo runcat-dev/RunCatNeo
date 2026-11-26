@@ -108,7 +108,7 @@ struct RunnerService {
     func validate(customRunnerName name: String, excluding excludedRunner: Runner? = nil) -> Bool {
         let runners = applicationSupportRepository.loadCustomRunners()
         return !runners.contains { runner in
-            if runner != excludedRunner, case let .custom(existingName) = runner.source {
+            if runner.id != excludedRunner?.id, case let .custom(existingName) = runner.source {
                 existingName == name
             } else {
                 false
@@ -144,7 +144,7 @@ struct RunnerService {
 
     func update(customRunner runner: Runner, with frameImages: [FrameImage]) throws {
         var runners = applicationSupportRepository.loadCustomRunners()
-        guard let index = runners.firstIndex(of: runner) else {
+        guard let index = runners.firstIndex(where: { $0.id == runner.id }) else {
             throw RCNError.customRunner(.loadingFailed)
         }
         let imageDataList = try frameImages.map {
@@ -158,7 +158,7 @@ struct RunnerService {
         staleResourceNames.forEach {
             applicationSupportRepository.delete(directory: runner.id, fileName: $0, fileType: .png)
         }
-        if appStateClient.withLock(\.runnerBundles.latestValue)?.runner == runner {
+        if appStateClient.withLock(\.runnerBundles.latestValue)?.runner.id == runner.id {
             try update(runner: runner)
         }
         loadRunnerBundleList()
@@ -166,7 +166,7 @@ struct RunnerService {
 
     func delete(customRunner runner: Runner) throws {
         var runners = applicationSupportRepository.loadCustomRunners()
-        runners.removeAll { $0 == runner }
+        runners.removeAll { $0.id == runner.id }
         try applicationSupportRepository.saveCustomRunners(runners)
         applicationSupportRepository.delete(directory: runner.id)
         loadRunnerBundleList()
