@@ -30,24 +30,30 @@ struct CustomMetricsSourceEditorView: View {
             Form {
                 Section {
                     LabeledContent {
-                        Button {
-                            Task {
-                                await store.send(.chooseSourceButtonTapped)
-                            }
-                        } label: {
-                            Text("choose", bundle: .module)
-                        }
-                        .fileImporter(
-                            isPresented: $store.showingSourceFileImporter,
-                            allowedContentTypes: [.json],
-                            allowsMultipleSelection: false,
-                            onCompletion: { result in
+                        if store.source == nil {
+                            Button {
                                 Task {
-                                    await store.send(.sourceFileImporterResponse(result))
+                                    await store.send(.chooseSourceButtonTapped)
                                 }
+                            } label: {
+                                Text("choose", bundle: .module)
                             }
-                        )
-                        .fileDialogMessage(Text("chooseJsonFile", bundle: .module))
+                            .fileImporter(
+                                isPresented: $store.showingSourceFileImporter,
+                                allowedContentTypes: [.json],
+                                allowsMultipleSelection: false,
+                                onCompletion: { result in
+                                    Task {
+                                        await store.send(.sourceFileImporterResponse(result))
+                                    }
+                                }
+                            )
+                            .fileDialogMessage(Text("chooseJsonFile", bundle: .module))
+                        } else {
+                            RemoveButton(label: "removeSourceFile") {
+                                await store.send(.removeSourceButtonTapped)
+                            }
+                        }
                     } label: {
                         Text("sourceFile", bundle: .module)
                         if let source = store.source {
@@ -56,23 +62,7 @@ struct CustomMetricsSourceEditorView: View {
                         }
                     }
                     LabeledContent {
-                        HStack {
-                            if store.symbolImageData != nil {
-                                Button(role: .destructive) {
-                                    Task {
-                                        await store.send(.removeSymbolImageButtonTapped)
-                                    }
-                                } label: {
-                                    Label {
-                                        Text("removeSymbolImage", bundle: .module)
-                                    } icon: {
-                                        Image(systemName: "minus.circle")
-                                    }
-                                    .labelStyle(.iconOnly)
-                                }
-                                .buttonStyle(.borderless)
-                                .tint(Color.red)
-                            }
+                        if store.symbolImageData == nil {
                             Button {
                                 Task {
                                     await store.send(.chooseSymbolImageButtonTapped)
@@ -91,17 +81,49 @@ struct CustomMetricsSourceEditorView: View {
                                 }
                             )
                             .fileDialogMessage(Text("chooseSymbolImage", bundle: .module))
+                        } else {
+                            RemoveButton(label: "removeSymbolImage") {
+                                await store.send(.removeSymbolImageButtonTapped)
+                            }
                         }
                     } label: {
-                        Text("symbolImage", bundle: .module)
+                        HStack(spacing: 4) {
+                            Text("symbolImage", bundle: .module)
+                            Button {
+                                Task {
+                                    await store.send(.symbolImageGuidanceButtonTapped)
+                                }
+                            } label: {
+                                Label {
+                                    Text("guidance", bundle: .module)
+                                } icon: {
+                                    Image(systemName: "info.circle")
+                                }
+                                .labelStyle(.iconOnly)
+                            }
+                            .buttonStyle(.borderless)
+                            .popover(isPresented: $store.showingSymbolImageGuidancePopover, arrowEdge: .bottom) {
+                                GuidanceView(
+                                    description: "symbolImageDescription",
+                                    linkLabel: "viewJsonSchemaAndSamples",
+                                    linkDestination: .customMetricsSchema
+                                )
+                            }
+                        }
                         Text("symbolImageRequirements", bundle: .module)
                     }
-                    if let previewBundle = store.previewBundle {
-                        LabeledContent {
+                    LabeledContent {
+                        if let previewBundle = store.previewBundle {
                             CustomMetricsCardView(customMetricsBundle: previewBundle, displayedDate: .now)
-                        } label: {
-                            Text("preview", bundle: .module)
+                        } else {
+                            Text("previewPlaceholder", bundle: .module)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, minHeight: 64)
+                                .background(.fill.quaternary, in: .rect(cornerRadius: 12))
                         }
+                    } label: {
+                        Text("preview", bundle: .module)
                     }
                 } header: {
                     Text("customMetricsSourceEditor", bundle: .module)
@@ -135,5 +157,27 @@ struct CustomMetricsSourceEditorView: View {
                 message: { _ in }
             )
         }
+    }
+}
+
+private struct RemoveButton: View {
+    var label: LocalizedStringKey
+    var action: () async -> Void
+
+    var body: some View {
+        Button(role: .destructive) {
+            Task {
+                await action()
+            }
+        } label: {
+            Label {
+                Text(label, bundle: .module)
+            } icon: {
+                Image(systemName: "minus.circle")
+            }
+            .labelStyle(.iconOnly)
+        }
+        .buttonStyle(.borderless)
+        .tint(Color.red)
     }
 }

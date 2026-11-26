@@ -33,6 +33,7 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
     public var symbolImageData: Data?
     public var showingSourceFileImporter: Bool
     public var showingSymbolImageFileImporter: Bool
+    public var showingSymbolImageGuidancePopover: Bool
     public var showingAlert: Bool
     public var error: RCNError?
     public let action: (Action) async -> Void
@@ -54,6 +55,7 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
         symbolImageData: Data? = nil,
         showingSourceFileImporter: Bool = false,
         showingSymbolImageFileImporter: Bool = false,
+        showingSymbolImageGuidancePopover: Bool = false,
         showingAlert: Bool = false,
         error: RCNError? = nil,
         action: @escaping (Action) async -> Void = { _ in }
@@ -66,6 +68,7 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
         self.symbolImageData = symbolImageData
         self.showingSourceFileImporter = showingSourceFileImporter
         self.showingSymbolImageFileImporter = showingSymbolImageFileImporter
+        self.showingSymbolImageGuidancePopover = showingSymbolImageGuidancePopover
         self.showingAlert = showingAlert
         self.error = error
         self.action = action
@@ -89,6 +92,10 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
         case let .sourceFileImporterResponse(.failure(error)):
             logService.error(.importingCustomMetricsSourceFailed(error))
 
+        case .removeSourceButtonTapped:
+            source = nil
+            snapshot = nil
+
         case .chooseSymbolImageButtonTapped:
             showingSymbolImageFileImporter = true
 
@@ -107,6 +114,9 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
 
         case .removeSymbolImageButtonTapped:
             symbolImageData = nil
+
+        case .symbolImageGuidanceButtonTapped:
+            showingSymbolImageGuidancePopover = true
 
         case .addButtonTapped:
             guard let source else { return }
@@ -134,9 +144,11 @@ public final class CustomMetricsSourceEditor: Composable, Identifiable {
     public enum Action: Sendable {
         case chooseSourceButtonTapped
         case sourceFileImporterResponse(Result<[URL], any Error>)
+        case removeSourceButtonTapped
         case chooseSymbolImageButtonTapped
         case symbolImageFileImporterResponse(Result<[URL], any Error>)
         case removeSymbolImageButtonTapped
+        case symbolImageGuidanceButtonTapped
         case addButtonTapped
         case customMetricsSourceAdded
         case cancelButtonTapped

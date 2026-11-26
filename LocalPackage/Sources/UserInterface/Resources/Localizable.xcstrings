@@ -4932,6 +4932,71 @@
         }
       }
     },
+    "previewPlaceholder" : {
+      "comment" : "A placeholder shown in the preview row until a custom metrics source file is chosen.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle eine Quelldatei aus, um eine Vorschau anzuzeigen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a source file to show a preview."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un archivo de origen para ver la previsualización."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez un fichier source pour afficher un aperçu."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ソースファイルを選択するとプレビューが表示されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "소스 파일을 선택하면 미리보기가 표시됩니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите файл источника, чтобы увидеть предпросмотр."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn tệp nguồn để hiển thị bản xem trước."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择来源文件后将显示预览。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇來源檔案後將顯示預覽。"
+          }
+        }
+      }
+    },
     "previewSpeed" : {
       "comment" : "A label for the slider that changes the speed of the runner preview.",
       "localizations" : {
@@ -5322,6 +5387,71 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "要移除自訂指標嗎？"
+          }
+        }
+      }
+    },
+    "removeSourceFile" : {
+      "comment" : "An accessibility label for a button that removes the chosen custom metrics source file.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quelldatei entfernen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Source File"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar archivo de origen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer le fichier source"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ソースファイルを削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "소스 파일 삭제"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить файл источника"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xóa tệp nguồn"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除来源文件"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除來源檔案"
           }
         }
       }
@@ -6714,61 +6844,126 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Symbolbild"
+            "value" : "Symbolbild (optional)"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Symbol Image"
+            "value" : "Symbol Image (Optional)"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Imagen del símbolo"
+            "value" : "Imagen del símbolo (opcional)"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Image du symbole"
+            "value" : "Image du symbole (facultatif)"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "シンボル画像"
+            "value" : "シンボル画像（任意）"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "심볼 이미지"
+            "value" : "심볼 이미지 (선택 사항)"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Изображение символа"
+            "value" : "Изображение символа (необязательно)"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hình ảnh biểu tượng"
+            "value" : "Hình ảnh biểu tượng (tùy chọn)"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "符号图片"
+            "value" : "符号图片（可选）"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "符號圖片"
+            "value" : "符號圖片（選用）"
+          }
+        }
+      }
+    },
+    "symbolImageDescription" : {
+      "comment" : "A description of how the symbol of a custom metrics card is chosen when no symbol image is set.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ohne Symbolbild wird das im JSON angegebene SF Symbol verwendet. Ist auch dort keines angegeben, wird das Standardsymbol verwendet."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If no symbol image is set, the SF Symbol specified in the JSON is used. If the JSON does not specify one either, the default symbol is used."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si no se establece una imagen del símbolo, se usa el SF Symbol indicado en el JSON. Si el JSON tampoco lo indica, se usa el símbolo predeterminado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si aucune image du symbole n’est définie, le SF Symbol indiqué dans le JSON est utilisé. Si le JSON n’en indique pas non plus, le symbole par défaut est utilisé."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シンボル画像を指定しない場合は、JSONで指定したSF Symbolが使われます。JSONでも指定がない場合は、デフォルトのシンボルが使われます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "심볼 이미지를 지정하지 않으면 JSON에서 지정한 SF Symbol이 사용됩니다. JSON에서도 지정하지 않은 경우 기본 심볼이 사용됩니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Если изображение символа не задано, используется SF Symbol, указанный в JSON. Если и в JSON он не указан, используется символ по умолчанию."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nếu không đặt hình ảnh biểu tượng, SF Symbol được chỉ định trong JSON sẽ được sử dụng. Nếu JSON cũng không chỉ định, biểu tượng mặc định sẽ được sử dụng."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未设置符号图片时，将使用 JSON 中指定的 SF Symbol。如果 JSON 中也未指定，则使用默认符号。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未設定符號圖片時，將使用 JSON 中指定的 SF Symbol。若 JSON 中也未指定，則使用預設符號。"
           }
         }
       }
@@ -6779,61 +6974,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Optional\n1. Format: PNG mit Transparenz\n2. Größe: 48 × 48px"
+            "value" : "1. Format: PNG mit Transparenz\n2. Größe: 48 × 48px"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Optional\n1. Format: PNG with transparency\n2. Size: 48 × 48px"
+            "value" : "1. Format: PNG with transparency\n2. Size: 48 × 48px"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Opcional\n1. Formato: PNG con transparencia\n2. Tamaño: 48 × 48px"
+            "value" : "1. Formato: PNG con transparencia\n2. Tamaño: 48 × 48px"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Facultatif\n1. Format : PNG avec transparence\n2. Taille : 48 × 48px"
+            "value" : "1. Format : PNG avec transparence\n2. Taille : 48 × 48px"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "任意\n1. フォーマット：透過PNG\n2. サイズ：48 × 48px"
+            "value" : "1. フォーマット：透過PNG\n2. サイズ：48 × 48px"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "선택 사항\n1. 포맷: 투명 PNG\n2. 크기: 48 × 48px"
+            "value" : "1. 포맷: 투명 PNG\n2. 크기: 48 × 48px"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Необязательно\n1. Формат: PNG с прозрачностью\n2. Размер: 48 × 48px"
+            "value" : "1. Формат: PNG с прозрачностью\n2. Размер: 48 × 48px"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tùy chọn\n1. Định dạng: PNG có độ trong suốt\n2. Kích thước: 48 × 48px"
+            "value" : "1. Định dạng: PNG có độ trong suốt\n2. Kích thước: 48 × 48px"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "可选\n1. 格式：透明 PNG\n2. 尺寸：48 × 48px"
+            "value" : "1. 格式：透明 PNG\n2. 尺寸：48 × 48px"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "選用\n1. 格式：透明 PNG\n2. 尺寸：48 × 48px"
+            "value" : "1. 格式：透明 PNG\n2. 尺寸：48 × 48px"
           }
         }
       }
