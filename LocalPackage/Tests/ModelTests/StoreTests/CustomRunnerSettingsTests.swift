@@ -26,10 +26,11 @@ struct CustomRunnerSettingsTests {
     }
 
     @MainActor @Test
-    func send_removeCustomRunnerButtonTapped_shows_alert_and_keeps_list_when_runner_is_in_use() async {
+    func send_removeCustomRunnerButtonTapped_shows_alert_and_keeps_list_when_edited_runner_is_in_use() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let editedRunner = Runner(id: "custom-runner", name: "Renamed Runner", isTemplate: true, frameOrder: .custom([0]))
+        appState.withLock { $0.runnerBundles.send(RunnerBundle(runner: editedRunner, frame: .custom(Data()))) }
         let bundle = RunnerBundle(runner: customRunner, frame: .custom(Data()))
-        appState.withLock { $0.runnerBundles.send(bundle) }
         let sut = CustomRunnerSettings(
             .testDependencies(appStateClient: .testDependency(appState)),
             customRunnerBundleList: [bundle]
@@ -193,20 +194,5 @@ struct CustomRunnerSettingsTests {
         await sut.send(.customRunnerEditor(.customRunnerSaved(updatedBundle)))
         #expect(sut.customRunnerBundleList == [updatedBundle, otherBundle])
         #expect(sut.customRunnerEditor == nil)
-    }
-
-    @MainActor @Test
-    func send_removeCustomRunnerButtonTapped_shows_alert_when_runner_in_use_has_been_edited() async {
-        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
-        let editedRunner = Runner(id: "custom-runner", name: "Renamed Runner", isTemplate: true, frameOrder: .custom([0]))
-        appState.withLock { $0.runnerBundles.send(RunnerBundle(runner: editedRunner, frame: .custom(Data()))) }
-        let bundle = RunnerBundle(runner: customRunner, frame: .custom(Data()))
-        let sut = CustomRunnerSettings(
-            .testDependencies(appStateClient: .testDependency(appState)),
-            customRunnerBundleList: [bundle]
-        )
-        await sut.send(.removeCustomRunnerButtonTapped(customRunner))
-        #expect(sut.customRunnerBundleList == [bundle])
-        #expect(sut.error == .customRunner(.runnerInUse))
     }
 }

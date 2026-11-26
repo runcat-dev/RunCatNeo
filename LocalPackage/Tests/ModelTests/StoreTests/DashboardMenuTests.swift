@@ -69,7 +69,7 @@ struct DashboardMenuTests {
     }
 
     @MainActor @Test
-    func send_settingsButtonTapped() async {
+    func send_settingsButtonTapped_activates_app_and_opens_settings() async {
         let callStack = AllocatedUnfairLock<[String]>(initialState: [])
         let sut = DashboardMenu(.testDependencies(
             nsAppClient: testDependency(of: NSAppClient.self) {
@@ -89,7 +89,7 @@ struct DashboardMenuTests {
     }
 
     @MainActor @Test
-    func send_activityMonitorButtonTapped() async {
+    func send_activityMonitorButtonTapped_opens_activity_monitor() async {
         let callStack = AllocatedUnfairLock<[String]>(initialState: [])
         let sut = DashboardMenu(.testDependencies(
             nsWorkspaceClient: testDependency(of: NSWorkspaceClient.self) {
@@ -108,7 +108,7 @@ struct DashboardMenuTests {
     }
 
     @MainActor @Test
-    func send_aboutButtonTapped() async {
+    func send_aboutButtonTapped_activates_app_and_shows_about_panel() async {
         let callStack = AllocatedUnfairLock<[String]>(initialState: [])
         let sut = DashboardMenu(.testDependencies(
             nsAppClient: testDependency(of: NSAppClient.self) {
@@ -128,7 +128,7 @@ struct DashboardMenuTests {
     }
 
     @MainActor @Test
-    func send_openSourceLicenseButtonTapped() async {
+    func send_openSourceLicenseButtonTapped_activates_app_and_opens_license_window() async {
         let callStack = AllocatedUnfairLock<[String]>(initialState: [])
         let sut = DashboardMenu(.testDependencies(
             nsAppClient: testDependency(of: NSAppClient.self) {
@@ -148,7 +148,7 @@ struct DashboardMenuTests {
     }
 
     @MainActor @Test
-    func send_reportIssueButtonTapped() async {
+    func send_reportIssueButtonTapped_opens_issues_page() async {
         let callStack = AllocatedUnfairLock<[String]>(initialState: [])
         let sut = DashboardMenu(.testDependencies(
             nsWorkspaceClient: testDependency(of: NSWorkspaceClient.self) {
@@ -165,7 +165,7 @@ struct DashboardMenuTests {
     }
 
     @MainActor @Test
-    func send_quitButtonTapped() async {
+    func send_quitButtonTapped_terminates_app() async {
         let callStack = AllocatedUnfairLock<[String]>(initialState: [])
         let sut = DashboardMenu(.testDependencies(
             nsAppClient: testDependency(of: NSAppClient.self) {

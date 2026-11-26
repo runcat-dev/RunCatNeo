@@ -25,14 +25,12 @@ import SystemInfoKit
 
 struct RunnerService {
     private let appStateClient: AppStateClient
-    private let dataClient: DataClient
     private let uuidClient: UUIDClient
     private let applicationSupportRepository: ApplicationSupportRepository
     private let userDefaultsRepository: UserDefaultsRepository
 
     init(_ appDependencies: AppDependencies) {
         appStateClient = appDependencies.appStateClient
-        dataClient = appDependencies.dataClient
         uuidClient = appDependencies.uuidClient
         applicationSupportRepository = .init(appDependencies.dataClient, appDependencies.fileManagerClient)
         userDefaultsRepository = .init(appDependencies.userDefaultsClient)
@@ -117,7 +115,7 @@ struct RunnerService {
     }
 
     func convertToCustomFrame(from frameImage: FrameImage) throws -> Frame {
-        let data = try dataClient.convert(frameImage.cgImage, .png)
+        let data = try frameImage.cgImage.pngData()
         return Frame.custom(data)
     }
 
@@ -134,7 +132,7 @@ struct RunnerService {
 
     func add(customRunner runner: Runner, with frameImages: [FrameImage]) throws {
         let imageDataList = try frameImages.map {
-            try dataClient.convert($0.cgImage, .png)
+            try $0.cgImage.pngData()
         }
         try saveFrameImageDataList(imageDataList, of: runner)
         let runners = applicationSupportRepository.loadCustomRunners()
@@ -148,7 +146,7 @@ struct RunnerService {
             throw RCNError.customRunner(.loadingFailed)
         }
         let imageDataList = try frameImages.map {
-            try dataClient.convert($0.cgImage, .png)
+            try $0.cgImage.pngData()
         }
         try saveFrameImageDataList(imageDataList, of: runner)
         let resourceNames = runner.resourceNames()

@@ -709,29 +709,52 @@ struct CustomMetricsServiceTests {
     }
 
     @Test
-    func update_cancels_source_observer_and_replaces_symbol_image_of_bundle() throws {
+    func update_while_monitoring_reloads_new_file_and_applies_symbol_image() async throws {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
-        let sourceObserver = Task<Void, Never> {
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(1))
-            }
-        }
-        let existingBundle = CustomMetricsBundle(id: UUID(1), snapshot: try snapshot)
-        appState.withLock {
-            $0.customMetricsObservers = [UUID(1): sourceObserver]
-            $0.metrics.send(Metrics(customMetricsBundles: [existingBundle]))
-        }
+        let writtenFiles = AllocatedUnfairLock<[String: Data]>(initialState: [:])
+        let updatedSnapshotJSON = snapshotJSON.replacingOccurrences(of: #""Card""#, with: #""Updated""#)
         let imageData = Data.image(width: 48, height: 48)
-        let storage = UserDefaultsClient.storage(initialSources: [makeSource(id: UUID(1))])
+        let storage = UserDefaultsClient.storage(initialSources: [makeSource()])
         let sut = CustomMetricsService(.testDependencies(
             appStateClient: .testDependency(appState),
+            dataClient: testDependency(of: DataClient.self) {
+                $0.read = { url in
+                    let path = url.path(percentEncoded: false)
+                    if let data = writtenFiles.withLock({ $0[path] }) {
+                        return data
+                    }
+                    return Data((path == "/tmp/updated.json" ? updatedSnapshotJSON : snapshotJSON).utf8)
+                }
+                $0.write = { data, url in
+                    writtenFiles.withLock { $0[url.path(percentEncoded: false)] = data }
+                }
+            },
+            fileManagerClient: testDependency(of: FileManagerClient.self) {
+                $0.urls = { _, _ in [URL(filePath: "/Users/user/Library/Application Support/")] }
+                $0.fileExists = { path in
+                    !path.hasSuffix(".png") || writtenFiles.withLock { $0[path] != nil }
+                }
+            },
+            urlClient: testDependency(of: URLClient.self) {
+                $0.create = { bookmark, _ in
+                    (false, URL(filePath: bookmark == Data("updated".utf8) ? "/tmp/updated.json" : "/tmp/card.json"))
+                }
+                $0.startAccessingSecurityScopedResource = { _ in true }
+            },
             userDefaultsClient: storage.client
         ))
-        try sut.update(source: makeSource(id: UUID(1)), symbolImageData: imageData)
-        #expect(sourceObserver.isCancelled)
-        #expect(appState.withLock(\.customMetricsObservers).isEmpty)
-        #expect(appState.withLock(\.metrics.latestValue)?.customMetricsBundles == [
-            CustomMetricsBundle(id: UUID(1), snapshot: try snapshot, symbolImageData: imageData),
-        ])
+        sut.startMonitoring()
+        await waitUntil { appState.withLock(\.metrics.latestValue)?.customMetricsBundles.first?.snapshot.title == "Card" }
+        var updatedSource = makeSource()
+        updatedSource.fileURL = URL(filePath: "/tmp/updated.json")
+        updatedSource.bookmark = Data("updated".utf8)
+        try sut.update(source: updatedSource, symbolImageData: imageData)
+        sut.emitConfigurationChange()
+        var updatedSnapshot = try snapshot
+        updatedSnapshot.title = "Updated"
+        let expectedBundle = CustomMetricsBundle(id: UUID(1), snapshot: updatedSnapshot, symbolImageData: imageData)
+        await waitUntil { appState.withLock(\.metrics.latestValue)?.customMetricsBundles == [expectedBundle] }
+        #expect(appState.withLock(\.metrics.latestValue)?.customMetricsBundles == [expectedBundle])
+        sut.stopMonitoring()
     }
 }

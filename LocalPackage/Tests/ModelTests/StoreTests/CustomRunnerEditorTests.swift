@@ -180,7 +180,6 @@ struct CustomRunnerEditorTests {
         let sut = CustomRunnerEditor(
             .testDependencies(
                 dataClient: testDependency(of: DataClient.self) {
-                    $0.convert = { _, _ in Data("png".utf8) }
                     $0.write = { _, url in
                         writtenFileNames.withLock { $0.append(url.lastPathComponent) }
                     }
@@ -286,11 +285,11 @@ struct CustomRunnerEditorTests {
             """
         let updatedRunnerBundle = AllocatedUnfairLock<RunnerBundle?>(initialState: nil)
         let editingRunner = Runner(id: "custom-runner", name: "Custom Runner", isTemplate: false, frameOrder: .custom([0]))
+        let frameImage = FrameImage.dummy()
         let sut = CustomRunnerEditor(
             .testDependencies(
                 dataClient: testDependency(of: DataClient.self) {
                     $0.read = { _ in Data(json.utf8) }
-                    $0.convert = { _, _ in Data("png".utf8) }
                 },
                 fileManagerClient: testDependency(of: FileManagerClient.self) {
                     $0.fileExists = { _ in true }
@@ -300,7 +299,7 @@ struct CustomRunnerEditorTests {
             mode: .edit(editingRunner),
             runnerName: "Custom Runner",
             isTemplate: true,
-            frameImages: [FrameImage.dummy()],
+            frameImages: [frameImage],
             action: { action in
                 if case let .customRunnerSaved(runnerBundle) = action {
                     updatedRunnerBundle.withLock { $0 = runnerBundle }
@@ -311,7 +310,7 @@ struct CustomRunnerEditorTests {
         let runnerBundle = try #require(updatedRunnerBundle.withLock { $0 })
         #expect(runnerBundle.runner.id == "custom-runner")
         #expect(runnerBundle.runner.isTemplate)
-        #expect(runnerBundle.displayFormat == .thumbnail(.custom(Data("png".utf8))))
+        #expect(runnerBundle.displayFormat == .thumbnail(.custom(try frameImage.cgImage.pngData())))
     }
 
     @MainActor @Test

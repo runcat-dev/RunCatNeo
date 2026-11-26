@@ -7,6 +7,34 @@ import Testing
 @testable import Model
 
 struct MetricsBarSettingsTests {
+    enum StylePickerSelection: CaseIterable {
+        case cpu
+        case memory
+        case storage
+
+        var action: MetricsBarSettings.Action {
+            switch self {
+            case .cpu:
+                .cpuStylePickerSelected(.circularGauge)
+            case .memory:
+                .memoryStylePickerSelected(.linearGauge)
+            case .storage:
+                .storageStylePickerSelected(.availableCapacity)
+            }
+        }
+
+        func isApplied(to configuration: MetricsBarConfiguration) -> Bool {
+            switch self {
+            case .cpu:
+                configuration.cpuStyle == .circularGauge
+            case .memory:
+                configuration.memoryStyle == .linearGauge
+            case .storage:
+                configuration.storageStyle == .availableCapacity
+            }
+        }
+    }
+
     private func makeSource(id: UUID, displayName: String = "Card") -> CustomMetricsSource {
         CustomMetricsSource(
             id: id,
@@ -135,48 +163,18 @@ struct MetricsBarSettingsTests {
         #expect(activationCount.withLock(\.self) == 0)
     }
 
-    @MainActor @Test
-    func send_cpuStylePickerSelected_persists_style_and_emits_change() async throws {
+    @MainActor @Test(arguments: StylePickerSelection.allCases)
+    func send_stylePickerSelected_persists_style_and_emits_change(selection: StylePickerSelection) async throws {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let storage = UserDefaultsClient.storage()
         let sut = MetricsBarSettings(.testDependencies(
             appStateClient: .testDependency(appState),
             userDefaultsClient: storage.client
         ))
-        await sut.send(.cpuStylePickerSelected(.circularGauge))
-        #expect(sut.metricsBarConfiguration.cpuStyle == .circularGauge)
+        await sut.send(selection.action)
+        #expect(selection.isApplied(to: sut.metricsBarConfiguration))
         let storedBarConfiguration = try #require(storage.currentMetricsBarConfiguration())
-        #expect(storedBarConfiguration.cpuStyle == .circularGauge)
-        #expect(appState.withLock(\.systemMetricsConfigurationChanges.latestValue) != nil)
-    }
-
-    @MainActor @Test
-    func send_memoryStylePickerSelected_persists_style_and_emits_change() async throws {
-        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
-        let storage = UserDefaultsClient.storage()
-        let sut = MetricsBarSettings(.testDependencies(
-            appStateClient: .testDependency(appState),
-            userDefaultsClient: storage.client
-        ))
-        await sut.send(.memoryStylePickerSelected(.linearGauge))
-        #expect(sut.metricsBarConfiguration.memoryStyle == .linearGauge)
-        let storedBarConfiguration = try #require(storage.currentMetricsBarConfiguration())
-        #expect(storedBarConfiguration.memoryStyle == .linearGauge)
-        #expect(appState.withLock(\.systemMetricsConfigurationChanges.latestValue) != nil)
-    }
-
-    @MainActor @Test
-    func send_storageStylePickerSelected_persists_style_and_emits_change() async throws {
-        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
-        let storage = UserDefaultsClient.storage()
-        let sut = MetricsBarSettings(.testDependencies(
-            appStateClient: .testDependency(appState),
-            userDefaultsClient: storage.client
-        ))
-        await sut.send(.storageStylePickerSelected(.availableCapacity))
-        #expect(sut.metricsBarConfiguration.storageStyle == .availableCapacity)
-        let storedBarConfiguration = try #require(storage.currentMetricsBarConfiguration())
-        #expect(storedBarConfiguration.storageStyle == .availableCapacity)
+        #expect(selection.isApplied(to: storedBarConfiguration))
         #expect(appState.withLock(\.systemMetricsConfigurationChanges.latestValue) != nil)
     }
 
