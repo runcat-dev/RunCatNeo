@@ -43,6 +43,17 @@ extension GraphicsContext {
         draw(image, at: point, anchor: .center)
     }
 
+    mutating func drawIcon(nsImage: NSImage, point: CGPoint, size: CGSize) {
+        let length = min(size.width, size.height)
+        let origin = CGPoint(
+            x: point.x + 0.5 * (size.width - length),
+            y: point.y + 0.5 * (size.height - length)
+        )
+        drawBlackImage(origin: origin, size: CGSize(width: length, height: length)) {
+            Image(nsImage: nsImage)
+        }
+    }
+
     mutating func drawCircularGauge(origin: CGPoint, size: CGSize, ratio: Double) {
         let radius = 0.5 * min(size.width, size.height)
         let innerRadius = 0.6 * radius

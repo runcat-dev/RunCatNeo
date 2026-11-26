@@ -37,7 +37,30 @@ struct CustomMetricsServiceTests {
     }
 
     @Test
-    func addSource_appends_source_built_from_snapshot_and_clients() throws {
+    func makeSource_returns_source_and_snapshot_built_from_file_and_clients() throws {
+        let sut = CustomMetricsService(.testDependencies(
+            dataClient: testDependency(of: DataClient.self) {
+                $0.read = { _ in Data(snapshotJSON.utf8) }
+            },
+            urlClient: testDependency(of: URLClient.self) {
+                $0.bookmarkData = { _, _ in Data("bookmark".utf8) }
+                $0.startAccessingSecurityScopedResource = { _ in true }
+            }
+        ))
+        let (source, snapshot) = try sut.makeSource(of: URL(filePath: "/tmp/card.json"))
+        #expect(source == CustomMetricsSource(
+            id: UUID(0),
+            displayName: "Card",
+            symbol: "staroflife",
+            fileURL: URL(filePath: "/tmp/card.json"),
+            bookmark: Data("bookmark".utf8),
+            createdAt: .distantPast
+        ))
+        #expect(snapshot == (try self.snapshot))
+    }
+
+    @Test
+    func makeSource_does_not_persist_source() throws {
         let storage = UserDefaultsClient.storage()
         let sut = CustomMetricsService(.testDependencies(
             dataClient: testDependency(of: DataClient.self) {
@@ -49,29 +72,20 @@ struct CustomMetricsServiceTests {
             },
             userDefaultsClient: storage.client
         ))
-        try sut.addSource(of: URL(filePath: "/tmp/card.json"))
-        #expect(storage.currentConfiguration() == CustomMetricsConfiguration(sources: [
-            CustomMetricsSource(
-                id: UUID(0),
-                displayName: "Card",
-                symbol: "staroflife",
-                fileURL: URL(filePath: "/tmp/card.json"),
-                bookmark: Data("bookmark".utf8),
-                createdAt: .distantPast
-            ),
-        ]))
+        _ = try sut.makeSource(of: URL(filePath: "/tmp/card.json"))
+        #expect(storage.currentConfiguration() == nil)
     }
 
     @Test
-    func addSource_throws_when_security_scoped_access_is_denied() {
+    func makeSource_throws_when_security_scoped_access_is_denied() {
         let sut = CustomMetricsService(.testDependencies())
         #expect(throws: RCNError.customMetrics(.fileUnreadable)) {
-            try sut.addSource(of: URL(filePath: "/tmp/card.json"))
+            try sut.makeSource(of: URL(filePath: "/tmp/card.json"))
         }
     }
 
     @Test
-    func addSource_throws_fileUnreadable_when_read_fails() {
+    func makeSource_throws_fileUnreadable_when_read_fails() {
         let sut = CustomMetricsService(.testDependencies(
             dataClient: testDependency(of: DataClient.self) {
                 $0.read = { _ in throw URLError(.unknown) }
@@ -81,12 +95,12 @@ struct CustomMetricsServiceTests {
             }
         ))
         #expect(throws: RCNError.customMetrics(.fileUnreadable)) {
-            try sut.addSource(of: URL(filePath: "/tmp/card.json"))
+            try sut.makeSource(of: URL(filePath: "/tmp/card.json"))
         }
     }
 
     @Test
-    func addSource_throws_invalidFormat_when_snapshot_decode_fails() {
+    func makeSource_throws_invalidFormat_when_snapshot_decode_fails() {
         let sut = CustomMetricsService(.testDependencies(
             dataClient: testDependency(of: DataClient.self) {
                 $0.read = { _ in Data("not json".utf8) }
@@ -96,8 +110,115 @@ struct CustomMetricsServiceTests {
             }
         ))
         #expect(throws: RCNError.customMetrics(.invalidFormat)) {
-            try sut.addSource(of: URL(filePath: "/tmp/card.json"))
+            try sut.makeSource(of: URL(filePath: "/tmp/card.json"))
         }
+    }
+
+    @Test
+    func loadSymbolImageData_returns_data_of_48px_png_with_alpha() throws {
+        let imageData = Data.image(width: 48, height: 48)
+        let sut = CustomMetricsService(.testDependencies(
+            dataClient: testDependency(of: DataClient.self) {
+                $0.read = { _ in imageData }
+            },
+            urlClient: testDependency(of: URLClient.self) {
+                $0.startAccessingSecurityScopedResource = { _ in true }
+            }
+        ))
+        #expect(try sut.loadSymbolImageData(of: URL(filePath: "/tmp/symbol.png")) == imageData)
+    }
+
+    @Test(arguments: [
+        Data.image(width: 32, height: 32),
+        Data.image(width: 48, height: 36),
+        Data.image(width: 96, height: 96),
+        Data.image(width: 48, height: 48, hasAlpha: false),
+        Data.image(width: 48, height: 48, type: .gif),
+        Data("not image".utf8),
+    ])
+    func loadSymbolImageData_throws_invalidSymbolImage_when_image_does_not_meet_requirements(imageData: Data) {
+        let sut = CustomMetricsService(.testDependencies(
+            dataClient: testDependency(of: DataClient.self) {
+                $0.read = { _ in imageData }
+            },
+            urlClient: testDependency(of: URLClient.self) {
+                $0.startAccessingSecurityScopedResource = { _ in true }
+            }
+        ))
+        #expect(throws: RCNError.customMetrics(.invalidSymbolImage)) {
+            try sut.loadSymbolImageData(of: URL(filePath: "/tmp/symbol.png"))
+        }
+    }
+
+    @Test
+    func loadSymbolImageData_throws_when_security_scoped_access_is_denied() {
+        let sut = CustomMetricsService(.testDependencies())
+        #expect(throws: RCNError.customMetrics(.fileUnreadable)) {
+            try sut.loadSymbolImageData(of: URL(filePath: "/tmp/symbol.png"))
+        }
+    }
+
+    @Test
+    func loadSymbolImageData_throws_fileUnreadable_when_read_fails() {
+        let sut = CustomMetricsService(.testDependencies(
+            dataClient: testDependency(of: DataClient.self) {
+                $0.read = { _ in throw URLError(.unknown) }
+            },
+            urlClient: testDependency(of: URLClient.self) {
+                $0.startAccessingSecurityScopedResource = { _ in true }
+            }
+        ))
+        #expect(throws: RCNError.customMetrics(.fileUnreadable)) {
+            try sut.loadSymbolImageData(of: URL(filePath: "/tmp/symbol.png"))
+        }
+    }
+
+    @Test
+    func add_appends_source_without_saving_image_when_symbol_image_is_absent() throws {
+        let writtenURLs = AllocatedUnfairLock<[URL]>(initialState: [])
+        let storage = UserDefaultsClient.storage()
+        let sut = CustomMetricsService(.testDependencies(
+            dataClient: testDependency(of: DataClient.self) {
+                $0.write = { _, url in writtenURLs.withLock { $0.append(url) } }
+            },
+            userDefaultsClient: storage.client
+        ))
+        try sut.add(source: makeSource(), symbolImageData: nil)
+        #expect(storage.currentConfiguration() == CustomMetricsConfiguration(sources: [makeSource()]))
+        #expect(writtenURLs.withLock(\.self).isEmpty)
+    }
+
+    @Test
+    func add_saves_symbol_image_in_source_directory_and_appends_source() throws {
+        let writtenFiles = AllocatedUnfairLock<[String: Data]>(initialState: [:])
+        let imageData = Data.image(width: 48, height: 48)
+        let storage = UserDefaultsClient.storage()
+        let sut = CustomMetricsService(.testDependencies(
+            dataClient: testDependency(of: DataClient.self) {
+                $0.write = { data, url in writtenFiles.withLock { $0[url.path(percentEncoded: false)] = data } }
+            },
+            userDefaultsClient: storage.client
+        ))
+        try sut.add(source: makeSource(id: UUID(1)), symbolImageData: imageData)
+        #expect(writtenFiles.withLock(\.self) == [
+            "/Users/user/Library/Application Support/RunCatNeo/\(UUID(1).uuidString)/symbol.png": imageData,
+        ])
+        #expect(storage.currentConfiguration() == CustomMetricsConfiguration(sources: [makeSource(id: UUID(1))]))
+    }
+
+    @Test
+    func add_throws_savingFailed_and_does_not_append_source_when_saving_image_fails() {
+        let storage = UserDefaultsClient.storage()
+        let sut = CustomMetricsService(.testDependencies(
+            dataClient: testDependency(of: DataClient.self) {
+                $0.write = { _, _ in throw URLError(.unknown) }
+            },
+            userDefaultsClient: storage.client
+        ))
+        #expect(throws: RCNError.customMetrics(.savingFailed)) {
+            try sut.add(source: makeSource(), symbolImageData: Data.image(width: 48, height: 48))
+        }
+        #expect(storage.currentConfiguration() == nil)
     }
 
     @Test
@@ -107,6 +228,24 @@ struct CustomMetricsServiceTests {
         let sut = CustomMetricsService(.testDependencies(userDefaultsClient: storage.client))
         sut.removeSource(of: UUID(1))
         #expect(storage.currentConfiguration() == CustomMetricsConfiguration(sources: [remaining]))
+    }
+
+    @Test
+    func removeSource_deletes_source_directory() {
+        let removedURLs = AllocatedUnfairLock<[URL]>(initialState: [])
+        let storage = UserDefaultsClient.storage(initialSources: [makeSource(id: UUID(1))])
+        let sut = CustomMetricsService(.testDependencies(
+            fileManagerClient: testDependency(of: FileManagerClient.self) {
+                $0.urls = { _, _ in [URL(filePath: "/Users/user/Library/Application Support/")] }
+                $0.fileExists = { _ in true }
+                $0.removeItem = { url in removedURLs.withLock { $0.append(url) } }
+            },
+            userDefaultsClient: storage.client
+        ))
+        sut.removeSource(of: UUID(1))
+        #expect(removedURLs.withLock(\.self).map { $0.path(percentEncoded: false) } == [
+            "/Users/user/Library/Application Support/RunCatNeo/\(UUID(1).uuidString)",
+        ])
     }
 
     @Test
@@ -241,6 +380,37 @@ struct CustomMetricsServiceTests {
         #expect(Set(appState.withLock(\.customMetricsObservers).keys) == [UUID(1)])
         #expect(appState.withLock(\.metrics.latestValue)?.customMetricsBundles == [
             CustomMetricsBundle(id: UUID(1), snapshot: try snapshot),
+        ])
+        sut.stopMonitoring()
+    }
+
+    @Test
+    func startMonitoring_attaches_saved_symbol_image_to_bundle() async throws {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let imageData = Data.image(width: 48, height: 48)
+        let source = makeSource()
+        let storage = UserDefaultsClient.storage(initialSources: [source])
+        let sut = CustomMetricsService(.testDependencies(
+            appStateClient: .testDependency(appState),
+            dataClient: testDependency(of: DataClient.self) {
+                $0.read = { url in
+                    url.hasPathSuffix("symbol.png") ? imageData : Data(snapshotJSON.utf8)
+                }
+            },
+            fileManagerClient: testDependency(of: FileManagerClient.self) {
+                $0.urls = { _, _ in [URL(filePath: "/Users/user/Library/Application Support/")] }
+                $0.fileExists = { _ in true }
+            },
+            urlClient: testDependency(of: URLClient.self) {
+                $0.create = { _, _ in (false, URL(filePath: "/tmp/card.json")) }
+                $0.startAccessingSecurityScopedResource = { _ in true }
+            },
+            userDefaultsClient: storage.client
+        ))
+        sut.startMonitoring()
+        await waitUntil { appState.withLock(\.metrics.latestValue)?.customMetricsBundles.isEmpty == false }
+        #expect(appState.withLock(\.metrics.latestValue)?.customMetricsBundles == [
+            CustomMetricsBundle(id: UUID(1), snapshot: try snapshot, symbolImageData: imageData),
         ])
         sut.stopMonitoring()
     }

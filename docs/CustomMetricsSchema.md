@@ -6,7 +6,16 @@ RunCat Neo can watch any local JSON file you point it at and render it as a card
 
 You decide what to track (Claude Code usage, GPU temperature, GitHub contributions, remaining reminders, anything else). You write a small script or program that keeps a JSON file on disk up to date. RunCat watches the file with a `DispatchSource` file-system event source and updates the card the moment the file changes. RunCat itself never polls the file and never makes network calls — whether your data comes from the network is entirely up to your script.
 
-To add a source: open RunCat's settings, go to **Metrics** → **Custom Metrics**, and click **Add Custom Metrics Source**, then pick the JSON file. The file is bookmarked with a security-scoped bookmark so the access survives sandbox restarts.
+To add a source: open RunCat's settings, go to **Metrics** → **Custom Metrics**, and click **Add Custom Metrics Source**. In the sheet, choose the JSON file, optionally choose a symbol image, check the preview, and click **Add**. The file is bookmarked with a security-scoped bookmark so the access survives sandbox restarts.
+
+### Symbol image
+
+Instead of an SF Symbol, a source can show your own image as its symbol. Choose it in the sheet when adding the source; it is not part of the JSON.
+
+- The image must be a 48 × 48 px PNG with transparency. Other sizes and formats are rejected.
+- It is drawn as a template (silhouette) image, like SF Symbols: only the alpha channel matters, and the color follows the system appearance.
+- RunCat copies the image into its own storage, so moving or deleting the original file has no effect. To change the image, remove the source and add it again.
+- When a symbol image is set, it is used on the dashboard card and in the Metrics Bar in place of `symbol`.
 
 ## Schema
 
@@ -36,7 +45,7 @@ The values above are illustrative — `title`, `symbol`, and the metric labels a
 | Field             | Type           | Required | Description |
 |-------------------|----------------|----------|-------------|
 | `title`           | string         | yes      | Card header text. |
-| `symbol`          | string         | no       | [SF Symbol](https://developer.apple.com/sf-symbols/) identifier shown next to the title. Defaults to `chart.bar.horizontal.page.fill`. |
+| `symbol`          | string         | no       | [SF Symbol](https://developer.apple.com/sf-symbols/) identifier shown next to the title. Defaults to `chart.bar.horizontal.page.fill`. Ignored when a [symbol image](#symbol-image) is set for the source. |
 | `metricsBarValue` | string         | no       | Short text shown in the Metrics Bar (the dedicated menu-bar item) next to the source's symbol. Displayed verbatim; keep it short — the bar caps the label width and truncates longer strings. Each source is hidden in the bar by default: click the Metrics Bar and flip the source's toggle to show it. When the source is shown but this field is omitted, the bar renders `---`. |
 | `metrics`         | array<Metric\> | yes      | Rows displayed inside the card. Empty array is allowed. |
 | `lastUpdatedDate` | string         | yes      | ISO 8601 timestamp (e.g. `"2026-06-05T04:50:40Z"`) of when the producer wrote this file. Shown as a relative time (`"3 min ago"`) at the bottom of the card; updates automatically. |

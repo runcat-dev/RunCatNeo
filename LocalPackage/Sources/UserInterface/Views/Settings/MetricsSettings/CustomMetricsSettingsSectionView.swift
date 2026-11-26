@@ -89,18 +89,9 @@ struct CustomMetricsSettingsSectionView: View {
                         Image(systemName: "plus")
                     }
                 }
-                .fileImporter(
-                    isPresented: $store.showingFileImporter,
-                    allowedContentTypes: [.json],
-                    allowsMultipleSelection: false,
-                    onCompletion: { result in
-                        Task {
-                            await store.send(.fileImporterResponse(result))
-                        }
-                    }
-                )
-                .fileDialogMessage(Text("chooseJsonFile", bundle: .module))
-                .fileDialogConfirmationLabel(Text("add", bundle: .module))
+                .sheet(item: $store.customMetricsSourceEditor) { store in
+                    CustomMetricsSourceEditorView(store: store)
+                }
                 Button {
                     Task {
                         await store.send(.guidanceButtonTapped)

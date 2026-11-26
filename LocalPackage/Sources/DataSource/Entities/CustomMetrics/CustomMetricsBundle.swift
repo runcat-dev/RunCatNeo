@@ -23,15 +23,18 @@ import Foundation
 public struct CustomMetricsBundle: Sendable, Identifiable, Equatable {
     public var id: UUID
     public var snapshot: CustomMetricsSnapshot
+    public var symbolImageData: Data?
     public var isFailed: Bool
 
     public init(
         id: UUID,
         snapshot: CustomMetricsSnapshot,
+        symbolImageData: Data? = nil,
         isFailed: Bool = false
     ) {
         self.id = id
         self.snapshot = snapshot
+        self.symbolImageData = symbolImageData
         self.isFailed = isFailed
     }
 }

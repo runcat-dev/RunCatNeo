@@ -48,6 +48,10 @@ extension RCNError.CustomMetrics: LocalizedError {
             "fileUnreadable"
         case .invalidFormat:
             "invalidFormat"
+        case .invalidSymbolImage:
+            "invalidSymbolImage"
+        case .savingFailed:
+            "customMetricsSavingFailed"
         }
         return String(localized: localizationValue, bundle: .module)
     }
