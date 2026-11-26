@@ -757,5 +757,4 @@ struct CustomMetricsServiceTests {
         #expect(appState.withLock(\.metrics.latestValue)?.customMetricsBundles == [expectedBundle])
         sut.stopMonitoring()
     }
-
 }
