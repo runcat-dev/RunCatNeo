@@ -23,11 +23,13 @@ import SwiftUI
 
 struct CustomMetricsCardView: View {
     var snapshot: CustomMetricsSnapshot
+    var symbolNSImage: NSImage?
     var isFailed: Bool
     var displayedDate: Date
 
     init(customMetricsBundle: CustomMetricsBundle, displayedDate: Date) {
         self.snapshot = customMetricsBundle.snapshot
+        self.symbolNSImage = customMetricsBundle.symbolNSImage
         self.isFailed = customMetricsBundle.isFailed
         self.displayedDate = displayedDate
     }
@@ -41,9 +43,18 @@ struct CustomMetricsCardView: View {
         }
     }
 
+    private var symbolImage: Image {
+        if let symbolNSImage {
+            Image(nsImage: symbolNSImage)
+        } else {
+            Image(systemName: snapshot.displaySymbol)
+        }
+    }
+
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
-            Image(systemName: snapshot.displaySymbol)
+            symbolImage
+                .renderingMode(.template)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 24, height: 24)

@@ -34,5 +34,7 @@ public enum RCNError: Error, Equatable {
     public enum CustomMetrics: Error {
         case fileUnreadable
         case invalidFormat
+        case invalidSymbolImage
+        case savingFailed
     }
 }

@@ -24,17 +24,18 @@ import Observation
 
 @MainActor @Observable
 public final class CustomMetricsSettings: Composable {
+    private let appDependencies: AppDependencies
     private let appStateClient: AppStateClient
+    private let uuidClient: UUIDClient
     private let userDefaultsRepository: UserDefaultsRepository
     private let nsWorkspaceClient: NSWorkspaceClient
     private let customMetricsService: CustomMetricsService
-    private let logService: LogService
 
     @ObservationIgnored private var task: Task<Void, Never>?
 
     public var customMetricsSources: [CustomMetricsSource]
     public var failedCustomMetricsSourceIDs: Set<UUID>
-    public var showingFileImporter: Bool
+    public var customMetricsSourceEditor: CustomMetricsSourceEditor?
     public var showingConfirmationDialog: Bool
     public var pendingRemovalSourceID: UUID?
     public var showingGuidancePopover: Bool
@@ -46,7 +47,7 @@ public final class CustomMetricsSettings: Composable {
         _ appDependencies: AppDependencies,
         customMetricsSources: [CustomMetricsSource]? = nil,
         failedCustomMetricsSourceIDs: Set<UUID> = [],
-        showingFileImporter: Bool = false,
+        customMetricsSourceEditor: CustomMetricsSourceEditor? = nil,
         showingConfirmationDialog: Bool = false,
         pendingRemovalSourceID: UUID? = nil,
         showingGuidancePopover: Bool = false,
@@ -54,14 +55,15 @@ public final class CustomMetricsSettings: Composable {
         error: RCNError? = nil,
         action: @escaping (Action) async -> Void = { _ in }
     ) {
+        self.appDependencies = appDependencies
         self.appStateClient = appDependencies.appStateClient
+        self.uuidClient = appDependencies.uuidClient
         self.userDefaultsRepository = .init(appDependencies.userDefaultsClient)
         self.nsWorkspaceClient = appDependencies.nsWorkspaceClient
         self.customMetricsService = .init(appDependencies)
-        self.logService = .init(appDependencies)
         self.customMetricsSources = customMetricsSources ?? userDefaultsRepository.customMetricsConfiguration.sources
         self.failedCustomMetricsSourceIDs = failedCustomMetricsSourceIDs
-        self.showingFileImporter = showingFileImporter
+        self.customMetricsSourceEditor = customMetricsSourceEditor
         self.showingConfirmationDialog = showingConfirmationDialog
         self.pendingRemovalSourceID = pendingRemovalSourceID
         self.showingGuidancePopover = showingGuidancePopover
@@ -107,22 +109,13 @@ public final class CustomMetricsSettings: Composable {
             customMetricsService.emitConfigurationChange()
 
         case .addCustomMetricsSourceButtonTapped:
-            showingFileImporter = true
-
-        case let .fileImporterResponse(.success(urls)):
-            guard let url = urls.first else { return }
-            do {
-                try customMetricsService.addSource(of: url)
-                customMetricsSources = userDefaultsRepository.customMetricsConfiguration.sources
-                customMetricsService.emitConfigurationChange()
-            } catch let error as RCNError {
-                await send(.errorOccurred(error))
-            } catch {
-                logService.critical(.unknown(error))
-            }
-
-        case let .fileImporterResponse(.failure(error)):
-            logService.error(.importingCustomMetricsSourceFailed(error))
+            customMetricsSourceEditor = .init(
+                appDependencies,
+                id: uuidClient.create(),
+                action: { [weak self] in
+                    await self?.send(.customMetricsSourceEditor($0))
+                }
+            )
 
         case .removingCustomMetricsSourceConfirmed:
             guard let sourceID = pendingRemovalSourceID else { return }
@@ -136,6 +129,17 @@ public final class CustomMetricsSettings: Composable {
 
         case .guidanceButtonTapped:
             showingGuidancePopover = true
+
+        case .customMetricsSourceEditor(.cancelButtonTapped):
+            customMetricsSourceEditor = nil
+
+        case .customMetricsSourceEditor(.customMetricsSourceAdded):
+            customMetricsSources = userDefaultsRepository.customMetricsConfiguration.sources
+            customMetricsService.emitConfigurationChange()
+            customMetricsSourceEditor = nil
+
+        case .customMetricsSourceEditor:
+            return
 
         case let .errorOccurred(error):
             self.error = error
@@ -161,10 +165,10 @@ public final class CustomMetricsSettings: Composable {
         case customMetricsSourceLinkTapped(CustomMetricsSource)
         case customMetricsSourceRowMoved(IndexSet, Int)
         case addCustomMetricsSourceButtonTapped
-        case fileImporterResponse(Result<[URL], any Error>)
         case removingCustomMetricsSourceConfirmed
         case removingCustomMetricsSourceCancelled
         case guidanceButtonTapped
+        case customMetricsSourceEditor(CustomMetricsSourceEditor.Action)
         case errorOccurred(RCNError)
     }
 }

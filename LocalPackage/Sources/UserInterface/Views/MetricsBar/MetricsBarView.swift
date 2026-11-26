@@ -184,7 +184,11 @@ struct MetricsBarView: View {
         bundle: CustomMetricsBundle
     ) {
         let iconSize = IndicatorKind.categoryIcon.size
-        context.drawIcon(systemName: bundle.snapshot.displaySymbol, point: point, size: iconSize)
+        if let symbolNSImage = bundle.symbolNSImage {
+            context.drawIcon(nsImage: symbolNSImage, point: point, size: iconSize)
+        } else {
+            context.drawIcon(systemName: bundle.snapshot.displaySymbol, point: point, size: iconSize)
+        }
         point.x += iconSize.width
         let labelSize = IndicatorKind.customValueLabelSize(for: bundle.metricsBarLabel)
         context.drawBlackText(origin: point, size: labelSize) {

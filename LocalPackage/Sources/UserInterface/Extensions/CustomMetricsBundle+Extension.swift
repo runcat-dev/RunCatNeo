@@ -18,9 +18,18 @@
  limitations under the License.
  */
 
+import AppKit
 import DataSource
 
 extension CustomMetricsBundle {
+    var symbolNSImage: NSImage? {
+        guard let symbolImageData, let nsImage = NSImage(data: symbolImageData) else {
+            return nil
+        }
+        nsImage.isTemplate = true
+        return nsImage
+    }
+
     var metricsBarLabel: String {
         if isFailed {
             "---"

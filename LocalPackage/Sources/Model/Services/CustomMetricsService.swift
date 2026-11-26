@@ -20,6 +20,8 @@
 
 import DataSource
 import Foundation
+import ImageIO
+import UniformTypeIdentifiers
 
 struct CustomMetricsService {
     private let appStateClient: AppStateClient
@@ -28,7 +30,15 @@ struct CustomMetricsService {
     private let fileWatcherClient: FileWatcherClient
     private let urlClient: URLClient
     private let uuidClient: UUIDClient
+    private let applicationSupportRepository: ApplicationSupportRepository
     private let userDefaultsRepository: UserDefaultsRepository
+
+    private static let symbolImageFileName = "symbol"
+    private static let symbolImagePixelSize = 48
+
+    private static func symbolImageDirectory(of id: UUID) -> String {
+        "CustomMetrics/\(id.uuidString)"
+    }
 
     private var snapshotDecoder: JSONDecoder = {
         let decoder = JSONDecoder()
@@ -43,10 +53,11 @@ struct CustomMetricsService {
         self.fileWatcherClient = appDependencies.fileWatcherClient
         self.urlClient = appDependencies.urlClient
         self.uuidClient = appDependencies.uuidClient
+        self.applicationSupportRepository = .init(appDependencies.dataClient, appDependencies.fileManagerClient)
         self.userDefaultsRepository = .init(appDependencies.userDefaultsClient)
     }
 
-    func addSource(of url: URL) throws {
+    func makeSource(of url: URL) throws -> (source: CustomMetricsSource, snapshot: CustomMetricsSnapshot) {
         guard urlClient.startAccessingSecurityScopedResource(url) else {
             throw RCNError.customMetrics(.fileUnreadable)
         }
@@ -68,6 +79,38 @@ struct CustomMetricsService {
             bookmark: bookmark,
             createdAt: dateClient.now()
         )
+        return (source, snapshot)
+    }
+
+    func loadSymbolImageData(of url: URL) throws -> Data {
+        guard urlClient.startAccessingSecurityScopedResource(url) else {
+            throw RCNError.customMetrics(.fileUnreadable)
+        }
+        defer {
+            urlClient.stopAccessingSecurityScopedResource(url)
+        }
+        guard let data = try? dataClient.read(url) else {
+            throw RCNError.customMetrics(.fileUnreadable)
+        }
+        guard Self.isValidSymbolImage(data) else {
+            throw RCNError.customMetrics(.invalidSymbolImage)
+        }
+        return data
+    }
+
+    func add(source: CustomMetricsSource, symbolImageData: Data?) throws {
+        if let symbolImageData {
+            do {
+                try applicationSupportRepository.saveData(
+                    directory: Self.symbolImageDirectory(of: source.id),
+                    fileName: Self.symbolImageFileName,
+                    fileType: .png,
+                    data: symbolImageData
+                )
+            } catch {
+                throw RCNError.customMetrics(.savingFailed)
+            }
+        }
         var configuration = userDefaultsRepository.customMetricsConfiguration
         configuration.sources.append(source)
         userDefaultsRepository.customMetricsConfiguration = configuration
@@ -77,6 +120,7 @@ struct CustomMetricsService {
         var configuration = userDefaultsRepository.customMetricsConfiguration
         configuration.sources.removeAll { $0.id == id }
         userDefaultsRepository.customMetricsConfiguration = configuration
+        applicationSupportRepository.delete(directory: Self.symbolImageDirectory(of: id))
         var metricsBarConfiguration = userDefaultsRepository.metricsBarConfiguration
         metricsBarConfiguration.visibleCustomMetricsSourceIDs.remove(id)
         userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
@@ -158,7 +202,7 @@ struct CustomMetricsService {
         }
     }
 
-    private func emitFailure(for source: CustomMetricsSource) {
+    private func emitFailure(for source: CustomMetricsSource, symbolImageData: Data?) {
         let sources = userDefaultsRepository.customMetricsConfiguration.sources
         appStateClient.send(\.metrics, default: .init()) { metrics in
             if let index = metrics.customMetricsBundles.firstIndex(where: { $0.id == source.id }) {
@@ -171,6 +215,7 @@ struct CustomMetricsService {
                         symbol: source.symbol,
                         lastUpdatedDate: source.createdAt
                     ),
+                    symbolImageData: symbolImageData,
                     isFailed: true
                 ))
             }
@@ -178,7 +223,7 @@ struct CustomMetricsService {
         }
     }
 
-    private func emitSuccess(snapshot: CustomMetricsSnapshot, for source: CustomMetricsSource) {
+    private func emitSuccess(snapshot: CustomMetricsSnapshot, for source: CustomMetricsSource, symbolImageData: Data?) {
         let sources = userDefaultsRepository.customMetricsConfiguration.sources
         appStateClient.send(\.metrics, default: .init()) { metrics in
             if let index = metrics.customMetricsBundles.firstIndex(where: { $0.id == source.id }) {
@@ -188,6 +233,7 @@ struct CustomMetricsService {
                 metrics.customMetricsBundles.append(CustomMetricsBundle(
                     id: source.id,
                     snapshot: snapshot,
+                    symbolImageData: symbolImageData,
                     isFailed: false
                 ))
             }
@@ -205,7 +251,12 @@ struct CustomMetricsService {
     }
 
     private func makeObserver(for source: CustomMetricsSource) -> Task<Void, Never> {
-        Task {
+        let symbolImageData = applicationSupportRepository.loadData(
+            directory: Self.symbolImageDirectory(of: source.id),
+            fileName: Self.symbolImageFileName,
+            fileType: .png
+        )
+        return Task {
             var currentBookmark = source.bookmark
             while !Task.isCancelled {
                 do {
@@ -215,38 +266,50 @@ struct CustomMetricsService {
                         persistRefreshedBookmark(refreshed, for: source.id)
                     }
                     guard urlClient.startAccessingSecurityScopedResource(url) else {
-                        emitFailure(for: source)
+                        emitFailure(for: source, symbolImageData: symbolImageData)
                         try await Task.sleep(for: .seconds(5))
                         continue
                     }
                     defer {
                         urlClient.stopAccessingSecurityScopedResource(url)
                     }
-                    loadSnapshot(from: url, for: source)
+                    loadSnapshot(from: url, for: source, symbolImageData: symbolImageData)
                     let watchStream = fileWatcherClient.watch(url)
                     for await _ in watchStream {
                         if Task.isCancelled { break }
-                        loadSnapshot(from: url, for: source)
+                        loadSnapshot(from: url, for: source, symbolImageData: symbolImageData)
                     }
                     try? await Task.sleep(for: .milliseconds(200))
                 } catch is CancellationError {
                     return
                 } catch {
-                    emitFailure(for: source)
+                    emitFailure(for: source, symbolImageData: symbolImageData)
                     try? await Task.sleep(for: .seconds(5))
                 }
             }
         }
     }
 
-    private func loadSnapshot(from url: URL, for source: CustomMetricsSource) {
+    private func loadSnapshot(from url: URL, for source: CustomMetricsSource, symbolImageData: Data?) {
         do {
             let data = try dataClient.read(url)
             let snapshot = try snapshotDecoder.decode(CustomMetricsSnapshot.self, from: data)
-            emitSuccess(snapshot: snapshot, for: source)
+            emitSuccess(snapshot: snapshot, for: source, symbolImageData: symbolImageData)
         } catch {
-            emitFailure(for: source)
+            emitFailure(for: source, symbolImageData: symbolImageData)
         }
+    }
+
+    private static func isValidSymbolImage(_ data: Data) -> Bool {
+        guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil),
+              CGImageSourceGetType(imageSource) as String? == UTType.png.identifier,
+              let properties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [CFString: Any],
+              let pixelWidth = properties[kCGImagePropertyPixelWidth] as? Int,
+              let pixelHeight = properties[kCGImagePropertyPixelHeight] as? Int,
+              let hasAlpha = properties[kCGImagePropertyHasAlpha] as? Bool else {
+            return false
+        }
+        return pixelWidth == symbolImagePixelSize && pixelHeight == symbolImagePixelSize && hasAlpha
     }
 
     private func persistRefreshedBookmark(_ bookmark: Data, for sourceID: UUID) {
