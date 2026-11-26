@@ -160,17 +160,6 @@ struct RunnerService {
         loadRunnerBundleList()
     }
 
-    private func saveFrameImageDataList(_ imageDataList: [Data], of runner: Runner) throws {
-        try imageDataList.enumerated().forEach { index, imageData in
-            try applicationSupportRepository.saveData(
-                directory: runner.id,
-                fileName: "frame-\(index)",
-                fileType: .png,
-                data: imageData
-            )
-        }
-    }
-
     func delete(customRunner runner: Runner) throws {
         var runners = applicationSupportRepository.loadCustomRunners()
         runners.removeAll { $0 == runner }
@@ -184,5 +173,16 @@ struct RunnerService {
         runners.move(fromOffsets: source, toOffset: destination)
         try applicationSupportRepository.saveCustomRunners(runners)
         loadRunnerBundleList()
+    }
+
+    private func saveFrameImageDataList(_ imageDataList: [Data], of runner: Runner) throws {
+        try imageDataList.enumerated().forEach { index, imageData in
+            try applicationSupportRepository.saveData(
+                directory: runner.id,
+                fileName: "frame-\(index)",
+                fileType: .png,
+                data: imageData
+            )
+        }
     }
 }

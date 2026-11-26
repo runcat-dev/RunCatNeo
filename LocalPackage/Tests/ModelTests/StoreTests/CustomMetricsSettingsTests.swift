@@ -325,7 +325,7 @@ struct CustomMetricsSettingsTests {
     }
 
     @MainActor @Test
-    func send_editCustomMetricsSourceButtonTapped_presents_editor_filled_with_source() async {
+    func send_editCustomMetricsSourceButtonTapped_presents_editor_filled_with_source() async throws {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let source = CustomMetricsSource(
             id: UUID(11),
@@ -349,12 +349,12 @@ struct CustomMetricsSettingsTests {
             }
         ))
         await sut.send(.editCustomMetricsSourceButtonTapped(source))
-        let editor = sut.customMetricsSourceEditor
-        #expect(editor?.editingSource == source)
-        #expect(editor?.isEditing == true)
-        #expect(editor?.source == source)
-        #expect(editor?.snapshot == snapshot)
-        #expect(editor?.symbolImageData == imageData)
+        let editor = try #require(sut.customMetricsSourceEditor)
+        #expect(editor.editingSource == source)
+        #expect(editor.isEditing)
+        #expect(editor.source == source)
+        #expect(editor.snapshot == snapshot)
+        #expect(editor.symbolImageData == imageData)
     }
 
     @MainActor @Test

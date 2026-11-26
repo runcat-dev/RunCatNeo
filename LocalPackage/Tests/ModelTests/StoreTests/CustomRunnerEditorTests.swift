@@ -273,7 +273,7 @@ struct CustomRunnerEditorTests {
     }
 
     @MainActor @Test
-    func send_saveButtonTapped_updates_runner_and_forwards_bundle() async {
+    func send_saveButtonTapped_updates_runner_and_forwards_bundle() async throws {
         let json = """
             [
               {
@@ -308,10 +308,10 @@ struct CustomRunnerEditorTests {
             }
         )
         await sut.send(.saveButtonTapped)
-        let runnerBundle = updatedRunnerBundle.withLock(\.self)
-        #expect(runnerBundle?.runner.id == "custom-runner")
-        #expect(runnerBundle?.runner.isTemplate == true)
-        #expect(runnerBundle?.displayFormat == .thumbnail(.custom(Data("png".utf8))))
+        let runnerBundle = try #require(updatedRunnerBundle.withLock { $0 })
+        #expect(runnerBundle.runner.id == "custom-runner")
+        #expect(runnerBundle.runner.isTemplate)
+        #expect(runnerBundle.displayFormat == .thumbnail(.custom(Data("png".utf8))))
     }
 
     @MainActor @Test

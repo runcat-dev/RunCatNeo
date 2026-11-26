@@ -151,7 +151,7 @@ struct CustomRunnerSettingsTests {
     }
 
     @MainActor @Test
-    func send_editCustomRunnerButtonTapped_creates_editor_filled_with_runner() async {
+    func send_editCustomRunnerButtonTapped_creates_editor_filled_with_runner() async throws {
         let sut = CustomRunnerSettings(.testDependencies(
             dataClient: testDependency(of: DataClient.self) {
                 $0.read = { _ in Data.image(width: 20, height: 36) }
@@ -161,12 +161,12 @@ struct CustomRunnerSettingsTests {
             }
         ))
         await sut.send(.editCustomRunnerButtonTapped(customRunner))
-        let editor = sut.customRunnerEditor
-        #expect(editor?.editingRunner == customRunner)
-        #expect(editor?.isEditing == true)
-        #expect(editor?.runnerName == "Custom Runner")
-        #expect(editor?.isTemplate == false)
-        #expect(editor?.frameImages.count == 1)
+        let editor = try #require(sut.customRunnerEditor)
+        #expect(editor.editingRunner == customRunner)
+        #expect(editor.isEditing)
+        #expect(editor.runnerName == "Custom Runner")
+        #expect(!editor.isTemplate)
+        #expect(editor.frameImages.count == 1)
     }
 
     @MainActor @Test
