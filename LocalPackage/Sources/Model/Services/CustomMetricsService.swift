@@ -116,6 +116,46 @@ struct CustomMetricsService {
         userDefaultsRepository.customMetricsConfiguration = configuration
     }
 
+    func savedSymbolImageData(of id: UUID) -> Data? {
+        applicationSupportRepository.loadData(
+            directory: Self.symbolImageDirectory(of: id),
+            fileName: Self.symbolImageFileName,
+            fileType: .png
+        )
+    }
+
+    func update(source: CustomMetricsSource, symbolImageData: Data?) throws {
+        var configuration = userDefaultsRepository.customMetricsConfiguration
+        guard let index = configuration.sources.firstIndex(where: { $0.id == source.id }) else {
+            throw RCNError.customMetrics(.savingFailed)
+        }
+        let directory = Self.symbolImageDirectory(of: source.id)
+        if let symbolImageData {
+            do {
+                try applicationSupportRepository.saveData(
+                    directory: directory,
+                    fileName: Self.symbolImageFileName,
+                    fileType: .png,
+                    data: symbolImageData
+                )
+            } catch {
+                throw RCNError.customMetrics(.savingFailed)
+            }
+        } else {
+            applicationSupportRepository.delete(directory: directory)
+        }
+        configuration.sources[index] = source
+        userDefaultsRepository.customMetricsConfiguration = configuration
+        appStateClient.withLock {
+            $0.customMetricsObservers.removeValue(forKey: source.id)?.cancel()
+        }
+        appStateClient.send(\.metrics, default: .init()) { metrics in
+            if let index = metrics.customMetricsBundles.firstIndex(where: { $0.id == source.id }) {
+                metrics.customMetricsBundles[index].symbolImageData = symbolImageData
+            }
+        }
+    }
+
     func removeSource(of id: UUID) {
         var configuration = userDefaultsRepository.customMetricsConfiguration
         configuration.sources.removeAll { $0.id == id }
@@ -135,7 +175,7 @@ struct CustomMetricsService {
     func perform(action: (_ securityScopedURL: URL) -> Void, for source: CustomMetricsSource) throws {
         let (isStale, url) = try urlClient.create(source.bookmark, .withSecurityScope)
         if isStale, let refreshed = try? urlClient.bookmarkData(url, .withSecurityScope) {
-            persistRefreshedBookmark(refreshed, for: source.id)
+            persistRefreshedBookmark(refreshed, replacing: source.bookmark, for: source.id)
         }
         guard urlClient.startAccessingSecurityScopedResource(url) else {
             throw RCNError.customMetrics(.fileUnreadable)
@@ -251,19 +291,15 @@ struct CustomMetricsService {
     }
 
     private func makeObserver(for source: CustomMetricsSource) -> Task<Void, Never> {
-        let symbolImageData = applicationSupportRepository.loadData(
-            directory: Self.symbolImageDirectory(of: source.id),
-            fileName: Self.symbolImageFileName,
-            fileType: .png
-        )
+        let symbolImageData = savedSymbolImageData(of: source.id)
         return Task {
             var currentBookmark = source.bookmark
             while !Task.isCancelled {
                 do {
                     let (isStale, url) = try urlClient.create(currentBookmark, .withSecurityScope)
                     if isStale, let refreshed = try? urlClient.bookmarkData(url, .withSecurityScope) {
+                        persistRefreshedBookmark(refreshed, replacing: currentBookmark, for: source.id)
                         currentBookmark = refreshed
-                        persistRefreshedBookmark(refreshed, for: source.id)
                     }
                     guard urlClient.startAccessingSecurityScopedResource(url) else {
                         emitFailure(for: source, symbolImageData: symbolImageData)
@@ -312,9 +348,10 @@ struct CustomMetricsService {
         return pixelWidth == symbolImagePixelSize && pixelHeight == symbolImagePixelSize && hasAlpha
     }
 
-    private func persistRefreshedBookmark(_ bookmark: Data, for sourceID: UUID) {
+    private func persistRefreshedBookmark(_ bookmark: Data, replacing staleBookmark: Data, for sourceID: UUID) {
         var configuration = userDefaultsRepository.customMetricsConfiguration
-        guard let index = configuration.sources.firstIndex(where: { $0.id == sourceID }) else {
+        guard let index = configuration.sources.firstIndex(where: { $0.id == sourceID }),
+              configuration.sources[index].bookmark == staleBookmark else {
             return
         }
         configuration.sources[index].bookmark = bookmark

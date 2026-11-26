@@ -18,7 +18,7 @@
  limitations under the License.
  */
 
-public enum RunnerSource: Sendable {
+public enum RunnerSource: Sendable, Hashable {
     case builtIn(RunnerKind)
     case custom(name: String)
 }

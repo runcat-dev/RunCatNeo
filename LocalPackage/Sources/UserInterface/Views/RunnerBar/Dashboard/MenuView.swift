@@ -49,7 +49,7 @@ struct MenuView: View {
                 get: { store.currentRunner },
                 asyncSet: { await store.send(.runnerPickerSelected($0)) }
             )) {
-                ForEach(store.runnerBundleList, id: \.runner) { runnerBundle in
+                ForEach(store.runnerBundleList) { runnerBundle in
                     Label {
                         Text(runnerBundle.runner.formatted)
                     } icon: {

@@ -124,13 +124,13 @@ struct CustomRunnerSettingsTests {
     }
 
     @MainActor @Test
-    func send_customRunnerEditor_customRunnerAdded_appends_bundle_and_closes_editor() async {
+    func send_customRunnerEditor_customRunnerSaved_appends_new_bundle_and_closes_editor() async {
         let bundle = RunnerBundle(runner: customRunner, frame: .custom(Data()))
         let sut = CustomRunnerSettings(
             .testDependencies(),
             customRunnerEditor: CustomRunnerEditor(.testDependencies(), id: .init())
         )
-        await sut.send(.customRunnerEditor(.customRunnerAdded(bundle)))
+        await sut.send(.customRunnerEditor(.customRunnerSaved(bundle)))
         #expect(sut.customRunnerBundleList == [bundle])
         #expect(sut.customRunnerEditor == nil)
     }
@@ -148,5 +148,65 @@ struct CustomRunnerSettingsTests {
         await sut.send(.errorOccurred(.customRunner(.runnerInUse)))
         #expect(sut.error == .customRunner(.runnerInUse))
         #expect(sut.showingAlert)
+    }
+
+    @MainActor @Test
+    func send_editCustomRunnerButtonTapped_creates_editor_filled_with_runner() async throws {
+        let sut = CustomRunnerSettings(.testDependencies(
+            dataClient: testDependency(of: DataClient.self) {
+                $0.read = { _ in Data.image(width: 20, height: 36) }
+            },
+            fileManagerClient: testDependency(of: FileManagerClient.self) {
+                $0.fileExists = { _ in true }
+            }
+        ))
+        await sut.send(.editCustomRunnerButtonTapped(customRunner))
+        let editor = try #require(sut.customRunnerEditor)
+        #expect(editor.mode == .edit(customRunner))
+        #expect(editor.runnerName == "Custom Runner")
+        #expect(!editor.isTemplate)
+        #expect(editor.frameImages.count == 1)
+    }
+
+    @MainActor @Test
+    func send_editCustomRunnerButtonTapped_shows_alert_when_frames_cannot_be_loaded() async {
+        let sut = CustomRunnerSettings(.testDependencies())
+        await sut.send(.editCustomRunnerButtonTapped(customRunner))
+        #expect(sut.customRunnerEditor == nil)
+        #expect(sut.error == .customRunner(.loadingFailed))
+        #expect(sut.showingAlert)
+    }
+
+    @MainActor @Test
+    func send_customRunnerEditor_customRunnerSaved_replaces_existing_bundle_and_closes_editor() async {
+        let otherBundle = RunnerBundle(
+            runner: Runner(id: "other-runner", name: "Other Runner", isTemplate: false, frameOrder: .custom([0])),
+            frame: .custom(Data())
+        )
+        let sut = CustomRunnerSettings(
+            .testDependencies(),
+            customRunnerBundleList: [RunnerBundle(runner: customRunner, frame: .custom(Data())), otherBundle],
+            customRunnerEditor: CustomRunnerEditor(.testDependencies(), id: .init())
+        )
+        let updatedRunner = Runner(id: "custom-runner", name: "Renamed Runner", isTemplate: true, frameOrder: .custom([0]))
+        let updatedBundle = RunnerBundle(runner: updatedRunner, frame: .custom(Data("png".utf8)))
+        await sut.send(.customRunnerEditor(.customRunnerSaved(updatedBundle)))
+        #expect(sut.customRunnerBundleList == [updatedBundle, otherBundle])
+        #expect(sut.customRunnerEditor == nil)
+    }
+
+    @MainActor @Test
+    func send_removeCustomRunnerButtonTapped_shows_alert_when_runner_in_use_has_been_edited() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let editedRunner = Runner(id: "custom-runner", name: "Renamed Runner", isTemplate: true, frameOrder: .custom([0]))
+        appState.withLock { $0.runnerBundles.send(RunnerBundle(runner: editedRunner, frame: .custom(Data()))) }
+        let bundle = RunnerBundle(runner: customRunner, frame: .custom(Data()))
+        let sut = CustomRunnerSettings(
+            .testDependencies(appStateClient: .testDependency(appState)),
+            customRunnerBundleList: [bundle]
+        )
+        await sut.send(.removeCustomRunnerButtonTapped(customRunner))
+        #expect(sut.customRunnerBundleList == [bundle])
+        #expect(sut.error == .customRunner(.runnerInUse))
     }
 }

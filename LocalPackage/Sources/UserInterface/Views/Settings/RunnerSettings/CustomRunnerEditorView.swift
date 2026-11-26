@@ -71,12 +71,12 @@ struct CustomRunnerEditorView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(role: .confirm) {
                         Task {
-                            await store.send(.addButtonTapped)
+                            await store.send(.confirmButtonTapped)
                         }
                     } label: {
-                        Text("add", bundle: .module)
+                        Text(store.mode.confirmButtonLabel)
                     }
-                    .disabled(!store.canAdd)
+                    .disabled(!store.canConfirm)
                 }
             }
             .alert(

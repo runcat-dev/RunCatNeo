@@ -228,7 +228,7 @@ struct CustomMetricsSettingsTests {
     }
 
     @MainActor @Test
-    func send_customMetricsSourceEditor_customMetricsSourceAdded_reloads_sources_emits_change_and_dismisses_editor() async {
+    func send_customMetricsSourceEditor_customMetricsSourceSaved_reloads_sources_emits_change_and_dismisses_editor() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let addedSource = CustomMetricsSource(
             id: UUID(11),
@@ -246,7 +246,7 @@ struct CustomMetricsSettingsTests {
             customMetricsSources: []
         )
         await sut.send(.addCustomMetricsSourceButtonTapped)
-        await sut.send(.customMetricsSourceEditor(.customMetricsSourceAdded))
+        await sut.send(.customMetricsSourceEditor(.customMetricsSourceSaved))
         #expect(sut.customMetricsSources == [addedSource])
         #expect(appState.withLock(\.customMetricsConfigurationChanges.latestValue) != nil)
         #expect(sut.customMetricsSourceEditor == nil)
@@ -322,5 +322,37 @@ struct CustomMetricsSettingsTests {
         await sut.send(.errorOccurred(.customMetrics(.fileUnreadable)))
         #expect(sut.error == .customMetrics(.fileUnreadable))
         #expect(sut.showingAlert)
+    }
+
+    @MainActor @Test
+    func send_editCustomMetricsSourceButtonTapped_presents_editor_filled_with_source() async throws {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let source = CustomMetricsSource(
+            id: UUID(11),
+            displayName: "Edited",
+            fileURL: URL(filePath: "/tmp/edited.json"),
+            bookmark: Data(),
+            createdAt: Date(timeIntervalSince1970: 0)
+        )
+        let snapshot = CustomMetricsSnapshot(title: "Edited", lastUpdatedDate: Date(timeIntervalSince1970: 0))
+        appState.withLock {
+            $0.metrics.send(Metrics(customMetricsBundles: [CustomMetricsBundle(id: UUID(11), snapshot: snapshot)]))
+        }
+        let imageData = Data.image(width: 48, height: 48)
+        let sut = CustomMetricsSettings(.testDependencies(
+            appStateClient: .testDependency(appState),
+            dataClient: testDependency(of: DataClient.self) {
+                $0.read = { _ in imageData }
+            },
+            fileManagerClient: testDependency(of: FileManagerClient.self) {
+                $0.fileExists = { _ in true }
+            }
+        ))
+        await sut.send(.editCustomMetricsSourceButtonTapped(source))
+        let editor = try #require(sut.customMetricsSourceEditor)
+        #expect(editor.mode == .edit(source))
+        #expect(editor.source == source)
+        #expect(editor.snapshot == snapshot)
+        #expect(editor.symbolImageData == imageData)
     }
 }

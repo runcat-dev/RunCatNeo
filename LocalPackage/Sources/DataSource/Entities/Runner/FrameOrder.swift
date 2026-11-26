@@ -18,7 +18,7 @@
  limitations under the License.
  */
 
-public enum FrameOrder: Sendable {
+public enum FrameOrder: Sendable, Hashable {
     case ascending(Int)
     case swing
     case pendulum

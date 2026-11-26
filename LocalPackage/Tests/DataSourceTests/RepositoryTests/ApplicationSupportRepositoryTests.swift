@@ -255,6 +255,35 @@ struct ApplicationSupportRepositoryTests {
     }
 
     @Test
+    func delete_file_removes_file_in_container_directory_when_it_exists() throws {
+        let removedURL = AllocatedUnfairLock<URL?>(initialState: nil)
+        let fileManagerClient = testDependency(of: FileManagerClient.self) {
+            $0.fileExists = { _ in true }
+            $0.removeItem = { url in
+                removedURL.withLock { $0 = url }
+            }
+        }
+        let sut = ApplicationSupportRepository(.testValue, fileManagerClient)
+        sut.delete(directory: "alpha", fileName: "frame-1", fileType: .png)
+        let removedFileURL = try #require(removedURL.withLock { $0 })
+        #expect(removedFileURL.hasPathSuffix("RunCatNeo/alpha/frame-1.png"))
+    }
+
+    @Test
+    func delete_file_does_nothing_when_file_does_not_exist() {
+        let removeItemCount = AllocatedUnfairLock<Int>(initialState: 0)
+        let fileManagerClient = testDependency(of: FileManagerClient.self) {
+            $0.fileExists = { _ in false }
+            $0.removeItem = { _ in
+                removeItemCount.withLock { $0 += 1 }
+            }
+        }
+        let sut = ApplicationSupportRepository(.testValue, fileManagerClient)
+        sut.delete(directory: "alpha", fileName: "frame-1", fileType: .png)
+        #expect(removeItemCount.withLock(\.self) == 0)
+    }
+
+    @Test
     func delete_removes_container_directory_when_it_exists() throws {
         let removedURL = AllocatedUnfairLock<URL?>(initialState: nil)
         let fileManagerClient = testDependency(of: FileManagerClient.self) {

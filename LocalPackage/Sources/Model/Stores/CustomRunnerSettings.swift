@@ -70,15 +70,36 @@ public final class CustomRunnerSettings: Composable {
                 return
             }
             do {
-                guard currentRunner != runner else {
+                guard currentRunner.id != runner.id else {
                     throw RCNError.customRunner(.runnerInUse)
                 }
-                customRunnerBundleList.removeAll { $0.runner == runner }
+                customRunnerBundleList.removeAll { $0.id == runner.id }
                 try runnerService.delete(customRunner: runner)
             } catch let error as RCNError {
                 await send(.errorOccurred(error))
             } catch {
                 logService.critical(.deletingCustomRunnerFailed(error))
+            }
+
+        case let .editCustomRunnerButtonTapped(runner):
+            guard case let .custom(name) = runner.source else { return }
+            do {
+                let frameImages = try runnerService.loadFrameImages(of: runner)
+                customRunnerEditor = .init(
+                    appDependencies,
+                    id: uuidClient.create(),
+                    mode: .edit(runner),
+                    runnerName: name,
+                    isTemplate: runner.isTemplate,
+                    frameImages: frameImages,
+                    action: { [weak self] in
+                        await self?.send(.customRunnerEditor($0))
+                    }
+                )
+            } catch let error as RCNError {
+                await send(.errorOccurred(error))
+            } catch {
+                logService.critical(.unknown(error))
             }
 
         case let .customRunnerRowMoved(indexSet, offset):
@@ -104,8 +125,12 @@ public final class CustomRunnerSettings: Composable {
         case .customRunnerEditor(.cancelButtonTapped):
             customRunnerEditor = nil
 
-        case let .customRunnerEditor(.customRunnerAdded(runnerBundle)):
-            customRunnerBundleList.append(runnerBundle)
+        case let .customRunnerEditor(.customRunnerSaved(runnerBundle)):
+            if let index = customRunnerBundleList.firstIndex(where: { $0.id == runnerBundle.id }) {
+                customRunnerBundleList[index] = runnerBundle
+            } else {
+                customRunnerBundleList.append(runnerBundle)
+            }
             customRunnerEditor = nil
 
         case .customRunnerEditor:
@@ -120,6 +145,7 @@ public final class CustomRunnerSettings: Composable {
     public enum Action: Sendable {
         case viewAppeared
         case removeCustomRunnerButtonTapped(Runner)
+        case editCustomRunnerButtonTapped(Runner)
         case customRunnerRowMoved(IndexSet, Int)
         case addCustomRunnerButtonTapped
         case guidanceButtonTapped

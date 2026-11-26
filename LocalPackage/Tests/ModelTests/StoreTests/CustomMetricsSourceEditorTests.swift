@@ -19,7 +19,7 @@ struct CustomMetricsSourceEditorTests {
     }
 
     private enum RecordedAction: Equatable {
-        case customMetricsSourceAdded
+        case customMetricsSourceSaved
         case errorOccurred(RCNError)
     }
 
@@ -30,8 +30,8 @@ struct CustomMetricsSourceEditorTests {
         let lock = AllocatedUnfairLock<[RecordedAction]>(initialState: [])
         let action: (CustomMetricsSourceEditor.Action) async -> Void = { action in
             switch action {
-            case .customMetricsSourceAdded:
-                lock.withLock { $0.append(.customMetricsSourceAdded) }
+            case .customMetricsSourceSaved:
+                lock.withLock { $0.append(.customMetricsSourceSaved) }
             case let .errorOccurred(error):
                 lock.withLock { $0.append(.errorOccurred(error)) }
             default:
@@ -42,11 +42,11 @@ struct CustomMetricsSourceEditorTests {
     }
 
     @MainActor @Test
-    func canAdd_is_false_until_source_is_chosen() {
+    func canConfirm_is_false_until_source_is_chosen() {
         let sut = CustomMetricsSourceEditor(.testDependencies(), id: UUID(0))
-        #expect(!sut.canAdd)
+        #expect(!sut.canConfirm)
         let chosen = CustomMetricsSourceEditor(.testDependencies(), id: UUID(0), source: makeSource())
-        #expect(chosen.canAdd)
+        #expect(chosen.canConfirm)
     }
 
     @MainActor @Test
@@ -178,7 +178,7 @@ struct CustomMetricsSourceEditorTests {
     }
 
     @MainActor @Test
-    func send_addButtonTapped_persists_source_and_reports_customMetricsSourceAdded() async {
+    func send_confirmButtonTapped_in_add_mode_persists_source_and_reports_customMetricsSourceSaved() async {
         let recorder = actionRecorder()
         let storage = UserDefaultsClient.storage()
         let sut = CustomMetricsSourceEditor(
@@ -187,13 +187,13 @@ struct CustomMetricsSourceEditorTests {
             source: makeSource(),
             action: recorder.action
         )
-        await sut.send(.addButtonTapped)
+        await sut.send(.confirmButtonTapped)
         #expect(storage.currentConfiguration() == CustomMetricsConfiguration(sources: [makeSource()]))
-        #expect(recorder.lock.withLock(\.self) == [.customMetricsSourceAdded])
+        #expect(recorder.lock.withLock(\.self) == [.customMetricsSourceSaved])
     }
 
     @MainActor @Test
-    func send_addButtonTapped_forwards_error_when_saving_symbol_image_fails() async {
+    func send_confirmButtonTapped_forwards_error_when_saving_symbol_image_fails() async {
         let recorder = actionRecorder()
         let storage = UserDefaultsClient.storage()
         let sut = CustomMetricsSourceEditor(
@@ -208,13 +208,13 @@ struct CustomMetricsSourceEditorTests {
             symbolImageData: Data.image(width: 48, height: 48),
             action: recorder.action
         )
-        await sut.send(.addButtonTapped)
+        await sut.send(.confirmButtonTapped)
         #expect(storage.currentConfiguration() == nil)
         #expect(recorder.lock.withLock(\.self) == [.errorOccurred(.customMetrics(.savingFailed))])
     }
 
     @MainActor @Test
-    func send_addButtonTapped_without_source_is_noop() async {
+    func send_confirmButtonTapped_without_source_is_noop() async {
         let recorder = actionRecorder()
         let storage = UserDefaultsClient.storage()
         let sut = CustomMetricsSourceEditor(
@@ -222,7 +222,7 @@ struct CustomMetricsSourceEditorTests {
             id: UUID(0),
             action: recorder.action
         )
-        await sut.send(.addButtonTapped)
+        await sut.send(.confirmButtonTapped)
         #expect(storage.currentConfiguration() == nil)
         #expect(recorder.lock.withLock(\.self).isEmpty)
     }
@@ -233,5 +233,53 @@ struct CustomMetricsSourceEditorTests {
         await sut.send(.errorOccurred(.customMetrics(.invalidSymbolImage)))
         #expect(sut.error == .customMetrics(.invalidSymbolImage))
         #expect(sut.showingAlert)
+    }
+
+    @MainActor @Test
+    func send_sourceFileImporterResponse_in_edit_mode_keeps_id_and_createdAt_of_editing_source() async {
+        let editingSource = CustomMetricsSource(
+            id: UUID(5),
+            displayName: "Original",
+            fileURL: URL(filePath: "/tmp/original.json"),
+            bookmark: Data([0x01]),
+            createdAt: Date(timeIntervalSince1970: 100)
+        )
+        let sut = CustomMetricsSourceEditor(
+            .testDependencies(
+                dataClient: testDependency(of: DataClient.self) {
+                    $0.read = { _ in Data(snapshotJSON.utf8) }
+                },
+                urlClient: testDependency(of: URLClient.self) {
+                    $0.startAccessingSecurityScopedResource = { _ in true }
+                    $0.bookmarkData = { _, _ in Data([0xAB]) }
+                }
+            ),
+            id: UUID(0),
+            mode: .edit(editingSource),
+            source: editingSource
+        )
+        await sut.send(.sourceFileImporterResponse(.success([URL(filePath: "/tmp/metrics.json")])))
+        #expect(sut.source?.id == UUID(5))
+        #expect(sut.source?.createdAt == Date(timeIntervalSince1970: 100))
+        #expect(sut.source?.displayName == "Imported")
+        #expect(sut.source?.bookmark == Data([0xAB]))
+    }
+
+    @MainActor @Test
+    func send_confirmButtonTapped_in_edit_mode_updates_source_and_reports_customMetricsSourceSaved() async {
+        let recorder = actionRecorder()
+        var updated = makeSource()
+        updated.displayName = "Updated"
+        let storage = UserDefaultsClient.storage(initialSources: [makeSource()])
+        let sut = CustomMetricsSourceEditor(
+            .testDependencies(userDefaultsClient: storage.client),
+            id: UUID(0),
+            mode: .edit(makeSource()),
+            source: updated,
+            action: recorder.action
+        )
+        await sut.send(.confirmButtonTapped)
+        #expect(storage.currentConfiguration() == CustomMetricsConfiguration(sources: [updated]))
+        #expect(recorder.lock.withLock(\.self) == [.customMetricsSourceSaved])
     }
 }

@@ -101,6 +101,17 @@ public struct ApplicationSupportRepository: Sendable {
         try dataClient.write(data, fileURL)
     }
 
+    public func delete(directory: String, fileName: String, fileType: UTType) {
+        let fileURL = appDirectoryURL
+            .appending(path: directory)
+            .appending(path: fileName)
+            .appendingPathExtension(for: fileType)
+        guard fileManagerClient.fileExists(fileURL.path(percentEncoded: false)) else {
+            return
+        }
+        try? fileManagerClient.removeItem(fileURL)
+    }
+
     public func delete(directory: String) {
         let containerURL = appDirectoryURL.appending(path: directory)
         guard fileManagerClient.fileExists(containerURL.path(percentEncoded: false)) else {

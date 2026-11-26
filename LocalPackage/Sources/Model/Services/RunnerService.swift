@@ -20,17 +20,20 @@
 
 import DataSource
 import Foundation
+import ImageIO
 import SystemInfoKit
 
 struct RunnerService {
     private let appStateClient: AppStateClient
     private let dataClient: DataClient
+    private let uuidClient: UUIDClient
     private let applicationSupportRepository: ApplicationSupportRepository
     private let userDefaultsRepository: UserDefaultsRepository
 
     init(_ appDependencies: AppDependencies) {
         appStateClient = appDependencies.appStateClient
         dataClient = appDependencies.dataClient
+        uuidClient = appDependencies.uuidClient
         applicationSupportRepository = .init(appDependencies.dataClient, appDependencies.fileManagerClient)
         userDefaultsRepository = .init(appDependencies.userDefaultsClient)
     }
@@ -102,10 +105,10 @@ struct RunnerService {
         }
     }
 
-    func validate(customRunnerName name: String) -> Bool {
+    func validate(customRunnerName name: String, excluding excludedRunner: Runner? = nil) -> Bool {
         let runners = applicationSupportRepository.loadCustomRunners()
         return !runners.contains { runner in
-            if case let .custom(existingName) = runner.source {
+            if runner.id != excludedRunner?.id, case let .custom(existingName) = runner.source {
                 existingName == name
             } else {
                 false
@@ -118,26 +121,52 @@ struct RunnerService {
         return Frame.custom(data)
     }
 
+    func loadFrameImages(of runner: Runner) throws -> [FrameImage] {
+        try runner.resourceNames().map { name in
+            guard let data = applicationSupportRepository.loadData(directory: runner.id, fileName: name, fileType: .png),
+                  let imageSource = CGImageSourceCreateWithData(data as CFData, nil),
+                  let cgImage = CGImageSourceCreateImageAtIndex(imageSource, 0, nil) else {
+                throw RCNError.customRunner(.loadingFailed)
+            }
+            return FrameImage(id: uuidClient.create(), cgImage: cgImage)
+        }
+    }
+
     func add(customRunner runner: Runner, with frameImages: [FrameImage]) throws {
-        let imageDataList: [Data] = try frameImages.map {
+        let imageDataList = try frameImages.map {
             try dataClient.convert($0.cgImage, .png)
         }
-        try imageDataList.enumerated().forEach { index, imageData in
-            try applicationSupportRepository.saveData(
-                directory: runner.id,
-                fileName: "frame-\(index)",
-                fileType: .png,
-                data: imageData
-            )
-        }
+        try saveFrameImageDataList(imageDataList, of: runner)
         let runners = applicationSupportRepository.loadCustomRunners()
         try applicationSupportRepository.saveCustomRunners(runners + [runner])
         loadRunnerBundleList()
     }
 
+    func update(customRunner runner: Runner, with frameImages: [FrameImage]) throws {
+        var runners = applicationSupportRepository.loadCustomRunners()
+        guard let index = runners.firstIndex(where: { $0.id == runner.id }) else {
+            throw RCNError.customRunner(.loadingFailed)
+        }
+        let imageDataList = try frameImages.map {
+            try dataClient.convert($0.cgImage, .png)
+        }
+        try saveFrameImageDataList(imageDataList, of: runner)
+        let resourceNames = runner.resourceNames()
+        let staleResourceNames = runners[index].resourceNames().filter { !resourceNames.contains($0) }
+        runners[index] = runner
+        try applicationSupportRepository.saveCustomRunners(runners)
+        staleResourceNames.forEach {
+            applicationSupportRepository.delete(directory: runner.id, fileName: $0, fileType: .png)
+        }
+        if appStateClient.withLock(\.runnerBundles.latestValue)?.runner.id == runner.id {
+            try update(runner: runner)
+        }
+        loadRunnerBundleList()
+    }
+
     func delete(customRunner runner: Runner) throws {
         var runners = applicationSupportRepository.loadCustomRunners()
-        runners.removeAll { $0 == runner }
+        runners.removeAll { $0.id == runner.id }
         try applicationSupportRepository.saveCustomRunners(runners)
         applicationSupportRepository.delete(directory: runner.id)
         loadRunnerBundleList()
@@ -148,5 +177,16 @@ struct RunnerService {
         runners.move(fromOffsets: source, toOffset: destination)
         try applicationSupportRepository.saveCustomRunners(runners)
         loadRunnerBundleList()
+    }
+
+    private func saveFrameImageDataList(_ imageDataList: [Data], of runner: Runner) throws {
+        try imageDataList.enumerated().forEach { index, imageData in
+            try applicationSupportRepository.saveData(
+                directory: runner.id,
+                fileName: "frame-\(index)",
+                fileType: .png,
+                data: imageData
+            )
+        }
     }
 }

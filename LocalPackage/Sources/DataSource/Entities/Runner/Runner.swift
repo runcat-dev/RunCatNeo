@@ -55,14 +55,6 @@ public struct Runner: Sendable, Hashable, Identifiable {
     }
 
     public static let `default` = Runner(kind: .cat)
-
-    public static func ==(lhs: Runner, rhs: Runner) -> Bool {
-        lhs.id == rhs.id
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
 }
 
 extension Runner: Codable {

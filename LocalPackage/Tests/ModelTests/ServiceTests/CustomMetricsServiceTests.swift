@@ -308,6 +308,23 @@ struct CustomMetricsServiceTests {
     }
 
     @Test
+    func perform_does_not_overwrite_bookmark_replaced_by_edit() throws {
+        var replacedSource = makeSource()
+        replacedSource.bookmark = Data("replaced".utf8)
+        let storage = UserDefaultsClient.storage(initialSources: [replacedSource])
+        let sut = CustomMetricsService(.testDependencies(
+            urlClient: testDependency(of: URLClient.self) {
+                $0.create = { _, _ in (true, URL(filePath: "/tmp/resolved.json")) }
+                $0.bookmarkData = { _, _ in Data("refreshed".utf8) }
+                $0.startAccessingSecurityScopedResource = { _ in true }
+            },
+            userDefaultsClient: storage.client
+        ))
+        try sut.perform(action: { _ in }, for: makeSource())
+        #expect(storage.currentConfiguration()?.sources.first?.bookmark == Data("replaced".utf8))
+    }
+
+    @Test
     func perform_throws_when_security_scoped_access_is_denied() {
         let sut = CustomMetricsService(.testDependencies(
             urlClient: testDependency(of: URLClient.self) {
@@ -606,4 +623,115 @@ struct CustomMetricsServiceTests {
         sut.stopMonitoring()
     }
 
+    @Test
+    func savedSymbolImageData_returns_image_in_source_directory() {
+        let imageData = Data.image(width: 48, height: 48)
+        let sut = CustomMetricsService(.testDependencies(
+            dataClient: testDependency(of: DataClient.self) {
+                $0.read = { url in
+                    url.path(percentEncoded: false) == "/Users/user/Library/Application Support/RunCatNeo/CustomMetrics/\(UUID(1).uuidString)/symbol.png"
+                        ? imageData
+                        : Data()
+                }
+            },
+            fileManagerClient: testDependency(of: FileManagerClient.self) {
+                $0.urls = { _, _ in [URL(filePath: "/Users/user/Library/Application Support/")] }
+                $0.fileExists = { _ in true }
+            }
+        ))
+        #expect(sut.savedSymbolImageData(of: UUID(1)) == imageData)
+    }
+
+    @Test
+    func update_replaces_source_in_place_and_saves_symbol_image() throws {
+        let writtenFiles = AllocatedUnfairLock<[String: Data]>(initialState: [:])
+        let imageData = Data.image(width: 48, height: 48)
+        let other = makeSource(id: UUID(2))
+        let storage = UserDefaultsClient.storage(initialSources: [makeSource(id: UUID(1)), other])
+        let sut = CustomMetricsService(.testDependencies(
+            dataClient: testDependency(of: DataClient.self) {
+                $0.write = { data, url in writtenFiles.withLock { $0[url.path(percentEncoded: false)] = data } }
+            },
+            userDefaultsClient: storage.client
+        ))
+        var updated = makeSource(id: UUID(1))
+        updated.displayName = "Updated"
+        try sut.update(source: updated, symbolImageData: imageData)
+        #expect(storage.currentConfiguration() == CustomMetricsConfiguration(sources: [updated, other]))
+        #expect(writtenFiles.withLock(\.self) == [
+            "/Users/user/Library/Application Support/RunCatNeo/CustomMetrics/\(UUID(1).uuidString)/symbol.png": imageData,
+        ])
+    }
+
+    @Test
+    func update_deletes_source_directory_when_symbol_image_is_absent() throws {
+        let removedURLs = AllocatedUnfairLock<[URL]>(initialState: [])
+        let storage = UserDefaultsClient.storage(initialSources: [makeSource(id: UUID(1))])
+        let sut = CustomMetricsService(.testDependencies(
+            fileManagerClient: testDependency(of: FileManagerClient.self) {
+                $0.urls = { _, _ in [URL(filePath: "/Users/user/Library/Application Support/")] }
+                $0.fileExists = { _ in true }
+                $0.removeItem = { url in removedURLs.withLock { $0.append(url) } }
+            },
+            userDefaultsClient: storage.client
+        ))
+        try sut.update(source: makeSource(id: UUID(1)), symbolImageData: nil)
+        #expect(removedURLs.withLock(\.self).map { $0.path(percentEncoded: false) } == [
+            "/Users/user/Library/Application Support/RunCatNeo/CustomMetrics/\(UUID(1).uuidString)",
+        ])
+    }
+
+    @Test
+    func update_throws_savingFailed_when_source_does_not_exist() {
+        let storage = UserDefaultsClient.storage(initialSources: [makeSource(id: UUID(2))])
+        let sut = CustomMetricsService(.testDependencies(userDefaultsClient: storage.client))
+        #expect(throws: RCNError.customMetrics(.savingFailed)) {
+            try sut.update(source: makeSource(id: UUID(1)), symbolImageData: nil)
+        }
+        #expect(storage.currentConfiguration() == CustomMetricsConfiguration(sources: [makeSource(id: UUID(2))]))
+    }
+
+    @Test
+    func update_throws_savingFailed_and_keeps_source_when_saving_image_fails() {
+        let storage = UserDefaultsClient.storage(initialSources: [makeSource(id: UUID(1))])
+        let sut = CustomMetricsService(.testDependencies(
+            dataClient: testDependency(of: DataClient.self) {
+                $0.write = { _, _ in throw URLError(.unknown) }
+            },
+            userDefaultsClient: storage.client
+        ))
+        var updated = makeSource(id: UUID(1))
+        updated.displayName = "Updated"
+        #expect(throws: RCNError.customMetrics(.savingFailed)) {
+            try sut.update(source: updated, symbolImageData: Data.image(width: 48, height: 48))
+        }
+        #expect(storage.currentConfiguration() == CustomMetricsConfiguration(sources: [makeSource(id: UUID(1))]))
+    }
+
+    @Test
+    func update_cancels_source_observer_and_replaces_symbol_image_of_bundle() throws {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let sourceObserver = Task<Void, Never> {
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(1))
+            }
+        }
+        let existingBundle = CustomMetricsBundle(id: UUID(1), snapshot: try snapshot)
+        appState.withLock {
+            $0.customMetricsObservers = [UUID(1): sourceObserver]
+            $0.metrics.send(Metrics(customMetricsBundles: [existingBundle]))
+        }
+        let imageData = Data.image(width: 48, height: 48)
+        let storage = UserDefaultsClient.storage(initialSources: [makeSource(id: UUID(1))])
+        let sut = CustomMetricsService(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: storage.client
+        ))
+        try sut.update(source: makeSource(id: UUID(1)), symbolImageData: imageData)
+        #expect(sourceObserver.isCancelled)
+        #expect(appState.withLock(\.customMetricsObservers).isEmpty)
+        #expect(appState.withLock(\.metrics.latestValue)?.customMetricsBundles == [
+            CustomMetricsBundle(id: UUID(1), snapshot: try snapshot, symbolImageData: imageData),
+        ])
+    }
 }

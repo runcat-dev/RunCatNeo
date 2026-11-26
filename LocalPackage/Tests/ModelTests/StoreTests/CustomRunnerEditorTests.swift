@@ -174,7 +174,7 @@ struct CustomRunnerEditorTests {
     }
 
     @MainActor @Test
-    func send_addButtonTapped_saves_runner_and_forwards_bundle() async {
+    func send_confirmButtonTapped_in_add_mode_saves_new_runner_and_forwards_bundle() async {
         let writtenFileNames = AllocatedUnfairLock<[String]>(initialState: [])
         let addedRunnerBundle = AllocatedUnfairLock<RunnerBundle?>(initialState: nil)
         let sut = CustomRunnerEditor(
@@ -190,12 +190,12 @@ struct CustomRunnerEditorTests {
             runnerName: "New Runner",
             frameImages: [FrameImage.dummy()],
             action: { action in
-                if case let .customRunnerAdded(runnerBundle) = action {
+                if case let .customRunnerSaved(runnerBundle) = action {
                     addedRunnerBundle.withLock { $0 = runnerBundle }
                 }
             }
         )
-        await sut.send(.addButtonTapped)
+        await sut.send(.confirmButtonTapped)
         #expect(addedRunnerBundle.withLock(\.self).flatMap { runnerBundle in
             if case let .custom(name) = runnerBundle.runner.source { name } else { nil }
         } == "New Runner")
@@ -203,7 +203,7 @@ struct CustomRunnerEditorTests {
     }
 
     @MainActor @Test
-    func send_addButtonTapped_forwards_error_when_name_already_exists() async {
+    func send_confirmButtonTapped_forwards_error_when_name_already_exists() async {
         let json = """
             [
               {
@@ -229,12 +229,12 @@ struct CustomRunnerEditorTests {
             frameImages: [FrameImage.dummy()],
             action: recorder.action
         )
-        await sut.send(.addButtonTapped)
+        await sut.send(.confirmButtonTapped)
         #expect(recorder.lock.withLock(\.self) == .customRunner(.nameAlreadyExists))
     }
 
     @MainActor @Test
-    func send_addButtonTapped_forwards_error_when_saving_fails() async {
+    func send_confirmButtonTapped_forwards_error_when_saving_fails() async {
         let recorder = errorRecorder()
         let sut = CustomRunnerEditor(
             .testDependencies(
@@ -247,12 +247,12 @@ struct CustomRunnerEditorTests {
             frameImages: [FrameImage.dummy()],
             action: recorder.action
         )
-        await sut.send(.addButtonTapped)
+        await sut.send(.confirmButtonTapped)
         #expect(recorder.lock.withLock(\.self) == .customRunner(.savingFailed))
     }
 
     @MainActor @Test
-    func send_addButtonTapped_without_frames_is_noop() async {
+    func send_confirmButtonTapped_without_frames_is_noop() async {
         let recorder = errorRecorder()
         let sut = CustomRunnerEditor(
             .testDependencies(),
@@ -260,7 +260,7 @@ struct CustomRunnerEditorTests {
             runnerName: "New Runner",
             action: recorder.action
         )
-        await sut.send(.addButtonTapped)
+        await sut.send(.confirmButtonTapped)
         #expect(recorder.lock.withLock(\.self) == nil)
     }
 
@@ -270,5 +270,85 @@ struct CustomRunnerEditorTests {
         await sut.send(.errorOccurred(.customRunner(.invalidFrameImage)))
         #expect(sut.showingAlert)
         #expect(sut.error == .customRunner(.invalidFrameImage))
+    }
+
+    @MainActor @Test
+    func send_confirmButtonTapped_in_edit_mode_updates_runner_and_forwards_bundle() async throws {
+        let json = """
+            [
+              {
+                "id": "custom-runner",
+                "name": "Custom Runner",
+                "isTemplate": false,
+                "frameOrder": [0]
+              }
+            ]
+            """
+        let updatedRunnerBundle = AllocatedUnfairLock<RunnerBundle?>(initialState: nil)
+        let editingRunner = Runner(id: "custom-runner", name: "Custom Runner", isTemplate: false, frameOrder: .custom([0]))
+        let sut = CustomRunnerEditor(
+            .testDependencies(
+                dataClient: testDependency(of: DataClient.self) {
+                    $0.read = { _ in Data(json.utf8) }
+                    $0.convert = { _, _ in Data("png".utf8) }
+                },
+                fileManagerClient: testDependency(of: FileManagerClient.self) {
+                    $0.fileExists = { _ in true }
+                }
+            ),
+            id: .init(),
+            mode: .edit(editingRunner),
+            runnerName: "Custom Runner",
+            isTemplate: true,
+            frameImages: [FrameImage.dummy()],
+            action: { action in
+                if case let .customRunnerSaved(runnerBundle) = action {
+                    updatedRunnerBundle.withLock { $0 = runnerBundle }
+                }
+            }
+        )
+        await sut.send(.confirmButtonTapped)
+        let runnerBundle = try #require(updatedRunnerBundle.withLock { $0 })
+        #expect(runnerBundle.runner.id == "custom-runner")
+        #expect(runnerBundle.runner.isTemplate)
+        #expect(runnerBundle.displayFormat == .thumbnail(.custom(Data("png".utf8))))
+    }
+
+    @MainActor @Test
+    func send_confirmButtonTapped_in_edit_mode_forwards_error_when_name_is_used_by_another_runner() async {
+        let json = """
+            [
+              {
+                "id": "custom-runner",
+                "name": "Custom Runner",
+                "isTemplate": false,
+                "frameOrder": [0]
+              },
+              {
+                "id": "other-runner",
+                "name": "Other Runner",
+                "isTemplate": false,
+                "frameOrder": [0]
+              }
+            ]
+            """
+        let recorder = errorRecorder()
+        let sut = CustomRunnerEditor(
+            .testDependencies(
+                dataClient: testDependency(of: DataClient.self) {
+                    $0.read = { _ in Data(json.utf8) }
+                },
+                fileManagerClient: testDependency(of: FileManagerClient.self) {
+                    $0.fileExists = { _ in true }
+                }
+            ),
+            id: .init(),
+            mode: .edit(Runner(id: "custom-runner", name: "Custom Runner", isTemplate: false, frameOrder: .custom([0]))),
+            runnerName: "Other Runner",
+            frameImages: [FrameImage.dummy()],
+            action: recorder.action
+        )
+        await sut.send(.confirmButtonTapped)
+        #expect(recorder.lock.withLock(\.self) == .customRunner(.nameAlreadyExists))
     }
 }
