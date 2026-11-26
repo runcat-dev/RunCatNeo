@@ -322,25 +322,10 @@ struct RunnerServiceTests {
     }
 
     @Test
-    func convertToCustomFrame_returns_custom_frame_with_converted_data() throws {
-        let sut = RunnerService(.testDependencies(
-            dataClient: testDependency(of: DataClient.self) {
-                $0.convert = { _, _ in Data("png".utf8) }
-            }
-        ))
-        #expect(try sut.convertToCustomFrame(from: FrameImage.dummy()) == .custom(Data("png".utf8)))
-    }
-
-    @Test
-    func convertToCustomFrame_throws_when_conversion_fails() {
-        let sut = RunnerService(.testDependencies(
-            dataClient: testDependency(of: DataClient.self) {
-                $0.convert = { _, _ in throw URLError(.unknown) }
-            }
-        ))
-        #expect(throws: URLError.self) {
-            try sut.convertToCustomFrame(from: FrameImage.dummy())
-        }
+    func convertToCustomFrame_returns_custom_frame_with_png_data() throws {
+        let frameImage = FrameImage.dummy()
+        let sut = RunnerService(.testDependencies())
+        #expect(try sut.convertToCustomFrame(from: frameImage) == .custom(try frameImage.cgImage.pngData()))
     }
 
     @Test
@@ -350,17 +335,17 @@ struct RunnerServiceTests {
         let sut = RunnerService(.testDependencies(
             appStateClient: .testDependency(appState),
             dataClient: testDependency(of: DataClient.self) {
-                $0.convert = { _, _ in Data("png".utf8) }
                 $0.write = { data, url in
                     written.withLock { $0.append((data, url)) }
                 }
             }
         ))
         let runner = Runner(id: "custom-runner", name: "Custom Runner", isTemplate: false, frameOrder: .custom([0, 1]))
-        try sut.add(customRunner: runner, with: [FrameImage.dummy(), FrameImage.dummy()])
+        let frameImage = FrameImage.dummy()
+        try sut.add(customRunner: runner, with: [frameImage, FrameImage.dummy()])
         let writtenFiles = written.withLock(\.self)
         #expect(writtenFiles.map(\.url.lastPathComponent) == ["frame-0.png", "frame-1.png", "CUSTOM_RUNNERS.json"])
-        #expect(writtenFiles.first?.data == Data("png".utf8))
+        #expect(writtenFiles.first?.data == (try frameImage.cgImage.pngData()))
         let expectedJSON = #"[{"frameOrder":[0,1],"id":"custom-runner","isTemplate":false,"name":"Custom Runner"}]"#
         #expect(writtenFiles.last.map { String(decoding: $0.data, as: UTF8.self) } == expectedJSON)
         #expect(appState.withLock(\.runnerBundleLists.latestValue) != nil)
@@ -577,7 +562,6 @@ struct RunnerServiceTests {
                         writtenJSON.withLock { $0 = String(decoding: data, as: UTF8.self) }
                     }
                 }
-                $0.convert = { _, _ in Data("png".utf8) }
             },
             fileManagerClient: testDependency(of: FileManagerClient.self) {
                 $0.fileExists = { _ in true }
@@ -619,7 +603,6 @@ struct RunnerServiceTests {
                         throw URLError(.unknown)
                     }
                 }
-                $0.convert = { _, _ in Data("png".utf8) }
             },
             fileManagerClient: testDependency(of: FileManagerClient.self) {
                 $0.fileExists = { _ in true }
@@ -662,7 +645,6 @@ struct RunnerServiceTests {
                 $0.read = { url in
                     url.hasPathSuffix("CUSTOM_RUNNERS.json") ? Data(json.utf8) : Data("frame".utf8)
                 }
-                $0.convert = { _, _ in Data("png".utf8) }
             },
             fileManagerClient: testDependency(of: FileManagerClient.self) {
                 $0.fileExists = { _ in true }
