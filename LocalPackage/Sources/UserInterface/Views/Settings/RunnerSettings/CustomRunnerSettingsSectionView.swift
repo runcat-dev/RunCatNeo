@@ -26,31 +26,27 @@ struct CustomRunnerSettingsSectionView: View {
 
     var body: some View {
         Section {
-            List {
-                ForEach(store.customRunnerBundleList) { runnerBundle in
-                    CustomRunnerRowView(
-                        runnerBundle: runnerBundle,
-                        editButtonTapped: {
-                            await store.send(.editCustomRunnerButtonTapped(runnerBundle.runner))
-                        },
-                        removeButtonTapped: {
-                            await store.send(.removeCustomRunnerButtonTapped(runnerBundle.runner))
-                        }
-                    )
-                }
-                .onMove { indexSet, offset in
-                    Task {
-                        await store.send(.customRunnerRowMoved(indexSet, offset))
+            if !store.customRunnerBundleList.isEmpty {
+                List {
+                    ForEach(store.customRunnerBundleList) { runnerBundle in
+                        CustomRunnerRowView(
+                            runnerBundle: runnerBundle,
+                            editButtonTapped: {
+                                await store.send(.editCustomRunnerButtonTapped(runnerBundle.runner))
+                            },
+                            removeButtonTapped: {
+                                await store.send(.removeCustomRunnerButtonTapped(runnerBundle.runner))
+                            }
+                        )
                     }
+                    .onMove { indexSet, offset in
+                        Task {
+                            await store.send(.customRunnerRowMoved(indexSet, offset))
+                        }
+                    }
+                    .listRowInsets(.vertical, 8)
                 }
-                .listRowInsets(.vertical, 8)
             }
-            .alert(
-                isPresented: $store.showingAlert,
-                error: store.error,
-                actions: { _ in },
-                message: { _ in }
-            )
             HStack {
                 Spacer()
                 Button {
@@ -88,6 +84,12 @@ struct CustomRunnerSettingsSectionView: View {
                     )
                 }
             }
+            .alert(
+                isPresented: $store.showingAlert,
+                error: store.error,
+                actions: { _ in },
+                message: { _ in }
+            )
         } header: {
             Text("customRunners", bundle: .module)
         }
