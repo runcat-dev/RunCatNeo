@@ -26,59 +26,31 @@ struct CustomMetricsSettingsSectionView: View {
 
     var body: some View {
         Section {
-            List {
-                ForEach(store.customMetricsSources) { source in
-                    CustomMetricsSourceRowView(
-                        source: source,
-                        isErrorDetected: store.failedCustomMetricsSourceIDs.contains(source.id),
-                        editButtonTapped: {
-                            await store.send(.editCustomMetricsSourceButtonTapped(source))
-                        },
-                        removeButtonTapped: {
-                            await store.send(.removeCustomMetricsSourceButtonTapped(source.id))
-                        },
-                        sourceLinkTapped: {
-                            await store.send(.customMetricsSourceLinkTapped(source))
-                        }
-                    )
-                }
-                .onMove { indexSet, offset in
-                    Task {
-                        await store.send(.customMetricsSourceRowMoved(indexSet, offset))
+            if !store.customMetricsSources.isEmpty {
+                List {
+                    ForEach(store.customMetricsSources) { source in
+                        CustomMetricsSourceRowView(
+                            source: source,
+                            isErrorDetected: store.failedCustomMetricsSourceIDs.contains(source.id),
+                            editButtonTapped: {
+                                await store.send(.editCustomMetricsSourceButtonTapped(source))
+                            },
+                            removeButtonTapped: {
+                                await store.send(.removeCustomMetricsSourceButtonTapped(source.id))
+                            },
+                            sourceLinkTapped: {
+                                await store.send(.customMetricsSourceLinkTapped(source))
+                            }
+                        )
                     }
+                    .onMove { indexSet, offset in
+                        Task {
+                            await store.send(.customMetricsSourceRowMoved(indexSet, offset))
+                        }
+                    }
+                    .listRowInsets(.vertical, 8)
                 }
-                .listRowInsets(.vertical, 8)
             }
-            .confirmationDialog(
-                Text("removeCustomMetricsSource", bundle: .module),
-                isPresented: $store.showingConfirmationDialog,
-                presenting: store.pendingRemovalSourceID,
-                actions: { sourceID in
-                    Button(role: .destructive) {
-                        Task {
-                            await store.send(.removingCustomMetricsSourceConfirmed)
-                        }
-                    } label: {
-                        Text("remove", bundle: .module)
-                    }
-                    Button(role: .cancel) {
-                        Task {
-                            await store.send(.removingCustomMetricsSourceCancelled)
-                        }
-                    } label: {
-                        Text("cancel", bundle: .module)
-                    }
-                },
-                message: { _ in
-                    Text("customMetricsConfirmationMessage", bundle: .module)
-                }
-            )
-            .alert(
-                isPresented: $store.showingAlert,
-                error: store.error,
-                actions: { _ in },
-                message: { _ in }
-            )
             HStack {
                 Spacer()
                 Button {
@@ -116,6 +88,36 @@ struct CustomMetricsSettingsSectionView: View {
                     )
                 }
             }
+            .confirmationDialog(
+                Text("removeCustomMetricsSource", bundle: .module),
+                isPresented: $store.showingConfirmationDialog,
+                presenting: store.pendingRemovalSourceID,
+                actions: { sourceID in
+                    Button(role: .destructive) {
+                        Task {
+                            await store.send(.removingCustomMetricsSourceConfirmed)
+                        }
+                    } label: {
+                        Text("remove", bundle: .module)
+                    }
+                    Button(role: .cancel) {
+                        Task {
+                            await store.send(.removingCustomMetricsSourceCancelled)
+                        }
+                    } label: {
+                        Text("cancel", bundle: .module)
+                    }
+                },
+                message: { _ in
+                    Text("customMetricsConfirmationMessage", bundle: .module)
+                }
+            )
+            .alert(
+                isPresented: $store.showingAlert,
+                error: store.error,
+                actions: { _ in },
+                message: { _ in }
+            )
         } header: {
             Text("customMetrics", bundle: .module)
         }
