@@ -19,9 +19,24 @@
  */
 
 import DataSource
+import Foundation
 
 extension CustomMetricsSnapshot {
     var displaySymbol: String {
         symbol ?? "chart.bar.horizontal.page.fill"
+    }
+
+    static var placeholder: Self {
+        .init(
+            title: String(localized: "placeholderTitle", bundle: .module),
+            metrics: [
+                .init(
+                    title: String(localized: "placeholderMetricTitle", bundle: .module),
+                    formattedValue: 0.48.formatted(.percent),
+                    normalizedValue: 0.48
+                ),
+            ],
+            lastUpdatedDate: .now
+        )
     }
 }

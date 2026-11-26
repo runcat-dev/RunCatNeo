@@ -111,15 +111,14 @@ struct CustomMetricsSourceEditorView: View {
                         Text("symbolImageRequirements", bundle: .module)
                     }
                     LabeledContent {
-                        if let previewBundle = store.previewBundle {
-                            CustomMetricsCardView(customMetricsBundle: previewBundle, displayedDate: .now)
-                        } else {
-                            Text("previewPlaceholder", bundle: .module)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity, minHeight: 64)
-                                .background(.fill.quaternary, in: .rect(cornerRadius: 12))
-                        }
+                        CustomMetricsCardView(
+                            customMetricsBundle: store.previewBundle ?? .init(
+                                id: store.id,
+                                snapshot: .placeholder,
+                                symbolImageData: store.symbolImageData
+                            ),
+                            displayedDate: .now
+                        )
                     } label: {
                         Text("preview", bundle: .module)
                     }
