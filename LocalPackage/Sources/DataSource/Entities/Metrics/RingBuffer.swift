@@ -22,7 +22,7 @@ public struct RingBuffer: Sendable {
     private let length: Int
     public private(set) var values: [Double]
 
-    public init(length: Int = 61) {
+    public init(length: Int = 60) {
         self.length = length
         values = [Double](repeating: 2, count: length)
     }

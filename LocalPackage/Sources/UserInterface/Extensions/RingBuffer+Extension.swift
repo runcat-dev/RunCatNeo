@@ -23,7 +23,7 @@ import DataSource
 extension RingBuffer {
     static var mock: RingBuffer {
         var ringBuffer = RingBuffer()
-        ringBuffer.append((0 ..< 61).map { _ in Double.random(in: 2 ... 100) })
+        ringBuffer.append((0 ..< 60).map { _ in Double.random(in: 2 ... 100) })
         return ringBuffer
     }
 }

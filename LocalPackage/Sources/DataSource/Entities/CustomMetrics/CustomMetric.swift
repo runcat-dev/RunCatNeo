@@ -18,14 +18,48 @@
  limitations under the License.
  */
 
-public struct CustomMetric: Codable, Sendable, Equatable {
+public struct CustomMetric: Decodable, Sendable, Equatable {
     public var title: String
     public var formattedValue: String
-    public var normalizedValue: Double?
+    public var normalized: Normalized?
 
-    public init(title: String, formattedValue: String, normalizedValue: Double? = nil) {
+    public enum Normalized: Sendable, Equatable {
+        case value(Double)
+        case values([Double])
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case title
+        case formattedValue
+        case normalizedValue
+        case normalizedValues
+    }
+
+    public init(title: String, formattedValue: String, normalized: Normalized? = nil) {
         self.title = title
         self.formattedValue = formattedValue
-        self.normalizedValue = normalizedValue
+        self.normalized = normalized
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        title = try container.decode(String.self, forKey: .title)
+        formattedValue = try container.decode(String.self, forKey: .formattedValue)
+        let normalizedValue = try container.decodeIfPresent(Double.self, forKey: .normalizedValue)
+        let normalizedValues = try container.decodeIfPresent([Double].self, forKey: .normalizedValues)
+        switch (normalizedValue, normalizedValues) {
+        case let (value?, nil):
+            normalized = .value(value)
+        case let (nil, values?):
+            normalized = .values(values)
+        case (nil, nil):
+            normalized = nil
+        case (.some, .some):
+            throw DecodingError.dataCorruptedError(
+                forKey: .normalizedValues,
+                in: container,
+                debugDescription: "normalizedValue and normalizedValues are mutually exclusive."
+            )
+        }
     }
 }
