@@ -68,6 +68,7 @@ When neither `normalizedValue` nor `normalizedValues` is present, only the `titl
 - `normalizedValue` and each element of `normalizedValues` are clamped to `[0, 1]` before drawing.
 - The line graph always spans the full width of the card's graph area, so the spacing between points depends on how many values you provide. With fewer than 2 values, a flat line at 0 is drawn.
 - `normalizedValues` must contain only numbers; `null` elements make the file fail to load.
+- Bars and line graphs are about 120 pt wide. Keep `title: formattedValue` short enough to fit that width on rows that have a graph; longer text widens the card and leaves the graph looking undersized.
 - Bars and line graphs are drawn in the accent color regardless of the value — they do not change color as the value grows. Encode any severity you want to convey in `formattedValue` itself.
 - If `metrics` is empty, the card shows only its title and the last-updated line.
 - `metricsBarValue` is rendered verbatim in the Metrics Bar with a monospaced digit font, prefixed by the source's `symbol`.
