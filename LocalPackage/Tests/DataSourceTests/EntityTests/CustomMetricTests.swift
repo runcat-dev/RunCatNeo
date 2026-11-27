@@ -23,6 +23,15 @@ struct CustomMetricTests {
     }
 
     @Test
+    func decode_with_empty_normalizedValues_yields_empty_values() throws {
+        let json = """
+            { "title": "GPU", "formattedValue": "0%", "normalizedValues": [] }
+            """.data(using: .utf8)!
+        let metric = try JSONDecoder().decode(CustomMetric.self, from: json)
+        #expect(metric == CustomMetric(title: "GPU", formattedValue: "0%", normalized: .values([])))
+    }
+
+    @Test
     func decode_without_normalized_keys_yields_nil() throws {
         let json = """
             { "title": "Model", "formattedValue": "Opus" }
