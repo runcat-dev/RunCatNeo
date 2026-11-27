@@ -28,7 +28,7 @@ struct CustomMetricsSnapshotTests {
             title: "Claude Code",
             symbol: "staroflife",
             metrics: [
-                CustomMetric(title: "Context", formattedValue: "5.4%", normalizedValue: 0.054),
+                CustomMetric(title: "Context", formattedValue: "5.4%", normalized: .value(0.054)),
                 CustomMetric(title: "Cost", formattedValue: "$3.21"),
             ],
             lastUpdatedDate: try #require(ISO8601DateFormatter().date(from: "2026-06-05T04:50:40Z"))

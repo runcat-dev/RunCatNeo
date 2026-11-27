@@ -64,8 +64,11 @@ struct CustomMetricsCardView: View {
                     ForEach(snapshot.metrics.enumerated(), id: \.offset) { _, metric in
                         Text(verbatim: "\(metric.title): \(metric.formattedValue)")
                             .font(.caption)
-                        if let normalizedValue = metric.normalizedValue {
-                            BarGraphView(value: max(0, min(1, normalizedValue)) * 100)
+                        if let barGraphValue = metric.barGraphValue {
+                            BarGraphView(value: barGraphValue)
+                        }
+                        if let lineGraphValues = metric.lineGraphValues {
+                            LineGraphView(values: lineGraphValues)
                         }
                     }
                     Text("lastUpdated:\(lastUpdatedDetail)", bundle: .module)

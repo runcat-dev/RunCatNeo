@@ -20,7 +20,7 @@
 
 import Foundation
 
-public struct CustomMetricsSnapshot: Codable, Sendable, Equatable {
+public struct CustomMetricsSnapshot: Decodable, Sendable, Equatable {
     public var title: String
     public var symbol: String?
     public var metricsBarValue: String?

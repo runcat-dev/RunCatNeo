@@ -10,12 +10,16 @@ Reads GPU statistics from the IOKit registry (no sudo, no network) and writes
       "symbol": "memorychip.fill",
       "metricsBarValue": "24%",
       "metrics": [
-        {"title": "Utilization",      "formattedValue": "24%", "normalizedValue": 0.24},
+        {"title": "Utilization",      "formattedValue": "24%", "normalizedValues": [0.18, 0.31, 0.24]},
         {"title": "Memory in use",    "formattedValue": "0.46 GB"},
         {"title": "Memory allocated", "formattedValue": "2.25 GB"}
       ],
       "lastUpdatedDate": "2026-08-12T18:25:08Z"
     }
+
+Utilization keeps the most recent 60 samples in memory and writes them as
+normalizedValues, so RunCat Neo draws them as a line graph. In one-shot mode
+there is only one sample, so the graph stays flat.
 
 Usage:
     runcat-gpu.py             write one snapshot and exit
@@ -30,10 +34,12 @@ import subprocess
 import sys
 import tempfile
 import time
+from collections import deque
 from datetime import datetime, timezone
 from pathlib import Path
 
 OUT = Path(os.environ.get("RUNCAT_OUT_FILE", str(Path.home() / ".runcat" / "gpu.json")))
+UTILIZATION_HISTORY = deque(maxlen=60)
 
 
 def gpu_statistics():
@@ -56,11 +62,12 @@ def statistic(statistics, key):
     return int(statistics[key])
 
 
-def percent(title, value):
+def percent_history(title, value, history):
+    history.append(round(value / 100, 4))
     return {
         "title": title,
         "formattedValue": f"{value:g}%",
-        "normalizedValue": round(value / 100, 4),
+        "normalizedValues": list(history),
     }
 
 
@@ -77,7 +84,7 @@ def build_snapshot():
         "symbol": "memorychip.fill",
         "metricsBarValue": f"{utilization:g}%",
         "metrics": [
-            percent("Utilization", utilization),
+            percent_history("Utilization", utilization, UTILIZATION_HISTORY),
             gigabytes("Memory in use", statistic(statistics, "In use system memory")),
             gigabytes("Memory allocated", statistic(statistics, "Alloc system memory")),
         ],

@@ -25,10 +25,11 @@ struct LineGraphView: View {
 
     var body: some View {
         Path { path in
+            let step = 120 / CGFloat(max(1, values.count - 1))
             path.move(to: CGPoint(x: 0, y: 16))
             values.enumerated().forEach { offset, value in
                 let v = min(100, max(2, value))
-                path.addLine(to: CGPoint(x: 2.0 * CGFloat(offset), y: 16 - 0.16 * v))
+                path.addLine(to: CGPoint(x: step * CGFloat(offset), y: 16 - 0.16 * v))
             }
             path.addLine(to: CGPoint(x: 120, y: 16))
             path.closeSubpath()

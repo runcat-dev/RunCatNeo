@@ -32,13 +32,14 @@ A valid file might look like this:
     { "title": "Model",   "formattedValue": "Opus 4.7" },
     { "title": "Context", "formattedValue": "5.4%",  "normalizedValue": 0.054 },
     { "title": "5h",      "formattedValue": "16.4%", "normalizedValue": 0.164 },
-    { "title": "7d",      "formattedValue": "1.0%",  "normalizedValue": 0.01  }
+    { "title": "7d",      "formattedValue": "1.0%",  "normalizedValue": 0.01  },
+    { "title": "Tokens",  "formattedValue": "12.3k", "normalizedValues": [0.12, 0.30, 0.18, 0.45, 0.62] }
   ],
   "lastUpdatedDate": "2026-06-05T04:50:40Z"
 }
 ```
 
-The values above are illustrative — `title`, `symbol`, and the metric labels are all your choice; pick whatever makes sense for what you're tracking. The `Model` row omits `normalizedValue`, so RunCat renders just the text with no bar; the other three rows include it, so a bar is drawn under the text.
+The values above are illustrative — `title`, `symbol`, and the metric labels are all your choice; pick whatever makes sense for what you're tracking. The `Model` row omits both `normalizedValue` and `normalizedValues`, so RunCat renders just the text; the `Context`, `5h`, and `7d` rows include `normalizedValue`, so a bar is drawn under the text; the `Tokens` row includes `normalizedValues`, so a line graph is drawn under the text.
 
 ### Top level
 
@@ -52,17 +53,22 @@ The values above are illustrative — `title`, `symbol`, and the metric labels a
 
 ### Metric
 
-| Field             | Type    | Required | Description |
-|-------------------|---------|----------|-------------|
-| `title`           | string  | yes      | Row label. The row is rendered as `title: formattedValue`. |
-| `formattedValue`  | string  | yes      | The completed display string. Include any units, currency symbols, or suffixes (e.g. `"5.4%"`, `"$3.21"`, `"42 days"`). |
-| `normalizedValue` | number  | no       | A value between 0 and 1. When present, a horizontal progress bar is drawn under the row. When omitted, only the `title: formattedValue` text is shown. |
+| Field              | Type           | Required | Description |
+|--------------------|----------------|----------|-------------|
+| `title`            | string         | yes      | Row label. The row is rendered as `title: formattedValue`. |
+| `formattedValue`   | string         | yes      | The completed display string. Include any units, currency symbols, or suffixes (e.g. `"5.4%"`, `"$3.21"`, `"42 days"`). |
+| `normalizedValue`  | number         | no       | A value between 0 and 1. When present, a horizontal progress bar is drawn under the row. Cannot be combined with `normalizedValues`. |
+| `normalizedValues` | array<number\> | no       | Values between 0 and 1, drawn left to right as a line graph under the row. Up to 60 values are drawn; values after the 60th are ignored. Cannot be combined with `normalizedValue`. |
+
+When neither `normalizedValue` nor `normalizedValues` is present, only the `title: formattedValue` text is shown. A metric that contains both is invalid, and the whole file fails to load.
 
 ## Display rules
 
 - Producer-side formatting is intentional. RunCat does **not** apply units, percent signs, or rounding — whatever you put in `formattedValue` is shown verbatim.
-- `normalizedValue` is clamped to `[0, 1]` before the bar is drawn.
-- The bar is drawn in the accent color regardless of the value — it does not change color as the value grows. Encode any severity you want to convey in `formattedValue` itself.
+- `normalizedValue` and each element of `normalizedValues` are clamped to `[0, 1]` before drawing.
+- The line graph always spans the full width of the card's graph area, so the spacing between points depends on how many values you provide. With fewer than 2 values, a flat line at 0 is drawn.
+- `normalizedValues` must contain only numbers; `null` elements make the file fail to load.
+- Bars and line graphs are drawn in the accent color regardless of the value — they do not change color as the value grows. Encode any severity you want to convey in `formattedValue` itself.
 - If `metrics` is empty, the card shows only its title and the last-updated line.
 - `metricsBarValue` is rendered verbatim in the Metrics Bar with a monospaced digit font, prefixed by the source's `symbol`.
 
@@ -96,6 +102,6 @@ See `docs/samples/` for working scripts:
 - `docs/samples/claude-code/` — Claude Code statusLine integration that writes model, context-window, and rate-limit rows.
 - `docs/samples/codex/` — Codex lifecycle hook that writes model, context-window, and rate-limit rows.
 - `docs/samples/bitcoin/` — launchd-scheduled shell script that shows the current Bitcoin price in USD via the CoinGecko public API.
-- `docs/samples/gpu/` — long-running launchd-managed Python script that shows Apple Silicon GPU utilization and memory usage from the IOKit registry.
+- `docs/samples/gpu/` — long-running launchd-managed Python script that shows Apple Silicon GPU utilization (with a line graph of recent samples) and memory usage from the IOKit registry.
 
 Want to share an integration? Open a PR adding a sibling directory under `docs/samples/`.

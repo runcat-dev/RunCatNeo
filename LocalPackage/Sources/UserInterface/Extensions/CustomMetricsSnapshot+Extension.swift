@@ -33,7 +33,7 @@ extension CustomMetricsSnapshot {
                 .init(
                     title: String(localized: "placeholderMetricTitle", bundle: .module),
                     formattedValue: 0.48.formatted(.percent),
-                    normalizedValue: 0.48
+                    normalized: .value(0.48)
                 ),
             ],
             lastUpdatedDate: .now

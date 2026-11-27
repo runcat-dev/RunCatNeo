@@ -48,7 +48,7 @@ launchctl bootout gui/$(id -u)/dev.runcat.gpu-sample
 
 | Row | Source key | Meaning |
 |-----|-----------|---------|
-| Utilization | `Device Utilization %` | Overall share of time the GPU was busy |
+| Utilization | `Device Utilization %` | Overall share of time the GPU was busy, drawn as a line graph of the most recent 60 samples |
 | Memory in use | `In use system memory` | Memory currently held by the GPU |
 | Memory allocated | `Alloc system memory` | Memory reserved for the GPU |
 
