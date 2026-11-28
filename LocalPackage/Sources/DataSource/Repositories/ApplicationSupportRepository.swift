@@ -79,6 +79,28 @@ public struct ApplicationSupportRepository: Sendable {
         try dataClient.write(data, fileURL)
     }
 
+    public func loadStepRecords() -> [StepRecord] {
+        let fileURL = appDirectoryURL
+            .appending(path: String.stepRecords)
+            .appendingPathExtension(for: .json)
+        guard fileManagerClient.fileExists(fileURL.path(percentEncoded: false)),
+              let data = try? dataClient.read(fileURL),
+              let records = try? JSONDecoder().decode([StepRecord].self, from: data) else {
+            return []
+        }
+        return records.sorted { $0.dayKey < $1.dayKey }
+    }
+
+    public func saveStepRecords(_ records: [StepRecord]) throws {
+        let fileURL = appDirectoryURL
+            .appending(path: String.stepRecords)
+            .appendingPathExtension(for: .json)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        let data = try encoder.encode(records)
+        try dataClient.write(data, fileURL)
+    }
+
     public func loadData(directory: String, fileName: String, fileType: UTType) -> Data? {
         let fileURL = appDirectoryURL
             .appending(path: directory)

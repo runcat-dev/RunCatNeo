@@ -30,12 +30,14 @@ public final class GeneralSettings: Composable {
 
     public var updateInterval: UpdateInterval
     public var launchesAtLogin: Bool
+    public var isStepCounterEnabled: Bool
     public let action: (Action) async -> Void
 
     public init(
         _ appDependencies: AppDependencies,
         updateInterval: UpdateInterval? = nil,
         launchesAtLogin: Bool? = nil,
+        isStepCounterEnabled: Bool? = nil,
         action: @escaping (Action) async -> Void = { _ in }
     ) {
         self.launchAtLoginRepository = .init(appDependencies.smAppServiceClient)
@@ -44,6 +46,7 @@ public final class GeneralSettings: Composable {
         self.systemMetricsService = .init(appDependencies)
         self.updateInterval = updateInterval ?? userDefaultsRepository.updateInterval
         self.launchesAtLogin = launchesAtLogin ?? launchAtLoginRepository.isEnabled
+        self.isStepCounterEnabled = isStepCounterEnabled ?? userDefaultsRepository.isStepCounterEnabled
         self.action = action
     }
 
@@ -57,6 +60,10 @@ public final class GeneralSettings: Composable {
             userDefaultsRepository.updateInterval = interval
             systemMetricsService.stopMonitoring()
             systemMetricsService.startMonitoring()
+
+        case let .stepCounterToggleSwitched(isOn):
+            isStepCounterEnabled = isOn
+            userDefaultsRepository.isStepCounterEnabled = isOn
 
         case let .launchAtLoginToggleSwitched(isOn):
             switch launchAtLoginRepository.switchStatus(isOn) {
@@ -72,5 +79,6 @@ public final class GeneralSettings: Composable {
         case viewAppeared(String)
         case updateIntervalPickerSelected(UpdateInterval)
         case launchAtLoginToggleSwitched(Bool)
+        case stepCounterToggleSwitched(Bool)
     }
 }

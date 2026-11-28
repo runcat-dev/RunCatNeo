@@ -39,6 +39,9 @@ struct DashboardView: View {
                 memoryRingBuffer: store.memoryRingBuffer,
                 isPreview: store.isPreview
             )
+            if store.showsStepCard {
+                StepCountCardView(statistics: store.stepStatistics)
+            }
             ForEach(store.customMetricsBundles) { customMetricsBundle in
                 CustomMetricsCardView(
                     customMetricsBundle: customMetricsBundle,

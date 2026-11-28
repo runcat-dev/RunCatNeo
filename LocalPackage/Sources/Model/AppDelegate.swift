@@ -36,9 +36,11 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
         logService.bootstrap()
         let nsWorkspaceClient = appDependencies.nsWorkspaceClient
         let systemInfoObserverClient = appDependencies.systemInfoObserverClient
+        let dateClient = appDependencies.dateClient
         let customMetricsService = CustomMetricsService(appDependencies)
         let systemMetricsService = SystemMetricsService(appDependencies)
         let runnerService = RunnerService(appDependencies)
+        let stepCountService = StepCountService(appDependencies)
         Task {
             await withTaskGroup { group in
                 group.addTask {
@@ -59,13 +61,19 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
                     let stream = systemInfoObserverClient.systemInfoStream()
                     for await value in stream {
                         systemMetricsService.updateMetrics(from: value)
-                        runnerService.updateRunnerSpeed(from: value.cpuInfo)
+                        let speed = runnerService.updateRunnerSpeed(from: value.cpuInfo)
+                        stepCountService.accumulate(
+                            speed: speed,
+                            frameCount: runnerService.currentFrameCount,
+                            at: dateClient.now()
+                        )
                     }
                 }
             }
         }
         logService.notice(.launchApp)
         customMetricsService.startMonitoring()
+        stepCountService.bootstrap()
         systemMetricsService.startMonitoring()
         do {
             try runnerService.setup()
@@ -77,5 +85,6 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
     public func applicationWillTerminate(_ notification: Notification) {
         CustomMetricsService(appDependencies).stopMonitoring()
         SystemMetricsService(appDependencies).stopMonitoring()
+        StepCountService(appDependencies).flush()
     }
 }

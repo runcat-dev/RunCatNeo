@@ -38,6 +38,11 @@ public struct UserDefaultsRepository: Sendable {
         nonmutating set { userDefaultsClient.set(newValue, .isFlippedHorizontally) }
     }
 
+    public var isStepCounterEnabled: Bool {
+        get { userDefaultsClient.bool(.isStepCounterEnabled) }
+        nonmutating set { userDefaultsClient.set(newValue, .isStepCounterEnabled) }
+    }
+
     public var usesAccentColor: Bool {
         get { userDefaultsClient.bool(.usesAccentColor) }
         nonmutating set { userDefaultsClient.set(newValue, .usesAccentColor) }
@@ -118,6 +123,7 @@ public struct UserDefaultsRepository: Sendable {
             .runnerID: RunnerKind.cat.id,
             .speedDecreasesUnderLoad: false,
             .isFlippedHorizontally: false,
+            .isStepCounterEnabled: true,
             .usesAccentColor: false,
             .updateInterval: UpdateInterval.default.rawValue,
         ])

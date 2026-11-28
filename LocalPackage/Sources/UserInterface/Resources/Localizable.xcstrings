@@ -1,6 +1,83 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "stepsRecentMinute:%lld" : {
+      "comment" : "The number of steps the cat took during the last minute.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last min: %lld steps"
+          }
+        }
+      }
+    },
+    "recordSteps" : {
+      "comment" : "A toggle that enables or disables the daily step counter.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record Runner Steps"
+          }
+        }
+      }
+    },
+    "stepCounter" : {
+      "comment" : "A section header for the step counter settings.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Step Counter"
+          }
+        }
+      }
+    },
+    "recordStepsFooter" : {
+      "comment" : "A footer that explains how the step counter works.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Counts one step per animation cycle and saves a daily total."
+          }
+        }
+      }
+    },
+    "runnerTrail" : {
+      "comment" : "A title of the dashboard card that shows how many steps the runner has taken.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Runner Trail"
+          }
+        }
+      }
+    },
+    "stepsToday:%@" : {
+      "comment" : "The number of steps the cat took today. The argument is the number of steps.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today: %@ steps"
+          }
+        }
+      }
+    },
+    "stepsTotal:%@" : {
+      "comment" : "The total number of steps the cat has taken so far. The argument is the number of steps.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total: %@ steps"
+          }
+        }
+      }
+    },
     "%lldseconds" : {
       "comment" : "A picker item that lets the user select the frequency at which the app updates. The argument is the number of seconds between updates.",
       "localizations" : {

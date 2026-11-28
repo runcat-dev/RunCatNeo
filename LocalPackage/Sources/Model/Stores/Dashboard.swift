@@ -30,13 +30,19 @@ public final class Dashboard: Composable {
     private let logService: LogService
 
     @ObservationIgnored private var task: Task<Void, Never>?
+    @ObservationIgnored private var stepTask: Task<Void, Never>?
 
     public var appName: String
     public var systemInfoBundle: SystemInfoBundle
     public var cpuRingBuffer: RingBuffer
     public var memoryRingBuffer: RingBuffer
     public var customMetricsBundles: [CustomMetricsBundle]
+    public var stepStatistics: StepStatistics
     public var displayedDate: Date
+
+    public var showsStepCard: Bool {
+        stepStatistics != .empty
+    }
     public let isPreview: Bool
     public let dashboardMenu: DashboardMenu
     public let action: (Action) async -> Void
@@ -48,6 +54,7 @@ public final class Dashboard: Composable {
         cpuRingBuffer: RingBuffer = .init(),
         memoryRingBuffer: RingBuffer = .init(),
         customMetricsBundles: [CustomMetricsBundle] = [],
+        stepStatistics: StepStatistics = .empty,
         displayedDate: Date? = nil,
         isPreview: Bool? = nil,
         dashboardMenu: DashboardMenu? = nil,
@@ -61,6 +68,7 @@ public final class Dashboard: Composable {
         self.cpuRingBuffer = cpuRingBuffer
         self.memoryRingBuffer = memoryRingBuffer
         self.customMetricsBundles = customMetricsBundles
+        self.stepStatistics = stepStatistics
         self.displayedDate = displayedDate ?? dateClient.now()
         self.isPreview = isPreview ?? ProcessInfo.isPreview
         weak var weakSelf: Dashboard? = nil
@@ -78,6 +86,9 @@ public final class Dashboard: Composable {
             if let metrics = appStateClient.withLock(\.metrics.latestValue) {
                 updateMetrics(metrics)
             }
+            if let stepStatistics = appStateClient.withLock(\.stepStatistics.latestValue) {
+                self.stepStatistics = stepStatistics
+            }
             task?.cancel()
             task = Task.immediate { [weak self, appStateClient] in
                 let stream = appStateClient.withLock(\.metrics.stream)
@@ -85,10 +96,19 @@ public final class Dashboard: Composable {
                     self?.updateMetrics(value)
                 }
             }
+            stepTask?.cancel()
+            stepTask = Task.immediate { [weak self, appStateClient] in
+                let stream = appStateClient.withLock(\.stepStatistics.stream)
+                for await value in stream {
+                    self?.stepStatistics = value
+                }
+            }
 
         case .viewDisappeared:
             task?.cancel()
             task = nil
+            stepTask?.cancel()
+            stepTask = nil
 
         case .dashboardMenu:
             return

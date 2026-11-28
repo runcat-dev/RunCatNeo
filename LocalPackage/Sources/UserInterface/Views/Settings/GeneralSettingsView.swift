@@ -38,6 +38,18 @@ struct GeneralSettingsView: View {
                 Text("launch", bundle: .module)
             }
             Section {
+                Toggle(isOn: Binding<Bool>(
+                    get: { store.isStepCounterEnabled },
+                    asyncSet: { await store.send(.stepCounterToggleSwitched($0)) }
+                )) {
+                    Text("recordSteps", bundle: .module)
+                }
+            } header: {
+                Text("stepCounter", bundle: .module)
+            } footer: {
+                Text("recordStepsFooter", bundle: .module)
+            }
+            Section {
                 Picker(selection: Binding<UpdateInterval>(
                     get: { store.updateInterval },
                     asyncSet: { await store.send(.updateIntervalPickerSelected($0)) }

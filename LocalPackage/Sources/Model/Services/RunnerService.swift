@@ -87,7 +87,16 @@ struct RunnerService {
         loadRunnerBundleList()
     }
 
-    func updateRunnerSpeed(from cpuInfo: CPUInfo?) {
+    var currentFrameCount: Int {
+        guard let runnerBundle = appStateClient.withLock(\.runnerBundles.latestValue),
+              case let .keyFrameAnimation(frames) = runnerBundle.displayFormat else {
+            return 0
+        }
+        return frames.count
+    }
+
+    @discardableResult
+    func updateRunnerSpeed(from cpuInfo: CPUInfo?) -> Float {
         let cpuValue = max(1.0, min(20.0, Float(cpuInfo?.percentage.value ?? .zero) / 5.0))
         let speed: Float = if userDefaultsRepository.speedDecreasesUnderLoad {
             0.5 * (21.0 - cpuValue)
@@ -95,6 +104,7 @@ struct RunnerService {
             cpuValue
         }
         appStateClient.send(\.runnerSpeeds, speed)
+        return speed
     }
 
     func resendCurrentRunnerBundle() {
