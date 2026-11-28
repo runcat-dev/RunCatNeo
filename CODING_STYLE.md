@@ -55,6 +55,8 @@ These are the authoritative line-level style rules for all Swift code in this re
 - Write simple value mappings as switch expressions with single-line cases (`case .cat: 5`).
 - Prefer `if`/`switch` expressions for variable assignment whenever they fit: assigning the result of one expression reads more cleanly than repeating the assignment inside every branch of an `if`/`switch` statement. (For SwiftUI view modifiers and other inline values, a ternary expression is sometimes clearer — use judgment.)
 - Prefer leading-dot shorthand and semantic constants when the type is inferable (`.zero` over `0`).
+- Write constants initialized from literals without a type annotation (`static let maxCount = 30`, `static let widthRange = 10 ... 100`).
+- When constants describe a domain concept, consider grouping them as static members of a type named after that concept (`FrameImage.maxCount`, `SymbolImage.pixelSize`) instead of `private static let` constants on a service, when that makes the code easier to follow.
 - Within a type, order members as: stored dependencies (`private let`), state properties, `init`, public methods, private helpers, nested types at the end.
 
 ## SwiftUI
