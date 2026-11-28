@@ -37,9 +37,15 @@ extension URL {
         string: "https://support.apple.com/guide/mac-help/mchlp1446/mac"
     )!
 
-    public static let runnerGallery = URL(
-        string: "https://runcat-dev.github.io/RunnerGallery/"
-    )!
+    public static var runnerGallery: URL {
+        runnerGallery(languageCode: Bundle.main.preferredLocalizations.first)
+    }
+
+    static func runnerGallery(languageCode: String?) -> URL {
+        let url = URL(string: "https://runcat-dev.github.io/RunnerGallery/")!
+        guard let languageCode else { return url }
+        return url.appending(queryItems: [URLQueryItem(name: "lang", value: languageCode)])
+    }
 
     public static let termsOfService = URL(
         string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
