@@ -49,9 +49,18 @@ struct CustomRunnerSettingsSectionView: View {
             }
             HStack {
                 Spacer()
-                Button {
-                    Task {
-                        await store.send(.addCustomRunnerButtonTapped)
+                Menu {
+                    Button {
+                        Task {
+                            await store.send(.importRunnerArchiveButtonTapped)
+                        }
+                    } label: {
+                        Label {
+                            Text("importRunnerArchive", bundle: .module)
+                        } icon: {
+                            Image(systemName: "square.and.arrow.down")
+                        }
+                        .labelStyle(.titleAndIcon)
                     }
                 } label: {
                     Label {
@@ -59,10 +68,24 @@ struct CustomRunnerSettingsSectionView: View {
                     } icon: {
                         Image(systemName: "plus")
                     }
+                } primaryAction: {
+                    Task {
+                        await store.send(.addCustomRunnerButtonTapped)
+                    }
                 }
+                .fixedSize()
                 .sheet(item: $store.customRunnerEditor) { store in
                     CustomRunnerEditorView(store: store)
                 }
+                .fileImporter(
+                    isPresented: $store.showingFileImporter,
+                    allowedContentTypes: [.zip],
+                    onCompletion: { result in
+                        Task {
+                            await store.send(.fileImporterResponse(result))
+                        }
+                    }
+                )
                 Button {
                     Task {
                         await store.send(.guidanceButtonTapped)

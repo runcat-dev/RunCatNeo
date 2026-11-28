@@ -32,6 +32,8 @@ extension RCNError.CustomRunner: LocalizedError {
             "invalidFrameImage"
         case .frameLimitExceeded:
             "frameLimitExceeded"
+        case .invalidRunnerArchive:
+            "invalidRunnerArchive"
         case .savingFailed:
             "savingFailed"
         case .loadingFailed:

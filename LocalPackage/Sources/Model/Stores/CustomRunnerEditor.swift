@@ -211,11 +211,11 @@ public final class CustomRunnerEditor: Composable, Identifiable {
     private func appendFrameImage(from url: URL) throws {
         guard let nsImage = NSImage(contentsOf: url),
               let cgImage = nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil),
-              cgImage.height == 36,
-              (10 ... 100).contains(cgImage.width) else {
+              cgImage.height == FrameImage.height,
+              FrameImage.widthRange.contains(cgImage.width) else {
             throw RCNError.customRunner(.invalidFrameImage)
         }
-        guard frameImages.count < 30 else {
+        guard frameImages.count < FrameImage.maxCount else {
             throw RCNError.customRunner(.frameLimitExceeded)
         }
         frameImages.append(.init(id: uuidClient.create(), cgImage: cgImage))

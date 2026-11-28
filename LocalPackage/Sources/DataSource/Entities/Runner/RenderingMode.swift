@@ -20,7 +20,7 @@
 
 import Foundation
 
-public enum RenderingMode: Hashable, Sendable, Identifiable, CaseIterable {
+public enum RenderingMode: String, Hashable, Sendable, Identifiable, CaseIterable, Decodable {
     case monochrome
     case color
 

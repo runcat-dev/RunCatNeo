@@ -26,13 +26,16 @@ import Observation
 public final class CustomRunnerSettings: Composable {
     private let appDependencies: AppDependencies
     private let appStateClient: AppStateClient
+    private let urlClient: URLClient
     private let uuidClient: UUIDClient
     private let logService: LogService
     private let runnerService: RunnerService
+    private let archivedRunnerService: ArchivedRunnerService
 
     public var customRunnerBundleList: [RunnerBundle]
     public var customRunnerEditor: CustomRunnerEditor?
     public var showingGuidancePopover: Bool
+    public var showingFileImporter: Bool
     public var showingAlert: Bool
     public var error: RCNError?
     public let action: (Action) async -> Void
@@ -42,18 +45,22 @@ public final class CustomRunnerSettings: Composable {
         customRunnerBundleList: [RunnerBundle] = [],
         customRunnerEditor: CustomRunnerEditor? = nil,
         showingGuidancePopover: Bool = false,
+        showingFileImporter: Bool = false,
         showingAlert: Bool = false,
         error: RCNError? = nil,
         action: @escaping (Action) async -> Void = { _ in }
     ) {
         self.appDependencies = appDependencies
         self.appStateClient = appDependencies.appStateClient
+        self.urlClient = appDependencies.urlClient
         self.uuidClient = appDependencies.uuidClient
         self.logService = .init(appDependencies)
         self.runnerService = .init(appDependencies)
+        self.archivedRunnerService = .init(appDependencies)
         self.customRunnerBundleList = customRunnerBundleList
         self.customRunnerEditor = customRunnerEditor
         self.showingGuidancePopover = showingGuidancePopover
+        self.showingFileImporter = showingFileImporter
         self.showingAlert = showingAlert
         self.error = error
         self.action = action
@@ -119,6 +126,38 @@ public final class CustomRunnerSettings: Composable {
                 }
             )
 
+        case .importRunnerArchiveButtonTapped:
+            showingFileImporter = true
+
+        case let .fileImporterResponse(.success(url)):
+            guard urlClient.startAccessingSecurityScopedResource(url) else { return }
+            defer {
+                urlClient.stopAccessingSecurityScopedResource(url)
+            }
+            do {
+                let archivedRunner = try archivedRunnerService.unarchive(
+                    from: url,
+                    languageCode: Bundle.main.preferredLocalizations.first
+                )
+                customRunnerEditor = .init(
+                    appDependencies,
+                    id: uuidClient.create(),
+                    runnerName: archivedRunner.runnerName,
+                    isTemplate: archivedRunner.isTemplate,
+                    frameImages: archivedRunner.frameImages,
+                    action: { [weak self] in
+                        await self?.send(.customRunnerEditor($0))
+                    }
+                )
+            } catch let error as RCNError {
+                await send(.errorOccurred(error))
+            } catch {
+                logService.error(.importingRunnerArchiveFailed(error))
+            }
+
+        case let .fileImporterResponse(.failure(error)):
+            logService.error(.importingRunnerArchiveFailed(error))
+
         case .guidanceButtonTapped:
             showingGuidancePopover = true
 
@@ -148,6 +187,8 @@ public final class CustomRunnerSettings: Composable {
         case editCustomRunnerButtonTapped(Runner)
         case customRunnerRowMoved(IndexSet, Int)
         case addCustomRunnerButtonTapped
+        case importRunnerArchiveButtonTapped
+        case fileImporterResponse(Result<URL, any Error>)
         case guidanceButtonTapped
         case customRunnerEditor(CustomRunnerEditor.Action)
         case errorOccurred(RCNError)

@@ -22,6 +22,10 @@ import Foundation
 import CoreGraphics
 
 public struct FrameImage: Sendable, Hashable, Identifiable {
+    public static let height = 36
+    public static let widthRange = 10 ... 100
+    public static let maxCount = 30
+
     public var id: UUID
     public var cgImage: CGImage
 
