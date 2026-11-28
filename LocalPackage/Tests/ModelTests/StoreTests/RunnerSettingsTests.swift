@@ -1,5 +1,4 @@
 import AllocatedUnfairLock
-import Foundation
 import Testing
 
 @testable import DataSource

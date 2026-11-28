@@ -18,8 +18,6 @@
  limitations under the License.
  */
 
-import Foundation
-
 public struct LaunchAtLoginRepository: Sendable {
     private var smAppServiceClient: SMAppServiceClient
 
