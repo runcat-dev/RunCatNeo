@@ -27,6 +27,7 @@ public enum RCNError: Error, Equatable {
         case nameAlreadyExists
         case invalidFrameImage
         case frameLimitExceeded
+        case invalidRunnerArchive
         case savingFailed
         case loadingFailed
     }

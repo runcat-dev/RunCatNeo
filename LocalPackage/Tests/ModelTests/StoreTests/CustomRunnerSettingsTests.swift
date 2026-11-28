@@ -195,4 +195,97 @@ struct CustomRunnerSettingsTests {
         #expect(sut.customRunnerBundleList == [updatedBundle, otherBundle])
         #expect(sut.customRunnerEditor == nil)
     }
+
+    @MainActor @Test
+    func send_importRunnerArchiveButtonTapped_shows_file_importer() async {
+        let sut = CustomRunnerSettings(.testDependencies())
+        await sut.send(.importRunnerArchiveButtonTapped)
+        #expect(sut.showingFileImporter)
+    }
+
+    @MainActor @Test
+    func send_fileImporterResponse_opens_editor_filled_from_runner_archive() async throws {
+        let archive = Data.zipArchive([
+            ZIPFixtureEntry(name: "metadata.json", contents: Data.runnerMetadata(type: "color", displayName: #"{"en": "Tester"}"#)),
+            ZIPFixtureEntry(name: "frames/tester-frame-0.png", contents: Data.image(width: 30, height: 36)),
+            ZIPFixtureEntry(name: "frames/tester-frame-1.png", contents: Data.image(width: 30, height: 36)),
+        ])
+        let accessEvents = AllocatedUnfairLock<[String]>(initialState: [])
+        let sut = CustomRunnerSettings(.testDependencies(
+            dataClient: testDependency(of: DataClient.self) {
+                $0.read = { _ in archive }
+            },
+            fileManagerClient: testDependency(of: FileManagerClient.self) {
+                $0.attributesOfItem = { _ in [.size: archive.count] }
+            },
+            urlClient: testDependency(of: URLClient.self) {
+                $0.startAccessingSecurityScopedResource = { _ in
+                    accessEvents.withLock { $0.append("start") }
+                    return true
+                }
+                $0.stopAccessingSecurityScopedResource = { _ in
+                    accessEvents.withLock { $0.append("stop") }
+                }
+            }
+        ))
+        await sut.send(.fileImporterResponse(.success(URL(filePath: "/tmp/tester.zip"))))
+        let customRunnerEditor = try #require(sut.customRunnerEditor)
+        #expect(customRunnerEditor.runnerName == "Tester")
+        #expect(customRunnerEditor.mode == .add)
+        #expect(!customRunnerEditor.isTemplate)
+        #expect(customRunnerEditor.frameImages.count == 2)
+        #expect(accessEvents.withLock(\.self) == ["start", "stop"])
+    }
+
+    @MainActor @Test
+    func send_fileImporterResponse_shows_alert_when_archive_is_invalid() async {
+        let sut = CustomRunnerSettings(.testDependencies(
+            dataClient: testDependency(of: DataClient.self) {
+                $0.read = { _ in Data("not a zip archive".utf8) }
+            },
+            fileManagerClient: testDependency(of: FileManagerClient.self) {
+                $0.attributesOfItem = { _ in [.size: 17] }
+            },
+            urlClient: testDependency(of: URLClient.self) {
+                $0.startAccessingSecurityScopedResource = { _ in true }
+            }
+        ))
+        await sut.send(.fileImporterResponse(.success(URL(filePath: "/tmp/invalid.zip"))))
+        #expect(sut.customRunnerEditor == nil)
+        #expect(sut.error == .customRunner(.invalidRunnerArchive))
+        #expect(sut.showingAlert)
+    }
+
+    @MainActor @Test
+    func send_fileImporterResponse_shows_loadingFailed_alert_when_file_access_is_denied() async {
+        let sut = CustomRunnerSettings(.testDependencies())
+        await sut.send(.fileImporterResponse(.success(URL(filePath: "/tmp/tester.zip"))))
+        #expect(sut.customRunnerEditor == nil)
+        #expect(sut.error == .customRunner(.loadingFailed))
+        #expect(sut.showingAlert)
+    }
+
+    @MainActor @Test
+    func send_fileImporterResponse_shows_loadingFailed_alert_when_file_cannot_be_read() async {
+        let sut = CustomRunnerSettings(.testDependencies(
+            fileManagerClient: testDependency(of: FileManagerClient.self) {
+                $0.attributesOfItem = { _ in throw CocoaError(.fileNoSuchFile) }
+            },
+            urlClient: testDependency(of: URLClient.self) {
+                $0.startAccessingSecurityScopedResource = { _ in true }
+            }
+        ))
+        await sut.send(.fileImporterResponse(.success(URL(filePath: "/tmp/tester.zip"))))
+        #expect(sut.customRunnerEditor == nil)
+        #expect(sut.error == .customRunner(.loadingFailed))
+        #expect(sut.showingAlert)
+    }
+
+    @MainActor @Test
+    func send_fileImporterResponse_shows_loadingFailed_alert_when_file_importer_fails() async {
+        let sut = CustomRunnerSettings(.testDependencies())
+        await sut.send(.fileImporterResponse(.failure(CocoaError(.fileReadUnknown))))
+        #expect(sut.error == .customRunner(.loadingFailed))
+        #expect(sut.showingAlert)
+    }
 }

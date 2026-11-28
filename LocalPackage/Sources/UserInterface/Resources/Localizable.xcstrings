@@ -2861,6 +2861,71 @@
         }
       }
     },
+    "importRunnerArchive" : {
+      "comment" : "A button to import a custom runner from a ZIP file downloaded from Runner Gallery.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aus ZIP importieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import from ZIP"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar desde ZIP"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer depuis un ZIP"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ZIPから読み込む"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ZIP에서 가져오기"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Импортировать из ZIP"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhập từ ZIP"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从 ZIP 导入"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從 ZIP 匯入"
+          }
+        }
+      }
+    },
     "invalidFormat" : {
       "comment" : "Error message when a metrics file does not follow the schema.",
       "localizations" : {
@@ -2987,6 +3052,71 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "序列中包含無效的影格影像。"
+          }
+        }
+      }
+    },
+    "invalidRunnerArchive" : {
+      "comment" : "Error message when the selected ZIP file is not a runner downloaded from Runner Gallery.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die ausgewählte Datei ist kein Runner aus der Runner Gallery."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The selected file is not a runner from Runner Gallery."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El archivo seleccionado no es un runner de Runner Gallery."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le fichier sélectionné n’est pas un runner de Runner Gallery."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択したファイルはRunner Galleryのランナーではありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택한 파일은 Runner Gallery의 러너가 아닙니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбранный файл не является раннером из Runner Gallery."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tệp đã chọn không phải là runner từ Runner Gallery."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所选文件不是来自 Runner Gallery 的跑者。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所選檔案不是來自 Runner Gallery 的跑者。"
           }
         }
       }
