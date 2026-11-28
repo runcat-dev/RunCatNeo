@@ -19,7 +19,6 @@
  */
 
 import DataSource
-import Foundation
 import Observation
 import SystemInfoKit
 

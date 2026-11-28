@@ -1,6 +1,5 @@
 import AllocatedUnfairLock
 import AppKit
-import Foundation
 import Testing
 
 @testable import DataSource

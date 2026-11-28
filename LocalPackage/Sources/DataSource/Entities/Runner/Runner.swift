@@ -18,8 +18,6 @@
  limitations under the License.
  */
 
-import Foundation
-
 public struct Runner: Sendable, Hashable, Identifiable {
     public var id: String
     public var isTemplate: Bool
