@@ -33,13 +33,6 @@ struct CustomMetricsService {
     private let applicationSupportRepository: ApplicationSupportRepository
     private let userDefaultsRepository: UserDefaultsRepository
 
-    private static let symbolImageFileName = "symbol"
-    private static let symbolImagePixelSize = 48
-
-    private static func symbolImageDirectory(of id: UUID) -> String {
-        "CustomMetrics/\(id.uuidString)"
-    }
-
     private var snapshotDecoder: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -102,8 +95,8 @@ struct CustomMetricsService {
         if let symbolImageData {
             do {
                 try applicationSupportRepository.saveData(
-                    directory: Self.symbolImageDirectory(of: source.id),
-                    fileName: Self.symbolImageFileName,
+                    directory: SymbolImage.directory(of: source.id),
+                    fileName: SymbolImage.fileName,
                     fileType: .png,
                     data: symbolImageData
                 )
@@ -118,8 +111,8 @@ struct CustomMetricsService {
 
     func savedSymbolImageData(of id: UUID) -> Data? {
         applicationSupportRepository.loadData(
-            directory: Self.symbolImageDirectory(of: id),
-            fileName: Self.symbolImageFileName,
+            directory: SymbolImage.directory(of: id),
+            fileName: SymbolImage.fileName,
             fileType: .png
         )
     }
@@ -129,12 +122,12 @@ struct CustomMetricsService {
         guard let index = configuration.sources.firstIndex(where: { $0.id == source.id }) else {
             throw RCNError.customMetrics(.savingFailed)
         }
-        let directory = Self.symbolImageDirectory(of: source.id)
+        let directory = SymbolImage.directory(of: source.id)
         if let symbolImageData {
             do {
                 try applicationSupportRepository.saveData(
                     directory: directory,
-                    fileName: Self.symbolImageFileName,
+                    fileName: SymbolImage.fileName,
                     fileType: .png,
                     data: symbolImageData
                 )
@@ -160,7 +153,7 @@ struct CustomMetricsService {
         var configuration = userDefaultsRepository.customMetricsConfiguration
         configuration.sources.removeAll { $0.id == id }
         userDefaultsRepository.customMetricsConfiguration = configuration
-        applicationSupportRepository.delete(directory: Self.symbolImageDirectory(of: id))
+        applicationSupportRepository.delete(directory: SymbolImage.directory(of: id))
         var metricsBarConfiguration = userDefaultsRepository.metricsBarConfiguration
         metricsBarConfiguration.visibleCustomMetricsSourceIDs.remove(id)
         userDefaultsRepository.metricsBarConfiguration = metricsBarConfiguration
@@ -345,7 +338,7 @@ struct CustomMetricsService {
               let hasAlpha = properties[kCGImagePropertyHasAlpha] as? Bool else {
             return false
         }
-        return pixelWidth == symbolImagePixelSize && pixelHeight == symbolImagePixelSize && hasAlpha
+        return pixelWidth == SymbolImage.pixelSize && pixelHeight == SymbolImage.pixelSize && hasAlpha
     }
 
     private func persistRefreshedBookmark(_ bookmark: Data, replacing staleBookmark: Data, for sourceID: UUID) {
