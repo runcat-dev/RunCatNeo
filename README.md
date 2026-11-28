@@ -40,8 +40,8 @@ RunCat Neo is available for installation on the App Store.
 
 ## Requirements
 
-- Development with Xcode 26.5+
-- Compatible with macOS 26.3+
+- Development with Xcode 27.2+
+- Compatible with macOS 26.0+
 - Written in Swift 6.2
 
 ## Architecture

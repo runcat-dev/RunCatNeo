@@ -17,14 +17,14 @@ Arrows show the direction of `import`. `UserInterface` may import `Model` and `D
   - No application logic.
 
 - **`Model`** — depends on `DataSource`. Holds:
-  - `Services` — long-lived workers wired in `AppDelegate` (`MetricsService`, `RunnerService`, `LogService`)
-  - `Stores` — `@MainActor @Observable` view-models conforming to `Composable` (`Dashboard`, `RunnerBar`, `MetricsBar`, settings stores)
+  - `Services` — long-lived workers wired in `AppDelegate` (e.g. `SystemMetricsService`, `RunnerService`, `LogService`)
+  - `Stores` — `@MainActor @Observable` view-models conforming to `Composable` (e.g. `Dashboard`, `RunnerBar`, `MetricsBar`, settings stores)
   - `AppDependencies` — the bag of all dependency clients, injected everywhere via the `\.appDependencies` SwiftUI environment value
   - `AppDelegate`
   - **This is where application logic lives.**
 
 - **`UserInterface`** — depends on `DataSource` + `Model`. Holds:
-  - SwiftUI `Scenes` (`RunnerBarScene`, `MetricsBarScene`, `SettingsWindowScene`)
+  - SwiftUI `Scenes` (e.g. `RunnerBarScene`, `MetricsBarScene`, `SettingsWindowScene`)
   - SwiftUI `Views`
   - Localized strings and image assets in `UserInterface/Resources/`
   - **No logic.**
@@ -58,7 +58,7 @@ Split a store into a child `Composable` when a part of the screen owns an indepe
 
 ## Cross-cutting state
 
-Global app state flows through `AppStateClient` (an `AllocatedUnfairLock<AppState>`). Async streams in `AppState` (e.g. `metrics`, `runnerBundles`, `runnerSpeeds`) are produced by services and consumed by stores via `for await` loops launched inside `reduce(.task)`.
+Global app state flows through `AppStateClient` (an `AllocatedUnfairLock<AppState>`). Async streams in `AppState` (e.g. `metrics`, `runnerBundles`, `runnerSpeeds`) are produced by services and consumed by stores via `for await` loops launched inside `reduce(.viewAppeared)`.
 
 `AppDependencies.shared` is the live singleton injected through the `\.appDependencies` SwiftUI environment value; tests construct one via `AppDependencies.testDependencies(...)`, overriding only the clients they care about.
 
