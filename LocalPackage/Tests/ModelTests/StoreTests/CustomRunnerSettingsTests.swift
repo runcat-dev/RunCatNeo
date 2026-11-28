@@ -257,14 +257,35 @@ struct CustomRunnerSettingsTests {
     }
 
     @MainActor @Test
-    func send_fileImporterResponse_does_nothing_when_file_access_is_denied() async {
+    func send_fileImporterResponse_shows_loadingFailed_alert_when_file_access_is_denied() async {
+        let sut = CustomRunnerSettings(.testDependencies())
+        await sut.send(.fileImporterResponse(.success(URL(filePath: "/tmp/tester.zip"))))
+        #expect(sut.customRunnerEditor == nil)
+        #expect(sut.error == .customRunner(.loadingFailed))
+        #expect(sut.showingAlert)
+    }
+
+    @MainActor @Test
+    func send_fileImporterResponse_shows_loadingFailed_alert_when_file_cannot_be_read() async {
         let sut = CustomRunnerSettings(.testDependencies(
-            dataClient: testDependency(of: DataClient.self) {
-                $0.read = { _ in Data("not a zip archive".utf8) }
+            fileManagerClient: testDependency(of: FileManagerClient.self) {
+                $0.attributesOfItem = { _ in throw CocoaError(.fileNoSuchFile) }
+            },
+            urlClient: testDependency(of: URLClient.self) {
+                $0.startAccessingSecurityScopedResource = { _ in true }
             }
         ))
-        await sut.send(.fileImporterResponse(.success(URL(filePath: "/tmp/bird.zip"))))
+        await sut.send(.fileImporterResponse(.success(URL(filePath: "/tmp/tester.zip"))))
         #expect(sut.customRunnerEditor == nil)
-        #expect(!sut.showingAlert)
+        #expect(sut.error == .customRunner(.loadingFailed))
+        #expect(sut.showingAlert)
+    }
+
+    @MainActor @Test
+    func send_fileImporterResponse_shows_loadingFailed_alert_when_file_importer_fails() async {
+        let sut = CustomRunnerSettings(.testDependencies())
+        await sut.send(.fileImporterResponse(.failure(CocoaError(.fileReadUnknown))))
+        #expect(sut.error == .customRunner(.loadingFailed))
+        #expect(sut.showingAlert)
     }
 }

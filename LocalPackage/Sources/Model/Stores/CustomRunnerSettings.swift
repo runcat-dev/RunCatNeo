@@ -130,7 +130,10 @@ public final class CustomRunnerSettings: Composable {
             showingFileImporter = true
 
         case let .fileImporterResponse(.success(url)):
-            guard urlClient.startAccessingSecurityScopedResource(url) else { return }
+            guard urlClient.startAccessingSecurityScopedResource(url) else {
+                await send(.errorOccurred(.customRunner(.loadingFailed)))
+                return
+            }
             defer {
                 urlClient.stopAccessingSecurityScopedResource(url)
             }
@@ -152,11 +155,11 @@ public final class CustomRunnerSettings: Composable {
             } catch let error as RCNError {
                 await send(.errorOccurred(error))
             } catch {
-                logService.error(.importingRunnerArchiveFailed(error))
+                await send(.errorOccurred(.customRunner(.loadingFailed)))
             }
 
-        case let .fileImporterResponse(.failure(error)):
-            logService.error(.importingRunnerArchiveFailed(error))
+        case .fileImporterResponse(.failure):
+            await send(.errorOccurred(.customRunner(.loadingFailed)))
 
         case .guidanceButtonTapped:
             showingGuidancePopover = true

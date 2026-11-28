@@ -24,7 +24,6 @@ public enum ErrorEvent {
     case donationFailed(any Error)
     case importingCustomMetricsSourceFailed(any Error)
     case importingFrameImagesFailed(any Error)
-    case importingRunnerArchiveFailed(any Error)
     case importingSymbolImageFailed(any Error)
     case switchingRunnerFailed(any Error)
 
@@ -36,8 +35,6 @@ public enum ErrorEvent {
             "Failed importing custom metrics source."
         case .importingFrameImagesFailed:
             "Failed importing frame images."
-        case .importingRunnerArchiveFailed:
-            "Failed importing runner archive."
         case .importingSymbolImageFailed:
             "Failed importing symbol image."
         case .switchingRunnerFailed:
@@ -50,7 +47,6 @@ public enum ErrorEvent {
         case let .donationFailed(error),
             let .importingCustomMetricsSourceFailed(error),
             let .importingFrameImagesFailed(error),
-            let .importingRunnerArchiveFailed(error),
             let .importingSymbolImageFailed(error),
             let .switchingRunnerFailed(error):
             ["cause": "\(error.localizedDescription)"]
